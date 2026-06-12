@@ -770,7 +770,7 @@ function calcBusinessPrepayment(input) {
     rate: cumResult.rate,
     quickDeduction: cumResult.quickDeduction,
     breakdown: [
-      `第${month}个月（累计）`,
+      `第${month}季度（累计）`,
       `累计收入: ${fmt(cumulativeRevenue)}`,
       `累计成本: ${fmt(cumulativeCosts)}`,
       `累计费用: ${fmt(cumulativeExpenses)}`,
@@ -1152,12 +1152,12 @@ function renderForm() {
 }
 
 function fld(id, label, opts = {}) {
-  const { unit, hint, type = 'number', placeholder, value, cls, step, disabled } = opts;
+  const { unit, hint, type = 'number', placeholder, value, cls, step, disabled, min, max } = opts;
   // value 作为 placeholder 显示（灰色提示，点击自动消失），实际值从空开始
   const ph = placeholder || (value != null ? String(value) : '');
   return `<div class="form-group${cls ? ' ' + cls : ''}">
     <label class="form-label" for="${id}">${label}${unit ? ' <span class="unit">(' + unit + ')</span>' : ''}</label>
-    <input class="form-input" type="${type}" id="${id}" placeholder="${ph}"${step ? ' step="' + step + '"' : ''}${disabled ? ' disabled' : ''}>
+    <input class="form-input" type="${type}" id="${id}" placeholder="${ph}"${step ? ' step="' + step + '"' : ''}${min != null ? ' min="' + min + '"' : ''}${max != null ? ' max="' + max + '"' : ''}${disabled ? ' disabled' : ''}>
     ${hint ? '<div class="form-hint">' + hint + '</div>' : ''}
   </div>`;
 }
@@ -1189,8 +1189,8 @@ function renderWithholdingForm(sub, container) {
   if (sub === 'salary') {
     html = `<div class="card"><div class="card-header">工资薪金累计预扣法</div><div class="card-body">
       <div class="mode-switch" id="salaryMode">
-        <button class="mode-btn active" data-mode="year">全年模拟</button>
-        <button class="mode-btn" data-mode="month">单月精算</button>
+        <button class="mode-btn active" data-mode="month">单月精算</button>
+        <button class="mode-btn" data-mode="year">全年模拟</button>
       </div>
       <div id="salaryFields"></div>
       <div class="btn-group"><button class="btn btn-outline btn-block" onclick="clearSalaryForm()">重置</button></div>
@@ -1206,35 +1206,35 @@ function renderWithholdingForm(sub, container) {
       runCalculation();
     });
 
-    renderSalaryFields('year');
+    renderSalaryFields('month');
     bindCalcInputs(container);
     return;
   } else if (sub === 'labor') {
     html = `<div class="card"><div class="card-header">劳务报酬所得 预扣预缴</div><div class="card-body">
-      ${fld('lw_income', '每次收入额', { unit: '元', value: 40000 })}
-      ${fld('lw_count', '预计全年次数', { unit: '次', value: 1, hint: '用于估算全年劳务报酬的预缴税额' })}
+      ${fld('lw_income', '每次收入额', { unit: '元' })}
+      ${fld('lw_count', '预计全年次数', { unit: '次', hint: '用于估算全年劳务报酬的预缴税额' })}
       <div class="btn-group"><button class="btn btn-outline btn-block" onclick="setVal('lw_income','')">清除</button></div>
     </div></div>`;
   } else if (sub === 'royalty') {
     html = `<div class="card"><div class="card-header">稿酬所得 预扣预缴</div><div class="card-body">
-      ${fld('rw_income', '每次收入额', { unit: '元', value: 20000 })}
-      ${fld('rw_count', '预计全年次数', { unit: '次', value: 1 })}
+      ${fld('rw_income', '每次收入额', { unit: '元' })}
+      ${fld('rw_count', '预计全年次数', { unit: '次' })}
       <div class="btn-group"><button class="btn btn-outline btn-block" onclick="setVal('rw_income','')">清除</button></div>
     </div></div>`;
   } else if (sub === 'authorization') {
     html = `<div class="card"><div class="card-header">特许权使用费所得 预扣预缴</div><div class="card-body">
-      ${fld('aw_income', '每次收入额', { unit: '元', value: 10000 })}
-      ${fld('aw_count', '预计全年次数', { unit: '次', value: 1 })}
+      ${fld('aw_income', '每次收入额', { unit: '元' })}
+      ${fld('aw_count', '预计全年次数', { unit: '次' })}
       <div class="btn-group"><button class="btn btn-outline btn-block" onclick="setVal('aw_income','')">清除</button></div>
     </div></div>`;
   } else if (sub === 'nonresident') {
     html = `<div class="card"><div class="card-header">非居民个人 月度应纳税额</div><div class="card-body">
       <div class="section-sub">非居民个人取得工资、劳务报酬、稿酬、特许权使用费四类所得，按月分项计算后合并，适用月度税率表</div>
-      ${fld('nr_salary', '当月工资薪金收入', { unit: '元', value: 20000 })}
-      ${fld('nr_labor', '当月劳务报酬收入', { unit: '元', value: 5000 })}
-      ${fld('nr_royalty', '当月稿酬收入', { unit: '元', value: 0 })}
-      ${fld('nr_auth', '当月特许权使用费收入', { unit: '元', value: 0 })}
-      ${fld('nr_specialDed', '当月专项扣除(三险一金)', { unit: '元', value: 0, hint: '非居民个人也可享受专项扣除' })}
+      ${fld('nr_salary', '当月工资薪金收入', { unit: '元' })}
+      ${fld('nr_labor', '当月劳务报酬收入', { unit: '元' })}
+      ${fld('nr_royalty', '当月稿酬收入', { unit: '元' })}
+      ${fld('nr_auth', '当月特许权使用费收入', { unit: '元' })}
+      ${fld('nr_specialDed', '当月专项扣除(三险一金)', { unit: '元', hint: '非居民个人也可享受专项扣除' })}
       <div class="btn-group"><button class="btn btn-outline btn-block" onclick="clearNonResidentForm()">清除</button></div>
     </div></div>`;
   }
@@ -1254,19 +1254,19 @@ function renderSalaryFields(mode) {
   if (!container) return;
   if (mode === 'year') {
     container.innerHTML = `
-      ${fld('sy_monthlySalary', '每月税前工资', { unit: '元', value: 10000 })}
-      ${fld('sy_monthlySpecial', '每月专项扣除(三险一金)', { unit: '元', value: 1500 })}
-      ${fld('sy_monthlySpecialAdd', '每月专项附加扣除', { unit: '元', value: 1000, hint: '含子女教育/房贷利息/赡养老人/婴幼儿照护等7项' })}
-      ${fld('sy_monthlyOther', '每月其他扣除', { unit: '元', value: 0, hint: '含企业年金/职业年金/商业健康保险/个人养老金/公益捐赠等' })}
+      ${fld('sy_monthlySalary', '每月税前工资', { unit: '元' })}
+      ${fld('sy_monthlySpecial', '每月专项扣除(三险一金)', { unit: '元' })}
+      ${fld('sy_monthlySpecialAdd', '每月专项附加扣除', { unit: '元', hint: '含子女教育/房贷利息/赡养老人/婴幼儿照护等7项' })}
+      ${fld('sy_monthlyOther', '每月其他扣除', { unit: '元', hint: '含企业年金/职业年金/商业健康保险/个人养老金/公益捐赠等' })}
       <div class="form-hint">假设全年每月工资和各项扣除不变，自动模拟12个月累计预扣全过程</div>
     `;
   } else {
     container.innerHTML = `
-      ${fld('sm_month', '当前计算月份', { type: 'number', value: 1, step: '1' })}
-      ${fld('sm_monthlySalary', '每月税前工资', { unit: '元', value: 10000 })}
-      ${fld('sm_monthlySpecial', '每月专项扣除(三险一金)', { unit: '元', value: 1500 })}
-      ${fld('sm_monthlySpecialAdd', '每月专项附加扣除', { unit: '元', value: 1000, hint: '含子女教育/房贷利息/赡养老人/婴幼儿照护等7项' })}
-      ${fld('sm_monthlyOther', '每月其他扣除', { unit: '元', value: 0, hint: '含企业年金/职业年金/商业健康保险/个人养老金/公益捐赠等' })}
+      ${fld('sm_month', '当前计算月份', { type: 'number', step: '1', min: 1, max: 12 })}
+      ${fld('sm_monthlySalary', '每月税前工资', { unit: '元' })}
+      ${fld('sm_monthlySpecial', '每月专项扣除(三险一金)', { unit: '元' })}
+      ${fld('sm_monthlySpecialAdd', '每月专项附加扣除', { unit: '元', hint: '含子女教育/房贷利息/赡养老人/婴幼儿照护等7项' })}
+      ${fld('sm_monthlyOther', '每月其他扣除', { unit: '元', hint: '含企业年金/职业年金/商业健康保险/个人养老金/公益捐赠等' })}
       <div class="form-hint">按<strong>每月相同</strong>自动推算1~当前月的累计值；如各月工资不同请用全年模拟参考再逐月调整</div>
     `;
   }
@@ -1278,38 +1278,38 @@ function renderSalaryFields(mode) {
 function renderSettlementForm(container) {
   container.innerHTML = `
     <div class="card"><div class="card-header">综合所得收入</div><div class="card-body">
-      ${fld('as_salary', '全年工资薪金收入', { unit: '元', value: 120000 })}
-      ${fld('as_labor', '全年劳务报酬收入总额', { unit: '元', value: 20000, hint: '多笔请自行加总后填入' })}
-      ${fld('as_royalty', '全年稿酬收入总额', { unit: '元', value: 10000, hint: '多笔请自行加总后填入' })}
-      ${fld('as_auth', '全年特许权使用费收入总额', { unit: '元', value: 0, hint: '多笔请自行加总后填入' })}
+      ${fld('as_salary', '全年工资薪金收入', { unit: '元' })}
+      ${fld('as_labor', '全年劳务报酬收入总额', { unit: '元', hint: '多笔请自行加总后填入' })}
+      ${fld('as_royalty', '全年稿酬收入总额', { unit: '元', hint: '多笔请自行加总后填入' })}
+      ${fld('as_auth', '全年特许权使用费收入总额', { unit: '元', hint: '多笔请自行加总后填入' })}
     </div></div>
     <div class="card"><div class="card-header">专项扣除 (三险一金 · 年度合计)</div><div class="card-body">
       <div class="form-row">
-        ${fld('as_pension', '养老保险', { unit: '元', value: 9600, cls: 'form-group' })}
-        ${fld('as_medical', '医疗保险', { unit: '元', value: 2400, cls: 'form-group' })}
+        ${fld('as_pension', '养老保险', { unit: '元', cls: 'form-group' })}
+        ${fld('as_medical', '医疗保险', { unit: '元', cls: 'form-group' })}
       </div>
       <div class="form-row">
-        ${fld('as_unemploy', '失业保险', { unit: '元', value: 600, cls: 'form-group' })}
-        ${fld('as_housefund', '住房公积金', { unit: '元', value: 12000, cls: 'form-group' })}
+        ${fld('as_unemploy', '失业保险', { unit: '元', cls: 'form-group' })}
+        ${fld('as_housefund', '住房公积金', { unit: '元', cls: 'form-group' })}
       </div>
     </div></div>
     <div class="card"><div class="card-header">专项附加扣除 (年度合计)</div><div class="card-body">
-      ${fld('as_infant', '3岁以下婴幼儿照护', { unit: '元', hint: '2,000元/月/每个婴幼儿', value: 0 })}
-      ${fld('as_childEdu', '子女教育', { unit: '元', hint: '2,000元/月/每个子女', value: 0 })}
-      ${fld('as_contEdu', '继续教育', { unit: '元', hint: '学历400元/月, 职业资格3,600元/年', value: 0 })}
-      ${fld('as_illness', '大病医疗', { unit: '元', hint: '自付超15,000元部分, 限额80,000元/年', value: 0 })}
-      ${fld('as_loan', '住房贷款利息', { unit: '元', hint: '1,000元/月 (与住房租金互斥)', value: 0 })}
-      ${fld('as_rent', '住房租金', { unit: '元', hint: '1,500/1,100/800元/月 (与房贷利息互斥)', value: 0 })}
-      ${fld('as_elderly', '赡养老人', { unit: '元', hint: '独生3,000元/月, 非独生最高1,500元/月', value: 0 })}
+      ${fld('as_infant', '3岁以下婴幼儿照护', { unit: '元', hint: '2,000元/月/每个婴幼儿' })}
+      ${fld('as_childEdu', '子女教育', { unit: '元', hint: '2,000元/月/每个子女' })}
+      ${fld('as_contEdu', '继续教育', { unit: '元', hint: '学历400元/月, 职业资格3,600元/年' })}
+      ${fld('as_illness', '大病医疗', { unit: '元', hint: '自付超15,000元部分, 限额80,000元/年' })}
+      ${fld('as_loan', '住房贷款利息', { unit: '元', hint: '1,000元/月 (与住房租金互斥)' })}
+      ${fld('as_rent', '住房租金', { unit: '元', hint: '1,500/1,100/800元/月 (与房贷利息互斥)' })}
+      ${fld('as_elderly', '赡养老人', { unit: '元', hint: '独生3,000元/月, 非独生最高1,500元/月' })}
     </div></div>
     <div class="card"><div class="card-header">其他扣除 (年度合计)</div><div class="card-body">
-      ${fld('as_annuity', '企业/职业年金', { unit: '元', value: 0 })}
-      ${fld('as_health', '商业健康保险', { unit: '元', hint: '限额2,400元/年', value: 0 })}
-      ${fld('as_penPension', '个人养老金缴费', { unit: '元', hint: '限额12,000元/年', value: 0 })}
-      ${fld('as_charity', '公益慈善捐赠', { unit: '元', hint: '不超过应纳税所得额30%', value: 0 })}
+      ${fld('as_annuity', '企业/职业年金', { unit: '元' })}
+      ${fld('as_health', '商业健康保险', { unit: '元', hint: '限额2,400元/年' })}
+      ${fld('as_penPension', '个人养老金缴费', { unit: '元', hint: '限额12,000元/年' })}
+      ${fld('as_charity', '公益慈善捐赠', { unit: '元', hint: '不超过应纳税所得额30%' })}
     </div></div>
     <div class="card"><div class="card-header">全年已预缴税额</div><div class="card-body">
-      ${fld('as_prepaid', '全年已预扣预缴税额合计', { unit: '元', value: 0, hint: '各扣缴义务人已预扣税额的总和(可从个税APP查询)' })}
+      ${fld('as_prepaid', '全年已预扣预缴税额合计', { unit: '元', hint: '各扣缴义务人已预扣税额的总和(可从个税APP查询)' })}
     </div></div>
     <div class="btn-group"><button class="btn btn-outline btn-block" onclick="clearSettlementForm()">清除全部</button></div>
   `;
@@ -1332,7 +1332,7 @@ function renderBusinessForm(sub, container) {
   } else if (sub === 'deemed') {
     html = `
     <div class="card"><div class="card-header">经营所得 — 核定征收</div><div class="card-body">
-      ${fld('bd_revenue', '全年收入总额', { unit: '元', value: 500000 })}
+      ${fld('bd_revenue', '全年收入总额', { unit: '元' })}
       ${fldSelect('bd_industry', '行业', [
         { value: 'industrial', label: '工业/交通运输业/商业 (5%-20%)' },
         { value: 'construction', label: '建筑业/房地产开发业 (7%-20%)' },
@@ -1340,9 +1340,9 @@ function renderBusinessForm(sub, container) {
         { value: 'entertainment', label: '娱乐业 (20%-40%)' },
         { value: 'other', label: '其他行业 (10%-30%)' },
       ])}
-      ${fld('bd_deemedRate', '核定应税所得率', { unit: '%', value: 5, step: '0.5', hint: '填写百分数, 如5表示5%' })}
+      ${fld('bd_deemedRate', '核定应税所得率', { unit: '%', step: '0.5', hint: '填写百分数, 如5表示5%' })}
       ${toggle('bd_isIndividual', '个体工商户 (适用2023-2027减半优惠)', true)}
-      ${fld('bd_otherRelief', '其他政策减免税额', { unit: '元', value: 0 })}
+      ${fld('bd_otherRelief', '其他政策减免税额', { unit: '元' })}
     </div></div>`;
   }
   container.innerHTML = html;
@@ -1372,29 +1372,29 @@ function renderAuditFields(mode) {
   if (!container) return;
   if (mode === 'annual') {
     container.innerHTML = `
-      ${fld('ba_revenue', '全年收入总额', { unit: '元', value: 500000 })}
-      ${fld('ba_costs', '成本', { unit: '元', value: 300000 })}
-      ${fld('ba_expenses', '费用', { unit: '元', value: 50000 })}
-      ${fld('ba_losses', '损失', { unit: '元', value: 0 })}
+      ${fld('ba_revenue', '全年收入总额', { unit: '元' })}
+      ${fld('ba_costs', '成本', { unit: '元' })}
+      ${fld('ba_expenses', '费用', { unit: '元' })}
+      ${fld('ba_losses', '损失', { unit: '元' })}
       ${toggle('ba_hasComprehensive', '有综合所得（如有，不再扣除基本费用及专项扣除）', true)}
-      ${fld('ba_basicDed', '额外基本减除费用', { unit: '元', value: 60000, hint: '无综合所得时可用，60,000元/年' })}
-      ${fld('ba_specialDed', '额外专项扣除合计', { unit: '元', value: 0 })}
-      ${fld('ba_specialAddDed', '额外专项附加扣除合计', { unit: '元', value: 0 })}
-      ${fld('ba_otherDed', '额外其他扣除合计', { unit: '元', value: 0 })}
+      ${fld('ba_basicDed', '额外基本减除费用', { unit: '元', hint: '无综合所得时可用，60,000元/年' })}
+      ${fld('ba_specialDed', '额外专项扣除合计', { unit: '元' })}
+      ${fld('ba_specialAddDed', '额外专项附加扣除合计', { unit: '元' })}
+      ${fld('ba_otherDed', '额外其他扣除合计', { unit: '元' })}
       ${toggle('ba_isIndividual', '个体工商户/个人独资企业 (适用2023-2027减半优惠)', true)}
-      ${fld('ba_otherRelief', '其他政策减免税额', { unit: '元', value: 0 })}
+      ${fld('ba_otherRelief', '其他政策减免税额', { unit: '元' })}
     `;
   } else {
     container.innerHTML = `
-      ${fld('bp_month', '当前所属期（第几月）', { type: 'number', value: 3, step: '1' })}
-      ${fld('bp_cumRevenue', '截至本期累计收入总额', { unit: '元', value: 150000 })}
-      ${fld('bp_cumCosts', '截至本期累计成本', { unit: '元', value: 90000 })}
-      ${fld('bp_cumExpenses', '截至本期累计费用', { unit: '元', value: 15000 })}
-      ${fld('bp_cumLosses', '截至本期累计损失', { unit: '元', value: 0 })}
-      ${fld('bp_prepaidTax', '截至上期已预缴税额', { unit: '元', value: 0 })}
+      ${fld('bp_month', '当前所属期（第几季度）', { type: 'number', step: '1', min: 1, max: 4 })}
+      ${fld('bp_cumRevenue', '截至本期累计收入总额', { unit: '元' })}
+      ${fld('bp_cumCosts', '截至本期累计成本', { unit: '元' })}
+      ${fld('bp_cumExpenses', '截至本期累计费用', { unit: '元' })}
+      ${fld('bp_cumLosses', '截至本期累计损失', { unit: '元' })}
+      ${fld('bp_prepaidTax', '截至上期已预缴税额', { unit: '元' })}
       ${toggle('bp_isIndividual', '个体工商户/个人独资企业 (适用2023-2027减半优惠)', true)}
-      ${fld('bp_otherRelief', '其他政策减免税额', { unit: '元', value: 0 })}
-      <div class="form-hint">经营所得按年计征，分期预缴。按累计数据计算本期应预缴税额，年终汇算清缴多退少补。</div>
+      ${fld('bp_otherRelief', '其他政策减免税额', { unit: '元' })}
+      <div class="form-hint">经营所得按年计征，按季预缴。按累计数据计算本期应预缴税额，年终汇算清缴多退少补。</div>
     `;
   }
   bindCalcInputs(container);
@@ -1407,30 +1407,30 @@ function renderOtherIncomeForm(sub, container) {
   if (sub === 'rental') {
     html = `
     <div class="card"><div class="card-header">财产租赁所得</div><div class="card-body">
-      ${fld('pr_rent', '月租金收入', { unit: '元', value: 4500 })}
-      ${fld('pr_taxes', '当月税费（印花税/城建税等）', { unit: '元', value: 0 })}
-      ${fld('pr_repair', '当月修缮费用', { unit: '元', hint: '限额800元/月, 超出可结转', value: 0 })}
-      ${fld('pr_priorRepair', '上月未扣完修缮费结转', { unit: '元', value: 0 })}
+      ${fld('pr_rent', '月租金收入', { unit: '元' })}
+      ${fld('pr_taxes', '当月税费（印花税/城建税等）', { unit: '元' })}
+      ${fld('pr_repair', '当月修缮费用', { unit: '元', hint: '限额800元/月, 超出可结转' })}
+      ${fld('pr_priorRepair', '上月未扣完修缮费结转', { unit: '元' })}
       ${toggle('pr_isHousing', '个人按市场价出租住房 (优惠税率10%)', true)}
     </div></div>`;
   } else if (sub === 'transfer') {
     html = `
     <div class="card"><div class="card-header">财产转让所得</div><div class="card-body">
-      ${fld('pt_income', '转让收入', { unit: '元', value: 600000 })}
-      ${fld('pt_original', '财产原值', { unit: '元', value: 410000 })}
-      ${fld('pt_expenses', '合理税费', { unit: '元', value: 35000 })}
+      ${fld('pt_income', '转让收入', { unit: '元' })}
+      ${fld('pt_original', '财产原值', { unit: '元' })}
+      ${fld('pt_expenses', '合理税费', { unit: '元' })}
     </div></div>`;
   } else if (sub === 'dividend') {
     html = `
     <div class="card"><div class="card-header">利息、股息、红利所得</div><div class="card-body">
-      ${fld('div_amount', '股息红利金额', { unit: '元', value: 50000 })}
-      ${fld('div_holdingMonths', '持股期限', { unit: '月', hint: '>12个月免税, 1-12个月减半, ≤1个月全额', value: 6 })}
+      ${fld('div_amount', '股息红利金额', { unit: '元' })}
+      ${fld('div_holdingMonths', '持股期限', { unit: '月', hint: '>12个月免税, 1-12个月减半, ≤1个月全额' })}
       ${toggle('div_isListed', '上市公司股票', true)}
     </div></div>`;
   } else if (sub === 'occasional') {
     html = `
     <div class="card"><div class="card-header">偶然所得</div><div class="card-body">
-      ${fld('oc_income', '收入金额', { unit: '元', value: 50000 })}
+      ${fld('oc_income', '收入金额', { unit: '元' })}
       ${fldSelect('oc_type', '类型', [
         { value: 'lottery', label: '彩票中奖 (≤10,000元免税)' },
         { value: 'invoice', label: '发票中奖 (≤800元免税)' },
@@ -1450,33 +1450,33 @@ function renderSpecialForm(sub, container) {
     html = `
     <div class="card"><div class="card-header">全年一次性奖金 — 两种计税方式对比</div><div class="card-body">
       <div class="section-sub">填入全年收入情况，对比「单独计税」和「并入综合所得」哪种更省税</div>
-      ${fld('ab_bonus', '全年一次性奖金金额', { unit: '元', value: 60000 })}
-      ${fld('ab_annualSalary', '全年工资薪金收入（不含奖金）', { unit: '元', value: 120000 })}
-      ${fld('ab_otherIncome', '其他综合所得收入额', { unit: '元', value: 0, hint: '劳务报酬×80% + 稿酬×80%×70% + 特许权使用费×80%' })}
-      ${fld('ab_totalDeductions', '全年总扣除额', { unit: '元', value: 96000, hint: '60,000基本减除 + 三险一金 + 专项附加扣除 + 其他扣除' })}
-      ${fld('ab_prepaidWithoutBonus', '全年已预缴税额（不含奖金）', { unit: '元', value: 5000, hint: '工资等其他综合所得已预扣的税，可从个税APP查询' })}
+      ${fld('ab_bonus', '全年一次性奖金金额', { unit: '元' })}
+      ${fld('ab_annualSalary', '全年工资薪金收入（不含奖金）', { unit: '元' })}
+      ${fld('ab_otherIncome', '其他综合所得收入额', { unit: '元', hint: '劳务报酬×80% + 稿酬×80%×70% + 特许权使用费×80%' })}
+      ${fld('ab_totalDeductions', '全年总扣除额', { unit: '元', hint: '60,000基本减除 + 三险一金 + 专项附加扣除 + 其他扣除' })}
+      ${fld('ab_prepaidWithoutBonus', '全年已预缴税额（不含奖金）', { unit: '元', hint: '工资等其他综合所得已预扣的税，可从个税APP查询' })}
     </div></div>`;
   } else if (sub === 'equity') {
     html = `
     <div class="card"><div class="card-header">股权激励所得</div><div class="card-body">
-      ${fld('eq_income', '股权激励收入', { unit: '元', hint: '股票期权=(行权价-施权价)×股数<br>限制性股票=(登记日市价+解禁日市价)÷2×股数-支付金额', value: 100000 })}
+      ${fld('eq_income', '股权激励收入', { unit: '元', hint: '股票期权=(行权价-施权价)×股数<br>限制性股票=(登记日市价+解禁日市价)÷2×股数-支付金额' })}
       <div class="form-hint" style="margin-top:8px;">2027年12月31日前不并入综合所得，单独适用综合所得税率表</div>
     </div></div>`;
   } else if (sub === 'severance') {
     html = `
     <div class="card"><div class="card-header">解除劳动合同一次性补偿金</div><div class="card-body">
-      ${fld('sv_compensation', '经济补偿金总额', { unit: '元', value: 300000 })}
-      ${fld('sv_avgSalary3x', '当地上年职工年平均工资×3', { unit: '元', hint: '免税额度, 超过部分单独适用综合所得税率表', value: 250000 })}
+      ${fld('sv_compensation', '经济补偿金总额', { unit: '元' })}
+      ${fld('sv_avgSalary3x', '当地上年职工年平均工资×3', { unit: '元', hint: '免税额度, 超过部分单独适用综合所得税率表' })}
     </div></div>`;
   } else if (sub === 'pension') {
     html = `
     <div class="card"><div class="card-header">个人养老金</div><div class="card-body">
       <div class="section-title">缴费环节 — 节税测算</div>
-      ${fld('pp_contribution', '年度缴费额', { unit: '元', value: 12000, hint: '限额12,000元/年' })}
-      ${fld('pp_comprehensiveIncome', '综合所得收入额(缴费前)', { unit: '元', value: 200000 })}
-      ${fld('pp_otherDeductions', '其他扣除合计(含专项+专项附加)', { unit: '元', value: 96000 })}
+      ${fld('pp_contribution', '年度缴费额', { unit: '元', hint: '限额12,000元/年' })}
+      ${fld('pp_comprehensiveIncome', '综合所得收入额(缴费前)', { unit: '元' })}
+      ${fld('pp_otherDeductions', '其他扣除合计(含专项+专项附加)', { unit: '元' })}
       <div class="section-title" style="margin-top:16px;">领取环节 — 应纳税额</div>
-      ${fld('pp_withdrawal', '预计领取金额', { unit: '元', value: 100000, hint: '领取时不并入综合所得, 单独按3%计税' })}
+      ${fld('pp_withdrawal', '预计领取金额', { unit: '元', hint: '领取时不并入综合所得, 单独按3%计税' })}
     </div></div>`;
   }
   container.innerHTML = html;
@@ -1496,6 +1496,19 @@ function bindCalcInputs(container) {
       clearTimeout(calcTimeout);
       calcTimeout = setTimeout(() => runCalculation(), 300);
     });
+    // 强制约束 min/max（手动输入也生效）
+    if (el.type === 'number') {
+      el.addEventListener('blur', () => {
+        const min = el.hasAttribute('min') ? parseFloat(el.getAttribute('min')) : null;
+        const max = el.hasAttribute('max') ? parseFloat(el.getAttribute('max')) : null;
+        const v = parseFloat(el.value);
+        if (!isNaN(v)) {
+          if (min != null && v < min) el.value = min;
+          if (max != null && v > max) el.value = max;
+          runCalculation();
+        }
+      });
+    }
   });
   // Initial calculation
   runCalculation();
@@ -1839,7 +1852,7 @@ function renderResult(result) {
     return;
   }
 
-  if (!result || (!result.tax && !result.taxableIncome && !result.currentPrepayTax && !result.refund && !result.supplement && !result.combined && !result.separateMethod && result.tax !== 0)) {
+  if (!result || (!result.tax && !result.taxableIncome && !result.currentPrepayTax && !result.currentMonthTax && !result.refund && !result.supplement && !result.combined && !result.separateMethod && result.tax !== 0)) {
     container.innerHTML = '<div class="card"><div class="card-body" style="text-align:center;color:var(--text3);padding:24px">请输入数据开始计算</div></div>';
     return;
   }
@@ -1900,6 +1913,18 @@ function renderResult(result) {
     if (result.rate !== undefined) {
       html += `<div class="result-row"><span class="rkey">适用税率</span><span class="rval">${(result.rate*100).toFixed(0)}%</span></div>`;
     }
+  } else if (result.currentMonthTax !== undefined) {
+    const cssClass = result.currentMonthTax > 0 ? 'owe' : '';
+    html += `<div class="result-main"><div class="result-amount ${cssClass}">${fmt(result.currentMonthTax)}</div><div class="result-label">本期应预扣预缴税额</div></div>`;
+    if (result.cumulativeTaxableIncome !== undefined) {
+      html += `<div class="result-row"><span class="rkey">累计应纳税所得额</span><span class="rval">${fmt(result.cumulativeTaxableIncome)}</span></div>`;
+    }
+    if (result.cumulativeTax !== undefined) {
+      html += `<div class="result-row"><span class="rkey">累计应纳税额</span><span class="rval">${fmt(result.cumulativeTax)}</span></div>`;
+    }
+    if (result.rate !== undefined) {
+      html += `<div class="result-row"><span class="rkey">适用税率</span><span class="rval">${(result.rate*100).toFixed(0)}%</span></div>`;
+    }
   }
 
   // Business prepayment result
@@ -1908,13 +1933,6 @@ function renderResult(result) {
     html += `<div class="result-row"><span class="rkey">累计应纳税所得额</span><span class="rval">${fmt(result.cumulativeTaxableIncome)}</span></div>`;
     html += `<div class="result-row"><span class="rkey">累计应纳税额</span><span class="rval">${fmt(result.cumulativeTax)}</span></div>`;
     html += `<div class="result-row"><span class="rkey">适用税率</span><span class="rval">${(result.rate*100).toFixed(0)}%</span></div>`;
-  }
-
-  // Specific result rows
-  if (result.currentMonthTax !== undefined) {
-    html += `<div class="result-row"><span class="rkey">本期应预扣预缴税额</span><span class="rval">${fmt(result.currentMonthTax)}</span></div>`;
-    html += `<div class="result-row"><span class="rkey">累计应纳税所得额</span><span class="rval">${fmt(result.cumulativeTaxableIncome)}</span></div>`;
-    html += `<div class="result-row"><span class="rkey">累计应纳税额</span><span class="rval">${fmt(result.cumulativeTax)}</span></div>`;
   }
 
   if (result.estimatedAnnualTax !== undefined) {
