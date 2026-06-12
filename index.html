@@ -1,0 +1,2278 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
+<meta name="format-detection" content="telephone=no">
+<meta property="og:title" content="个人所得税计算器">
+<meta property="og:description" content="2026版·综合所得税计算·预扣预缴·汇算清缴·经营所得·打开即用">
+<meta property="og:type" content="article">
+<title>个人所得税计算器</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --blue:#1a73e8;--blue-l:#e8f0fe;--red:#d93025;--red-l:#fce8e6;--green:#188038;--green-l:#e6f4ea;
+  --bg:#f5f5f5;--card:#fff;--text:#202124;--text2:#5f6368;--text3:#9aa0a6;--border:#e0e0e0;
+  --radius:12px;--shadow:0 1px 3px rgba(0,0,0,.08);--font:system-ui,-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  --pri:var(--blue);--pri-l:var(--blue-l);--danger:var(--red);--danger-l:var(--red-l);--success:var(--green);--success-l:var(--green-l);
+}
+html{font-size:16px;-webkit-text-size-adjust:100%}
+body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:1.5;min-height:100vh;padding-bottom:env(safe-area-inset-bottom,20px)}
+.app{max-width:500px;margin:0 auto;padding:12px 16px 80px}
+
+/* Header */
+.header{text-align:center;padding:16px 0 8px}
+.header h1{font-size:1.35rem;font-weight:700;color:var(--text)}
+.header .sub{font-size:.75rem;color:var(--text3);margin-top:2px}
+
+/* Main Tabs */
+.main-tabs{display:flex;background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;position:sticky;top:8px;z-index:10;margin-bottom:12px}
+.main-tab{flex:1;text-align:center;padding:11px 4px;font-size:.73rem;font-weight:500;color:var(--text2);cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;transition:all .2s;-webkit-tap-highlight-color:transparent;user-select:none;white-space:nowrap}
+.main-tab.active{color:var(--pri);border-bottom-color:var(--pri);font-weight:600}
+.main-tab:active{background:#f0f0f0}
+
+/* Sub Tabs */
+.sub-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.sub-tab{padding:6px 12px;border-radius:20px;font-size:.7rem;border:1px solid var(--border);background:var(--card);color:var(--text2);cursor:pointer;transition:all .2s;-webkit-tap-highlight-color:transparent;user-select:none}
+.sub-tab.active{background:var(--pri);color:#fff;border-color:var(--pri);font-weight:600}
+
+/* Cards */
+.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:12px;overflow:hidden}
+.card-header{padding:12px 16px;font-size:.85rem;font-weight:600;color:var(--text);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.card-body{padding:14px 16px}
+
+/* Form */
+.form-group{margin-bottom:12px}
+.form-group:last-child{margin-bottom:0}
+.form-label{display:block;font-size:.73rem;font-weight:500;color:var(--text2);margin-bottom:4px}
+.form-label .unit{font-weight:400;color:var(--text3);font-size:.7rem}
+.form-input{width:100%;height:40px;padding:0 12px;font-size:.88rem;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);outline:none;transition:border .2s;-webkit-appearance:none;font-family:inherit}
+.form-input:focus{border-color:var(--pri);background:var(--card);color:var(--text)}
+.form-input::placeholder{color:#c0c0c0;font-size:.82rem}
+.form-input.error{border-color:var(--danger)}
+.form-hint{font-size:.65rem;color:var(--text3);margin-top:4px}
+.form-row{display:flex;gap:10px}
+.form-row .form-group{flex:1}
+
+/* Select */
+.form-select{width:100%;height:40px;padding:0 12px;font-size:.88rem;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);outline:none;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M6 8L1 3h10z' fill='%239aa0a6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px;font-family:inherit}
+
+/* Toggle */
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0}
+.toggle-label{font-size:.78rem;color:var(--text)}
+.toggle{position:relative;width:44px;height:24px;cursor:pointer}
+.toggle input{display:none}
+.toggle-track{position:absolute;inset:0;background:#ccc;border-radius:12px;transition:background .2s}
+.toggle input:checked+.toggle-track{background:var(--pri)}
+.toggle-thumb{position:absolute;top:2px;left:2px;width:20px;height:20px;background:#fff;border-radius:50%;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.toggle input:checked~.toggle-thumb{transform:translateX(20px)}
+
+/* Result */
+.result-card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:12px;overflow:hidden}
+.result-header{padding:10px 16px;font-size:.78rem;font-weight:600;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px}
+.result-body{padding:14px 16px}
+.result-main{text-align:center;padding:8px 0}
+.result-amount{font-size:2.2rem;font-weight:800;line-height:1.2}
+.result-amount.owe{color:var(--danger)}
+.result-amount.refund{color:var(--success)}
+.result-label{font-size:.7rem;color:var(--text3);margin-top:4px}
+.result-row{display:flex;justify-content:space-between;padding:6px 0;font-size:.75rem;border-bottom:1px solid var(--border)}
+.result-row:last-child{border-bottom:none}
+.result-row .rkey{color:var(--text2)}
+.result-row .rval{font-weight:600}
+
+/* Breakdown */
+.breakdown{margin-top:8px;border-top:1px solid var(--border);padding-top:8px}
+.breakdown-toggle{display:flex;align-items:center;gap:6px;font-size:.7rem;color:var(--pri);cursor:pointer;padding:6px 0;user-select:none;-webkit-tap-highlight-color:transparent}
+.breakdown-toggle .arrow{transition:transform .2s;font-size:.6rem}
+.breakdown-toggle.open .arrow{transform:rotate(90deg)}
+.breakdown-content{display:none;font-size:.7rem;color:var(--text2);line-height:1.7}
+.breakdown-content.show{display:block}
+.breakdown-step{padding:3px 8px;border-left:2px solid var(--pri-l);margin:4px 0;color:var(--text)}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;height:40px;padding:0 20px;font-size:.8rem;font-weight:500;border:none;border-radius:8px;cursor:pointer;transition:all .2s;-webkit-tap-highlight-color:transparent;font-family:inherit}
+.btn-primary{background:var(--pri);color:#fff}
+.btn-primary:active{opacity:.85}
+.btn-outline{background:var(--card);color:var(--pri);border:1px solid var(--pri)}
+.btn-outline:active{background:var(--pri-l)}
+.btn-sm{height:32px;padding:0 12px;font-size:.7rem}
+.btn-block{display:flex;width:100%}
+.btn-group{display:flex;gap:8px;margin-top:12px}
+
+/* Drawer overlay */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:100;display:none;align-items:flex-end;justify-content:center}
+.overlay.show{display:flex}
+.drawer{background:var(--card);border-radius:16px 16px 0 0;width:100%;max-width:500px;max-height:80vh;overflow-y:auto;padding:0 0 24px}
+.drawer-handle{width:36px;height:4px;background:#ccc;border-radius:2px;margin:10px auto 0}
+.drawer-header{position:sticky;top:0;background:var(--card);padding:12px 16px;font-size:.85rem;font-weight:700;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;z-index:1}
+.drawer-close{width:28px;height:28px;border:none;background:#f0f0f0;border-radius:50%;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1}
+.drawer-body{padding:12px 16px}
+.drawer table{width:100%;font-size:.68rem;border-collapse:collapse}
+.drawer table th,.drawer table td{padding:6px 8px;text-align:center;border:1px solid var(--border)}
+.drawer table th{background:#f8f9fa;font-weight:600;font-size:.65rem}
+.drawer table td{font-size:.68rem}
+.drawer h4{font-size:.78rem;margin:14px 0 8px;color:var(--pri)}
+.drawer .note{font-size:.65rem;color:var(--text3);margin-top:4px}
+
+/* Bottom bar */
+.bottom-bar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:500px;background:var(--card);border-top:1px solid var(--border);display:flex;padding:8px 16px;padding-bottom:calc(8px + env(safe-area-inset-bottom,0));gap:10px;z-index:10}
+.bottom-btn{flex:1;height:36px;border:none;border-radius:8px;font-size:.7rem;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;-webkit-tap-highlight-color:transparent;background:var(--bg);color:var(--text2)}
+.bottom-btn:active{background:#e8e8e8}
+
+/* Section title */
+.section-title{font-size:.8rem;font-weight:600;color:var(--text);margin:16px 0 8px;padding-left:4px}
+.section-sub{font-size:.68rem;color:var(--text3);margin:-4px 0 8px 4px}
+
+/* Footer */
+.footer{text-align:center;padding:20px 16px;font-size:.65rem;color:var(--text3);line-height:1.6}
+
+/* Comparison */
+.compare-box{display:flex;gap:8px;margin-top:8px}
+.compare-item{flex:1;text-align:center;padding:10px 8px;border-radius:8px;background:var(--bg)}
+.compare-item.best{border:2px solid var(--success);background:var(--success-l)}
+.compare-amount{font-size:1.1rem;font-weight:700}
+.compare-label{font-size:.65rem;color:var(--text2);margin-top:2px}
+.badge{display:inline-block;font-size:.6rem;padding:2px 8px;border-radius:10px;font-weight:600}
+.badge-best{background:var(--success);color:#fff}
+
+/* Tooltip icon */
+.info-icon{display:inline-flex;width:16px;height:16px;border-radius:50%;background:var(--border);color:var(--text3);font-size:.6rem;align-items:center;justify-content:center;cursor:help;font-weight:700;vertical-align:middle;margin-left:4px}
+
+/* Month table */
+.month-table{width:100%;font-size:.68rem;border-collapse:collapse;margin-top:8px}
+.month-table th,.month-table td{padding:5px 4px;text-align:center;border:1px solid var(--border)}
+.month-table th{background:#f8f9fa;font-weight:600;font-size:.63rem;position:sticky;top:0}
+.month-table td{font-size:.65rem}
+.month-table tr:last-child td{font-weight:700;background:#fafafa}
+.month-table .tax-col{color:var(--danger);font-weight:600}
+
+/* Mode switch */
+.mode-switch{display:flex;background:var(--bg);border-radius:8px;padding:3px;margin-bottom:12px}
+.mode-btn{flex:1;text-align:center;padding:7px 0;font-size:.72rem;border:none;background:none;border-radius:6px;cursor:pointer;transition:all .2s;color:var(--text2);-webkit-tap-highlight-color:transparent}
+.mode-btn.active{background:var(--card);color:var(--pri);font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+
+/* Highlight animation */
+@keyframes highlight{0%{background:var(--pri-l)}100%{background:transparent}}
+.highlight{animation:highlight .6s ease}
+
+/* Responsive */
+@media (min-width:500px){
+  .app{padding:16px 0 90px}
+  .main-tab{font-size:.78rem;padding:12px 6px}
+  .sub-tab{font-size:.73rem;padding:7px 14px}
+}
+
+/* Print / share image */
+@media print{
+  body{background:#fff}
+  .bottom-bar,.main-tabs,.sub-tabs,.btn,.overlay{display:none!important}
+  .card,.result-card{box-shadow:none;border:1px solid #ddd;break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <div class="header">
+    <h1>个人所得税计算器</h1>
+    <div class="sub">打开即用 · 一站式个税计算</div>
+  </div>
+
+  <nav class="main-tabs" id="mainTabs">
+    <button class="main-tab active" data-tab="0">预扣预缴</button>
+    <button class="main-tab" data-tab="1">汇算清缴</button>
+    <button class="main-tab" data-tab="2">经营所得</button>
+    <button class="main-tab" data-tab="3">其他所得</button>
+    <button class="main-tab" data-tab="4">特殊场景</button>
+  </nav>
+
+  <div id="subTabs"></div>
+  <div id="calcForm"></div>
+  <div id="calcResult"></div>
+
+  <div class="footer">@ 小波的财税日记 · 微信号：xbcs260611<br>
+    依据《中华人民共和国个人所得税法》及实施条例<br>
+    计算结果仅供参考
+  </div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="drawer" id="drawer">
+    <div class="drawer-handle"></div>
+    <div class="drawer-header">
+      税率表速查
+      <button class="drawer-close" id="drawerClose">✕</button>
+    </div>
+    <div class="drawer-body" id="drawerBody"></div>
+  </div>
+</div>
+
+<div class="bottom-bar">
+  <button class="bottom-btn" id="btnRate">📊 税率速查</button>
+  <button class="bottom-btn" id="btnShare">📤 生成分享图</button>
+</div>
+
+<canvas id="shareCanvas" style="display:none"></canvas>
+
+<script>
+// ============================================================
+// SECTION 1: CONSTANTS — TAX RATE TABLES & DEDUCTION STANDARDS
+// ============================================================
+
+// 综合所得七级超额累进税率表 (Table 5-3, 含速算扣除数)
+const COMPREHENSIVE_TAX_BRACKETS = Object.freeze([
+  { maxIncome: 36000,   rate: 0.03, quickDeduction: 0 },
+  { maxIncome: 144000,  rate: 0.10, quickDeduction: 2520 },
+  { maxIncome: 300000,  rate: 0.20, quickDeduction: 16920 },
+  { maxIncome: 420000,  rate: 0.25, quickDeduction: 31920 },
+  { maxIncome: 660000,  rate: 0.30, quickDeduction: 52920 },
+  { maxIncome: 960000,  rate: 0.35, quickDeduction: 85920 },
+  { maxIncome: Infinity, rate: 0.45, quickDeduction: 181920 },
+]);
+
+// 经营所得五级超额累进税率表 (Table 5-7, 含速算扣除数)
+const BUSINESS_TAX_BRACKETS = Object.freeze([
+  { maxIncome: 30000,   rate: 0.05, quickDeduction: 0 },
+  { maxIncome: 90000,   rate: 0.10, quickDeduction: 1500 },
+  { maxIncome: 300000,  rate: 0.20, quickDeduction: 10500 },
+  { maxIncome: 500000,  rate: 0.30, quickDeduction: 40500 },
+  { maxIncome: Infinity, rate: 0.35, quickDeduction: 65500 },
+]);
+
+// 劳务报酬预扣率表 (Table 5-5)
+const LABOR_WITHHOLDING_BRACKETS = Object.freeze([
+  { maxIncome: 20000,   rate: 0.20, quickDeduction: 0 },
+  { maxIncome: 50000,   rate: 0.30, quickDeduction: 2000 },
+  { maxIncome: Infinity, rate: 0.40, quickDeduction: 7000 },
+]);
+
+// 月度税率表 (Table 5-9 / Table 5-6 非居民)
+const MONTHLY_TAX_BRACKETS = Object.freeze([
+  { maxIncome: 3000,   rate: 0.03, quickDeduction: 0 },
+  { maxIncome: 12000,  rate: 0.10, quickDeduction: 210 },
+  { maxIncome: 25000,  rate: 0.20, quickDeduction: 1410 },
+  { maxIncome: 35000,  rate: 0.25, quickDeduction: 2660 },
+  { maxIncome: 55000,  rate: 0.30, quickDeduction: 4410 },
+  { maxIncome: 80000,  rate: 0.35, quickDeduction: 7160 },
+  { maxIncome: Infinity, rate: 0.45, quickDeduction: 15160 },
+]);
+
+// 核定征收应税所得率表 (Table 5-8)
+const DEEMED_PROFIT_RATES = Object.freeze({
+  industrial:    { label: '工业/交通运输业/商业', min: 0.05, max: 0.20, default: 0.05 },
+  construction:  { label: '建筑业/房地产开发业', min: 0.07, max: 0.20, default: 0.07 },
+  catering:      { label: '饮食服务业', min: 0.07, max: 0.25, default: 0.07 },
+  entertainment: { label: '娱乐业', min: 0.20, max: 0.40, default: 0.20 },
+  other:         { label: '其他行业', min: 0.10, max: 0.30, default: 0.10 },
+});
+
+// 基本减除费用
+const ANNUAL_BASIC_DEDUCTION = 60000;   // 年度
+const MONTHLY_BASIC_DEDUCTION = 5000;   // 月度
+
+// 专项附加扣除标准 (月度)
+const SPECIAL_ADD_DEDUCTIONS = Object.freeze({
+  infantCare:            { label: '3岁以下婴幼儿照护', monthly: 2000, note: '每个婴幼儿2000元/月' },
+  childEducation:        { label: '子女教育', monthly: 2000, note: '每个子女2000元/月' },
+  continuingEduDegree:   { label: '继续教育(学历)', monthly: 400, note: '学历继续教育期间400元/月' },
+  continuingEduCert:     { label: '继续教育(职业资格)', annual: 3600, note: '取得证书当年3600元' },
+  seriousIllness:        { label: '大病医疗', annualMax: 80000, note: '自付超15000元部分，限额80000元/年' },
+  housingLoanInterest:   { label: '住房贷款利息', monthly: 1000, note: '首套住房，最长240个月' },
+  housingRentTier1:      { label: '住房租金(一类)', monthly: 1500, note: '直辖市/省会/计划单列市' },
+  housingRentTier2:      { label: '住房租金(二类)', monthly: 1100, note: '市辖区人口>100万的城市' },
+  housingRentTier3:      { label: '住房租金(三类)', monthly: 800, note: '市辖区人口≤100万的城市' },
+  elderlyOnlyChild:      { label: '赡养老人(独生)', monthly: 3000, note: '独生子女3000元/月' },
+  elderlyNonOnlyChild:   { label: '赡养老人(非独生)', monthlyMax: 1500, note: '非独生子女最高1500元/月' },
+});
+
+// 其他扣除限额
+const OTHER_DEDUCTION_LIMITS = Object.freeze({
+  commercialHealth: 2400,     // 商业健康保险: 2400元/年
+  personalPensionMax: 12000,  // 个人养老金: 12000元/年
+  charitableRate: 0.30,       // 公益捐赠: 不超过应纳税所得额30%
+});
+
+// 财产租赁税率
+const PROPERTY_RENTAL_RATE = 0.20;
+const PROPERTY_RENTAL_HOUSING_RATE = 0.10;  // 个人按市场价出租住房
+
+// 其他所得统一税率
+const FLAT_RATE = 0.20;
+
+// 经营所得减半优惠期间
+const HALF_REDUCTION_INCOME_CAP = 2000000; // 2023-2027
+
+// 年终奖计税方式可选期
+const BONUS_SEPARATE_DEADLINE = 2027; // 2027年12月31日前
+
+// ============================================================
+// SECTION 2: UTILITY FUNCTIONS
+// ============================================================
+
+function calcProgressiveTax(taxableIncome, brackets) {
+  if (taxableIncome <= 0) return { tax: 0, rate: 0, quickDeduction: 0, bracketIndex: -1, taxableIncome };
+  for (let i = 0; i < brackets.length; i++) {
+    if (taxableIncome <= brackets[i].maxIncome) {
+      const b = brackets[i];
+      return {
+        tax: Math.round(taxableIncome * b.rate - b.quickDeduction),
+        rate: b.rate,
+        quickDeduction: b.quickDeduction,
+        bracketIndex: i,
+        taxableIncome,
+        formula: `${taxableIncome.toFixed(2)} × ${(b.rate*100).toFixed(0)}% - ${b.quickDeduction.toFixed(0)}`
+      };
+    }
+  }
+  // fallback — should never reach here with Infinity guard
+  const last = brackets[brackets.length - 1];
+  return {
+    tax: Math.round(taxableIncome * last.rate - last.quickDeduction),
+    rate: last.rate, quickDeduction: last.quickDeduction,
+    bracketIndex: brackets.length - 1, taxableIncome
+  };
+}
+
+function calcExpenseDeduction(income, threshold = 4000) {
+  if (income <= threshold) {
+    return { deduction: threshold === 4000 ? 800 : income * 0.2, method: 'fixed', amount: threshold === 4000 ? 800 : income * 0.2 };
+  }
+  return { deduction: income * 0.2, method: 'rate', amount: income * 0.2 };
+}
+
+function fmt(n) {
+  if (n == null || isNaN(n)) return '--';
+  const abs = Math.abs(n);
+  if (abs >= 1e8) return (n / 1e8).toFixed(2) + '亿';
+  if (abs >= 1e4) return (n / 1e4).toFixed(2) + '万';
+  return n.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function fmtInt(n) {
+  if (n == null || isNaN(n)) return '--';
+  return Math.round(n).toLocaleString('zh-CN');
+}
+
+function getVal(id) {
+  const el = document.getElementById(id);
+  if (!el) return 0;
+  const v = parseFloat(el.value);
+  return isNaN(v) || v < 0 ? 0 : v;
+}
+
+function getValStr(id) {
+  const el = document.getElementById(id);
+  return el ? el.value : '';
+}
+
+function setVal(id, v) {
+  const el = document.getElementById(id);
+  if (el) el.value = v;
+}
+
+function getChecked(id) {
+  const el = document.getElementById(id);
+  return el ? el.checked : false;
+}
+
+// ============================================================
+// SECTION 3: PURE CALCULATION FUNCTIONS
+// ============================================================
+
+// ---------- A. 预扣预缴 ----------
+
+function calcSalaryWithholding(input) {
+  const { month, monthlySalary, cumulativeSalary, cumulativeDeduction,
+    cumulativeSpecialDeduction, cumulativeSpecialAddDeduction, cumulativeOtherDeduction,
+    cumulativePrepaidTax, monthSpecialDeduction, monthSpecialAddDeduction, monthOtherDeduction } = input;
+
+  const cumSalary = cumulativeSalary + monthlySalary;
+  const cumDeduction = cumulativeDeduction + MONTHLY_BASIC_DEDUCTION;
+  const cumSpecial = cumulativeSpecialDeduction + monthSpecialDeduction;
+  const cumSpecialAdd = cumulativeSpecialAddDeduction + monthSpecialAddDeduction;
+  const cumOther = cumulativeOtherDeduction + monthOtherDeduction;
+
+  const cumTaxableIncome = cumSalary - cumDeduction - cumSpecial - cumSpecialAdd - cumOther;
+  const cumResult = calcProgressiveTax(Math.max(0, cumTaxableIncome), COMPREHENSIVE_TAX_BRACKETS);
+  const cumTax = cumResult.tax;
+  const currentTax = Math.max(0, cumTax - cumulativePrepaidTax);
+
+  return {
+    cumulativeSalary: cumSalary,
+    cumulativeDeduction: cumDeduction,
+    cumulativeSpecialDeduction: cumSpecial,
+    cumulativeSpecialAddDeduction: cumSpecialAdd,
+    cumulativeOtherDeduction: cumOther,
+    cumulativeTaxableIncome: Math.max(0, cumTaxableIncome),
+    cumulativeTax: cumTax,
+    currentMonthTax: currentTax,
+    rate: cumResult.rate,
+    quickDeduction: cumResult.quickDeduction,
+    breakdown: [
+      `累计收入: ${fmt(cumSalary)} = ${fmt(cumulativeSalary)} + ${fmt(monthlySalary)}`,
+      `累计减除费用: ${fmt(cumDeduction)} (${month}个月 × 5,000元/月)`,
+      `累计专项扣除: ${fmt(cumSpecial)}`,
+      `累计专项附加扣除: ${fmt(cumSpecialAdd)}`,
+      `累计其他扣除: ${fmt(cumOther)}`,
+      `累计应纳税所得额: ${fmt(Math.max(0, cumTaxableIncome))} = ${fmt(cumSalary)} - ${fmt(cumDeduction)} - ${fmt(cumSpecial)} - ${fmt(cumSpecialAdd)} - ${fmt(cumOther)}`,
+      `累计应纳税额: ${fmt(cumTax)} (适用税率${(cumResult.rate*100).toFixed(0)}%, 速算扣除数${cumResult.quickDeduction})`,
+      `本期应预扣预缴税额: ${fmt(currentTax)} = ${fmt(cumTax)} - ${fmt(cumulativePrepaidTax)}`,
+    ]
+  };
+}
+
+function calcLaborServiceWithholding(input) {
+  const { income } = input;
+  const exp = calcExpenseDeduction(income);
+  const taxableIncome = Math.max(0, income - exp.amount);
+  const result = calcProgressiveTax(taxableIncome, LABOR_WITHHOLDING_BRACKETS);
+  return {
+    taxableIncome: Math.round(taxableIncome * 100) / 100,
+    tax: result.tax,
+    rate: result.rate,
+    quickDeduction: result.quickDeduction,
+    expenseDeduction: exp.amount,
+    breakdown: [
+      `收入: ${fmt(income)}`,
+      `减除费用: ${fmt(exp.amount)} (${exp.method === 'fixed' ? '定额800元' : '定率20%'})`,
+      `应纳税所得额: ${fmt(taxableIncome)} = ${fmt(income)} - ${fmt(exp.amount)}`,
+      `应预扣税额: ${fmt(result.tax)} (${(result.rate*100).toFixed(0)}% × ${fmt(taxableIncome)} - ${result.quickDeduction})`,
+    ]
+  };
+}
+
+function calcRoyaltyWithholding(input) {
+  const { income } = input;
+  const exp = calcExpenseDeduction(income);
+  const afterExpense = Math.max(0, income - exp.amount);
+  const incomeAmount = afterExpense * 0.7; // 减按70%
+  const tax = Math.round(incomeAmount * FLAT_RATE);
+  return {
+    taxableIncome: Math.round(incomeAmount * 100) / 100,
+    tax,
+    rate: FLAT_RATE,
+    expenseDeduction: exp.amount,
+    incomeAfterExpense: afterExpense,
+    incomeAfterDiscount: incomeAmount,
+    breakdown: [
+      `收入: ${fmt(income)}`,
+      `减除费用: ${fmt(exp.amount)} (${exp.method === 'fixed' ? '定额800元' : '定率20%'})`,
+      `减除费用后: ${fmt(afterExpense)} = ${fmt(income)} - ${fmt(exp.amount)}`,
+      `再减按70%: ${fmt(incomeAmount)} = ${fmt(afterExpense)} × 70%`,
+      `应预扣税额: ${fmt(tax)} = ${fmt(incomeAmount)} × 20%`,
+    ]
+  };
+}
+
+function calcAuthorizationWithholding(input) {
+  const { income } = input;
+  const exp = calcExpenseDeduction(income);
+  const taxableIncome = Math.max(0, income - exp.amount);
+  const tax = Math.round(taxableIncome * FLAT_RATE);
+  return {
+    taxableIncome: Math.round(taxableIncome * 100) / 100,
+    tax,
+    rate: FLAT_RATE,
+    expenseDeduction: exp.amount,
+    breakdown: [
+      `收入: ${fmt(income)}`,
+      `减除费用: ${fmt(exp.amount)} (${exp.method === 'fixed' ? '定额800元' : '定率20%'})`,
+      `应纳税所得额: ${fmt(taxableIncome)} = ${fmt(income)} - ${fmt(exp.amount)}`,
+      `应预扣税额: ${fmt(tax)} = ${fmt(taxableIncome)} × 20%`,
+    ]
+  };
+}
+
+function simulateAnnualSalaryWithholding(input) {
+  const { monthlySalaries, monthlySpecialDeduction, monthlySpecialAddDeduction, monthlyOtherDeduction } = input;
+  let cumSalary = 0, cumDeduction = 0, cumSpecial = 0, cumSpecialAdd = 0, cumOther = 0, cumPrepaidTax = 0;
+  const months = [];
+  for (let i = 0; i < monthlySalaries.length; i++) {
+    const result = calcSalaryWithholding({
+      month: i + 1,
+      monthlySalary: monthlySalaries[i] || 0,
+      cumulativeSalary: cumSalary,
+      cumulativeDeduction: cumDeduction,
+      cumulativeSpecialDeduction: cumSpecial,
+      cumulativeSpecialAddDeduction: cumSpecialAdd,
+      cumulativeOtherDeduction: cumOther,
+      cumulativePrepaidTax: cumPrepaidTax,
+      monthSpecialDeduction: monthlySpecialDeduction || 0,
+      monthSpecialAddDeduction: monthlySpecialAddDeduction || 0,
+      monthOtherDeduction: monthlyOtherDeduction || 0,
+    });
+    cumSalary = result.cumulativeSalary;
+    cumDeduction = result.cumulativeDeduction;
+    cumSpecial = result.cumulativeSpecialDeduction;
+    cumSpecialAdd = result.cumulativeSpecialAddDeduction;
+    cumOther = result.cumulativeOtherDeduction;
+    cumPrepaidTax = result.cumulativeTax;
+    months.push({ month: i + 1, tax: result.currentMonthTax, cumTax: result.cumulativeTax, cumTaxableIncome: result.cumulativeTaxableIncome });
+  }
+  return {
+    months,
+    totalAnnualTax: cumPrepaidTax,
+    totalAnnualIncome: cumSalary,
+    breakdown: months.map(m => `第${m.month}月: 本月预扣 ${fmt(m.tax)}, 累计 ${fmt(m.cumTax)} (累计应纳税所得额 ${fmt(m.cumTaxableIncome)})`)
+  };
+}
+
+// 辅助函数：快速模拟前N个月的累计预扣税
+function simulateSingleUpTo(numMonths, monthlySalary, monthlySp, monthlySpa, monthlyOther) {
+  const salaries = new Array(numMonths).fill(monthlySalary);
+  const sim = simulateAnnualSalaryWithholding({
+    monthlySalaries: salaries,
+    monthlySpecialDeduction: monthlySp,
+    monthlySpecialAddDeduction: monthlySpa,
+    monthlyOtherDeduction: monthlyOther,
+  });
+  return sim.totalAnnualTax || 0;
+}
+
+// ---------- B. 汇算清缴 ----------
+
+function calcComprehensiveIncomeAmount(input) {
+  const { salaryIncome, laborServiceIncomes, royaltyIncomes, authorizationIncomes } = input;
+
+  const salaryAmount = salaryIncome;
+
+  let laborAmount = 0;
+  const laborBreakdown = (laborServiceIncomes || []).map(inc => {
+    const amount = inc * 0.8; // 减除20%费用
+    laborAmount += amount;
+    return `${fmt(inc)} × 80% = ${fmt(amount)}`;
+  });
+
+  let royaltyAmount = 0;
+  const royaltyBreakdown = (royaltyIncomes || []).map(inc => {
+    const amount = inc * 0.8 * 0.7; // 减除20%费用后再×70%
+    royaltyAmount += amount;
+    return `${fmt(inc)} × 80% × 70% = ${fmt(amount)}`;
+  });
+
+  let authAmount = 0;
+  const authBreakdown = (authorizationIncomes || []).map(inc => {
+    const amount = inc * 0.8;
+    authAmount += amount;
+    return `${fmt(inc)} × 80% = ${fmt(amount)}`;
+  });
+
+  const total = salaryAmount + laborAmount + royaltyAmount + authAmount;
+
+  return {
+    salaryAmount, laborAmount, royaltyAmount, authAmount,
+    totalComprehensiveIncome: total,
+    breakdown: [
+      `工资薪金收入额: ${fmt(salaryAmount)} (全额计入)`,
+      ...laborBreakdown.map(b => `劳务报酬收入额: ${b}`),
+      ...royaltyBreakdown.map(b => `稿酬收入额: ${b}`),
+      ...authBreakdown.map(b => `特许权使用费收入额: ${b}`),
+      `综合所得收入额合计: ${fmt(total)}`,
+    ]
+  };
+}
+
+function calcAnnualSettlementTax(input) {
+  const { comprehensiveIncomeAmount, specialDeductions, specialAddDeductions, otherDeductions } = input;
+
+  const sdTotal = (specialDeductions.pension || 0) + (specialDeductions.medical || 0) +
+    (specialDeductions.unemployment || 0) + (specialDeductions.housingFund || 0);
+
+  const sadTotal = (specialAddDeductions.infantCare || 0) + (specialAddDeductions.childEducation || 0) +
+    (specialAddDeductions.continuingEducation || 0) + (specialAddDeductions.seriousIllness || 0) +
+    (specialAddDeductions.housingLoanInterest || 0) + (specialAddDeductions.housingRent || 0) +
+    (specialAddDeductions.elderlySupport || 0);
+
+  const otherTotal = (otherDeductions.annuity || 0) + (otherDeductions.commercialHealth || 0) +
+    (otherDeductions.pensionContribution || 0) + (otherDeductions.charitableDonation || 0);
+
+  const totalDeductions = ANNUAL_BASIC_DEDUCTION + sdTotal + sadTotal + otherTotal;
+  const taxableIncome = Math.max(0, comprehensiveIncomeAmount - totalDeductions);
+  const result = calcProgressiveTax(taxableIncome, COMPREHENSIVE_TAX_BRACKETS);
+
+  return {
+    totalDeductions,
+    taxableIncome,
+    tax: result.tax,
+    rate: result.rate,
+    quickDeduction: result.quickDeduction,
+    breakdown: [
+      `综合所得收入额: ${fmt(comprehensiveIncomeAmount)}`,
+      `基本减除费用: ${fmt(ANNUAL_BASIC_DEDUCTION)} (60,000元/年)`,
+      `专项扣除(三险一金): ${fmt(sdTotal)}`,
+      `专项附加扣除: ${fmt(sadTotal)}`,
+      `其他扣除: ${fmt(otherTotal)}`,
+      `扣除合计: ${fmt(totalDeductions)}`,
+      `应纳税所得额: ${fmt(taxableIncome)} = ${fmt(comprehensiveIncomeAmount)} - ${fmt(totalDeductions)}`,
+      `应纳税额: ${fmt(result.tax)} (${(result.rate*100).toFixed(0)}% × ${fmt(taxableIncome)} - ${result.quickDeduction})`,
+    ]
+  };
+}
+
+function calcSettlementResult(annualTax, totalPrepaidTax) {
+  const diff = annualTax - totalPrepaidTax;
+  return {
+    annualTax, totalPrepaidTax,
+    refund: diff < 0 ? Math.abs(diff) : 0,
+    supplement: diff > 0 ? diff : 0,
+    isRefund: diff < 0,
+    isEven: diff === 0,
+    diff,
+    breakdown: [
+      `全年应纳税额: ${fmt(annualTax)}`,
+      `全年已预缴税额: ${fmt(totalPrepaidTax)}`,
+      diff < 0 ? `应退税额: ${fmt(Math.abs(diff))}` : diff > 0 ? `应补税额: ${fmt(diff)}` : `无需补退税`,
+    ]
+  };
+}
+
+function calcTotalPrepaidTax(input) {
+  const { salaryWithholdingTax, laborServiceTaxes, royaltyTaxes, authorizationTaxes } = input;
+  const laborTotal = (laborServiceTaxes || []).reduce((a, b) => a + b, 0);
+  const royaltyTotal = (royaltyTaxes || []).reduce((a, b) => a + b, 0);
+  const authTotal = (authorizationTaxes || []).reduce((a, b) => a + b, 0);
+  const total = (salaryWithholdingTax || 0) + laborTotal + royaltyTotal + authTotal;
+  return {
+    totalPrepaid: total,
+    breakdown: {
+      salary: salaryWithholdingTax || 0,
+      labor: laborTotal,
+      royalty: royaltyTotal,
+      authorization: authTotal,
+    }
+  };
+}
+
+// ---------- C. 经营所得 ----------
+
+function calcBusinessIncomeByAudit(input) {
+  const { totalRevenue, costs, expenses, losses, otherRelief, hasComprehensiveIncome,
+    annualBasicDeduction, specialDeductionTotal, specialAddDeductionTotal, otherDeductionTotal, isSolePropOrIndividual } = input;
+
+  const grossProfit = totalRevenue - costs - expenses - losses;
+  let taxableIncome = Math.max(0, grossProfit);
+
+  // 如无综合所得，可再减除费用
+  if (!hasComprehensiveIncome) {
+    taxableIncome = Math.max(0, taxableIncome - (annualBasicDeduction || 0) - (specialDeductionTotal || 0) - (specialAddDeductionTotal || 0) - (otherDeductionTotal || 0));
+  }
+
+  const result = calcProgressiveTax(taxableIncome, BUSINESS_TAX_BRACKETS);
+  const taxBeforeReduction = result.tax;
+
+  // 个体工商户2023-2027减半优惠
+  let halfReduction = 0;
+  if (isSolePropOrIndividual && taxableIncome <= HALF_REDUCTION_INCOME_CAP) {
+    halfReduction = Math.round((taxBeforeReduction - (otherRelief || 0)) * 0.5);
+  }
+
+  const taxAfterReduction = Math.max(0, taxBeforeReduction - halfReduction - (otherRelief || 0));
+
+  return {
+    grossProfit,
+    taxableIncome,
+    taxBeforeReduction,
+    halfReduction,
+    tax: taxAfterReduction,
+    rate: result.rate,
+    quickDeduction: result.quickDeduction,
+    breakdown: [
+      `收入总额: ${fmt(totalRevenue)}`,
+      `成本: ${fmt(costs)}`,
+      `费用: ${fmt(expenses)}`,
+      `损失: ${fmt(losses)}`,
+      `毛利润: ${fmt(grossProfit)} = ${fmt(totalRevenue)} - ${fmt(costs)} - ${fmt(expenses)} - ${fmt(losses)}`,
+      hasComprehensiveIncome ? '有综合所得，不再扣除基本费用及专项扣除' : `无综合所得，加扣: 基本减除${fmt(annualBasicDeduction || 0)} + 专项扣除${fmt(specialDeductionTotal || 0)} + 专项附加${fmt(specialAddDeductionTotal || 0)} + 其他${fmt(otherDeductionTotal || 0)}`,
+      `应纳税所得额: ${fmt(taxableIncome)}`,
+      `原应纳税额: ${fmt(taxBeforeReduction)} (${(result.rate*100).toFixed(0)}% × ${fmt(taxableIncome)} - ${result.quickDeduction})`,
+      halfReduction > 0 ? `减半优惠: ${fmt(halfReduction)} (2023-2027, 应纳税所得额≤200万)` : '',
+      `实际应纳税额: ${fmt(taxAfterReduction)}`,
+    ].filter(Boolean)
+  };
+}
+
+function calcBusinessIncomeByDeemed(input) {
+  const { totalRevenue, deemedRate, otherRelief } = input;
+
+  const taxableIncome = Math.max(0, totalRevenue * deemedRate);
+  const result = calcProgressiveTax(taxableIncome, BUSINESS_TAX_BRACKETS);
+  const taxBeforeReduction = result.tax;
+
+  let halfReduction = 0;
+  if (taxableIncome <= HALF_REDUCTION_INCOME_CAP) {
+    halfReduction = Math.round((taxBeforeReduction - (otherRelief || 0)) * 0.5);
+  }
+
+  const taxAfterReduction = Math.max(0, taxBeforeReduction - halfReduction - (otherRelief || 0));
+
+  return {
+    taxableIncome,
+    taxBeforeReduction,
+    halfReduction,
+    tax: taxAfterReduction,
+    rate: result.rate,
+    breakdown: [
+      `收入总额: ${fmt(totalRevenue)}`,
+      `应税所得率: ${(deemedRate * 100).toFixed(0)}%`,
+      `应纳税所得额: ${fmt(taxableIncome)} = ${fmt(totalRevenue)} × ${(deemedRate*100).toFixed(0)}%`,
+      `原应纳税额: ${fmt(taxBeforeReduction)} (${(result.rate*100).toFixed(0)}% × ${fmt(taxableIncome)} - ${result.quickDeduction})`,
+      halfReduction > 0 ? `减半优惠: ${fmt(halfReduction)}` : '',
+      `实际应纳税额: ${fmt(taxAfterReduction)}`,
+    ].filter(Boolean)
+  };
+}
+
+function calcHalfReduction(input) {
+  const { taxableIncome, calculatedTax, otherRelief } = input;
+  if (taxableIncome > HALF_REDUCTION_INCOME_CAP) {
+    return { reduction: 0, taxAfterReduction: calculatedTax, note: '应纳税所得额超过200万，不适用减半优惠' };
+  }
+  const reduction = Math.round((calculatedTax - (otherRelief || 0)) * 0.5);
+  return {
+    reduction,
+    taxAfterReduction: Math.max(0, calculatedTax - reduction - (otherRelief || 0)),
+    note: `减免税额 ${fmt(reduction)} = (${fmt(calculatedTax)} - ${fmt(otherRelief || 0)}) × 50%`,
+  };
+}
+
+function calcPartnershipAllocation(input) {
+  const { totalBusinessIncome, partnerCount, allocationRatios } = input;
+  const ratios = allocationRatios || new Array(partnerCount).fill(1 / partnerCount);
+  const partnerIncomes = ratios.map(r => Math.round(totalBusinessIncome * r * 100) / 100);
+  return {
+    partnerIncomes,
+    breakdown: partnerIncomes.map((inc, i) => `合伙人${i + 1}: ${fmt(inc)} (分配比例 ${(ratios[i]*100).toFixed(1)}%)`)
+  };
+}
+
+// C4. 经营所得分期预缴
+function calcBusinessPrepayment(input) {
+  const { month, cumulativeRevenue, cumulativeCosts, cumulativeExpenses, cumulativeLosses, cumulativePrepaidTax, isIndividual, otherRelief } = input;
+  const cumProfit = cumulativeRevenue - cumulativeCosts - cumulativeExpenses - cumulativeLosses;
+  const cumTaxable = Math.max(0, cumProfit);
+  const cumResult = calcProgressiveTax(cumTaxable, BUSINESS_TAX_BRACKETS);
+  let cumTax = cumResult.tax;
+
+  // 减半优惠
+  let halfReduction = 0;
+  if (isIndividual && cumTaxable <= HALF_REDUCTION_INCOME_CAP) {
+    halfReduction = Math.round((cumTax - (otherRelief || 0)) * 0.5);
+  }
+  cumTax = Math.max(0, cumTax - halfReduction - (otherRelief || 0));
+  const currentTax = Math.max(0, cumTax - cumulativePrepaidTax);
+
+  return {
+    cumulativeProfit: cumProfit,
+    cumulativeTaxableIncome: cumTaxable,
+    cumulativeTax: cumTax,
+    currentPrepayTax: currentTax,
+    halfReduction,
+    rate: cumResult.rate,
+    quickDeduction: cumResult.quickDeduction,
+    breakdown: [
+      `第${month}个月（累计）`,
+      `累计收入: ${fmt(cumulativeRevenue)}`,
+      `累计成本: ${fmt(cumulativeCosts)}`,
+      `累计费用: ${fmt(cumulativeExpenses)}`,
+      `累计损失: ${fmt(cumulativeLosses)}`,
+      `累计利润: ${fmt(cumProfit)}`,
+      `累计应纳税所得额: ${fmt(cumTaxable)}`,
+      `累计应纳税额: ${fmt(cumTax)} (${(cumResult.rate*100).toFixed(0)}% × ${fmt(cumTaxable)} - ${cumResult.quickDeduction})`,
+      halfReduction > 0 ? `减半优惠: ${fmt(halfReduction)}` : '',
+      `本期应预缴税额: ${fmt(currentTax)} = ${fmt(cumTax)} - ${fmt(cumulativePrepaidTax)}`,
+    ].filter(Boolean)
+  };
+}
+
+// ---------- D. 其他所得 ----------
+
+function calcPropertyRentalTax(input) {
+  const { monthlyRent, taxesAndFees, repairCost, priorRemainingRepair, isResidentialHousing } = input;
+
+  const netAfterFees = monthlyRent - (taxesAndFees || 0);
+  const totalRepairAvailable = (repairCost || 0) + (priorRemainingRepair || 0);
+  const allowableRepair = Math.min(totalRepairAvailable, 800);
+  const remainingRepair = totalRepairAvailable - allowableRepair;
+  const afterRepair = netAfterFees - allowableRepair;
+
+  let taxableIncome, tax, deductionAmount;
+  if (afterRepair <= 4000) {
+    deductionAmount = 800;
+    taxableIncome = Math.max(0, afterRepair - 800);
+  } else {
+    deductionAmount = afterRepair * 0.2;
+    taxableIncome = Math.max(0, afterRepair * 0.8);
+  }
+
+  const rate = isResidentialHousing ? PROPERTY_RENTAL_HOUSING_RATE : PROPERTY_RENTAL_RATE;
+  tax = Math.round(taxableIncome * rate);
+
+  return {
+    taxableIncome: Math.round(taxableIncome * 100) / 100,
+    tax,
+    rate,
+    remainingRepair,
+    breakdown: [
+      `月租金收入: ${fmt(monthlyRent)}`,
+      `减税费: ${fmt(taxesAndFees || 0)}`,
+      `减修缮费: ${fmt(allowableRepair)} (可用${fmt(totalRepairAvailable)}, 限额800元/月)`,
+      `减除前余额: ${fmt(afterRepair)}`,
+      afterRepair <= 4000 ? `减除费用: 800元 (定额)` : `减除费用: ${fmt(deductionAmount)} (定率20%)`,
+      `应纳税所得额: ${fmt(taxableIncome)}`,
+      `应纳税额: ${fmt(tax)} = ${fmt(taxableIncome)} × ${(rate*100).toFixed(0)}%${isResidentialHousing ? ' (个人出租住房优惠税率10%)' : ''}`,
+      remainingRepair > 0 ? `未扣完修缮费结转下月: ${fmt(remainingRepair)}` : '',
+    ].filter(Boolean)
+  };
+}
+
+function calcPropertyTransferTax(input) {
+  const { transferIncome, originalCost, reasonableExpenses } = input;
+  const taxableIncome = Math.max(0, transferIncome - originalCost - reasonableExpenses);
+  const tax = Math.round(taxableIncome * FLAT_RATE);
+  return {
+    taxableIncome: Math.round(taxableIncome * 100) / 100,
+    tax,
+    rate: FLAT_RATE,
+    breakdown: [
+      `转让收入: ${fmt(transferIncome)}`,
+      `财产原值: ${fmt(originalCost)}`,
+      `合理税费: ${fmt(reasonableExpenses)}`,
+      `应纳税所得额: ${fmt(taxableIncome)} = ${fmt(transferIncome)} - ${fmt(originalCost)} - ${fmt(reasonableExpenses)}`,
+      `应纳税额: ${fmt(tax)} = ${fmt(taxableIncome)} × 20%`,
+    ]
+  };
+}
+
+function calcDividendTax(input) {
+  const { dividendAmount, holdingMonths, isListed } = input;
+  let taxableAmount, isExempt = false, rate = FLAT_RATE, note = '';
+
+  if (isListed) {
+    if (holdingMonths > 12) { isExempt = true; taxableAmount = 0; note = '持股超1年，暂免征收个人所得税'; }
+    else if (holdingMonths > 1) { taxableAmount = dividendAmount * 0.5; note = '持股1个月以上至1年，暂减按50%计入应纳税所得额'; }
+    else { taxableAmount = dividendAmount; note = '持股1个月以内(含)，全额计入应纳税所得额'; }
+  } else {
+    taxableAmount = dividendAmount;
+    note = '非上市公司股息红利，全额计入应纳税所得额';
+  }
+
+  const tax = isExempt ? 0 : Math.round(taxableAmount * rate);
+  return {
+    taxableIncome: taxableAmount,
+    tax,
+    rate,
+    isExempt,
+    breakdown: [ `股息红利金额: ${fmt(dividendAmount)}`, note, `应纳税所得额: ${fmt(taxableAmount)}`, isExempt ? `应纳税额: 0 (免税)` : `应纳税额: ${fmt(tax)} = ${fmt(taxableAmount)} × 20%` ]
+  };
+}
+
+function calcOccasionalIncomeTax(input) {
+  const { income, type } = input;
+  let isExempt = false, taxableIncome = income, note = '';
+
+  if (type === 'lottery' && income <= 10000) { isExempt = true; taxableIncome = 0; note = '彩票中奖≤10,000元，免征个人所得税'; }
+  else if (type === 'invoice' && income <= 800) { isExempt = true; taxableIncome = 0; note = '发票中奖≤800元，免征个人所得税'; }
+
+  const tax = isExempt ? 0 : Math.round(taxableIncome * FLAT_RATE);
+  return {
+    taxableIncome, tax, rate: FLAT_RATE, isExempt,
+    breakdown: [
+      `收入金额: ${fmt(income)}`,
+      note || `无免税优惠`,
+      `应纳税所得额: ${fmt(taxableIncome)}`,
+      `应纳税额: ${isExempt ? '0 (免税)' : fmt(tax) + ' = ' + fmt(taxableIncome) + ' × 20%'}`,
+    ]
+  };
+}
+
+// ---------- E. 特殊场景 ----------
+
+function calcAnnualBonusSeparate(input) {
+  const { bonusAmount } = input;
+  const monthlyEquivalent = bonusAmount / 12;
+  const result = calcProgressiveTax(bonusAmount, MONTHLY_TAX_BRACKETS);
+  // Note: for annual bonus separate taxation, the rule is:
+  // monthlyEquivalent determines the bracket, then tax = bonusAmount × rate - quickDeduction
+  // The calcProgressiveTax directly on bonusAmount with MONTHLY brackets won't be correct
+  // because the quickDeduction in monthly table is for monthly income, not annual bonus
+  // Actually the correct formula: divide by 12 to find bracket, then apply rate to full amount
+  // Let me compute this correctly
+  let bracket = MONTHLY_TAX_BRACKETS[0];
+  for (let i = 0; i < MONTHLY_TAX_BRACKETS.length; i++) {
+    if (monthlyEquivalent <= MONTHLY_TAX_BRACKETS[i].maxIncome) {
+      bracket = MONTHLY_TAX_BRACKETS[i];
+      break;
+    }
+  }
+  const tax = Math.round(bonusAmount * bracket.rate - bracket.quickDeduction);
+
+  return {
+    monthlyEquivalent: Math.round(monthlyEquivalent * 100) / 100,
+    rate: bracket.rate,
+    quickDeduction: bracket.quickDeduction,
+    tax,
+    breakdown: [
+      `全年一次性奖金: ${fmt(bonusAmount)}`,
+      `除以12后: ${fmt(monthlyEquivalent)} → 适用月度税率表`,
+      `适用税率: ${(bracket.rate*100).toFixed(0)}%, 速算扣除数: ${fmtInt(bracket.quickDeduction)}`,
+      `应纳税额: ${fmt(tax)} = ${fmt(bonusAmount)} × ${(bracket.rate*100).toFixed(0)}% - ${fmtInt(bracket.quickDeduction)}`,
+    ]
+  };
+}
+
+function calcAnnualBonusComparison(input) {
+  const { bonusAmount, annualSalaryIncome, otherComprehensiveIncomeAmount, totalDeductions, annualPrepaidTaxWithoutBonus } = input;
+
+  // 方法1: 单独计税
+  const separate = calcAnnualBonusSeparate({ bonusAmount });
+
+  // 方法2: 并入综合所得
+  const combinedIncome = (annualSalaryIncome || 0) + (otherComprehensiveIncomeAmount || 0) + bonusAmount;
+  const settlementResult = calcAnnualSettlementTax({
+    comprehensiveIncomeAmount: combinedIncome,
+    specialDeductions: {},
+    specialAddDeductions: {},
+    otherDeductions: {},
+  });
+  // Recalculate with actual deductions
+  const taxableCombined = Math.max(0, combinedIncome - (totalDeductions || 0));
+  const combinedTaxResult = calcProgressiveTax(taxableCombined, COMPREHENSIVE_TAX_BRACKETS);
+  const totalTaxCombined = combinedTaxResult.tax;
+  const incrementFromBonus = totalTaxCombined - (annualPrepaidTaxWithoutBonus || 0);
+
+  // Comparison
+  const separateTotal = separate.tax + (annualPrepaidTaxWithoutBonus || 0);
+  const savingsWithSeparate = totalTaxCombined - separateTotal;
+
+  return {
+    separateMethod: { bonusTax: separate.tax, totalTax: separateTotal },
+    combinedMethod: { bonusTax: Math.max(0, incrementFromBonus), totalTax: totalTaxCombined },
+    recommendation: savingsWithSeparate > 0 ? 'separate' : (savingsWithSeparate < 0 ? 'combined' : 'equal'),
+    savingsWithSeparate,
+    breakdown: [
+      `【方法一：单独计税】`,
+      `  年终奖应纳税额: ${fmt(separate.tax)}`,
+      `  工资等其他综合所得税: ${fmt(annualPrepaidTaxWithoutBonus || 0)}`,
+      `  合计: ${fmt(separateTotal)}`,
+      `【方法二：并入综合所得】`,
+      `  并入后总收入额: ${fmt(combinedIncome)}`,
+      `  并入后应纳税所得额: ${fmt(taxableCombined)}`,
+      `  并入后应纳税额: ${fmt(totalTaxCombined)}`,
+      savingsWithSeparate > 0 ? `>>> 建议选择单独计税，可节省 ${fmt(savingsWithSeparate)}` :
+      savingsWithSeparate < 0 ? `>>> 建议选择并入综合所得，可节省 ${fmt(Math.abs(savingsWithSeparate))}` :
+      `>>> 两种方式结果相同`,
+    ]
+  };
+}
+
+function calcEquityIncentiveTax(input) {
+  const { equityIncome } = input;
+  const result = calcProgressiveTax(equityIncome, COMPREHENSIVE_TAX_BRACKETS);
+  return {
+    taxableIncome: equityIncome,
+    tax: result.tax,
+    rate: result.rate,
+    quickDeduction: result.quickDeduction,
+    breakdown: [
+      `股权激励收入: ${fmt(equityIncome)}`,
+      `应纳税额: ${fmt(result.tax)} (不并入综合所得，单独适用综合所得税率表)`,
+      `适用税率: ${(result.rate*100).toFixed(0)}%, 速算扣除数: ${fmtInt(result.quickDeduction)}`,
+      `计算: ${fmt(equityIncome)} × ${(result.rate*100).toFixed(0)}% - ${fmtInt(result.quickDeduction)} = ${fmt(result.tax)}`,
+    ]
+  };
+}
+
+function calcSeveranceTax(input) {
+  const { compensation, localAvgSalary3x } = input;
+  const exemptAmount = Math.min(compensation, localAvgSalary3x);
+  const taxableIncome = Math.max(0, compensation - localAvgSalary3x);
+  const result = calcProgressiveTax(taxableIncome, COMPREHENSIVE_TAX_BRACKETS);
+  return {
+    exemptAmount,
+    taxableIncome,
+    tax: result.tax,
+    rate: result.rate,
+    breakdown: [
+      `补偿金总额: ${fmt(compensation)}`,
+      `免税额度(当地上年职工平均工资3倍): ${fmt(localAvgSalary3x)}`,
+      `免税部分: ${fmt(exemptAmount)}`,
+      `应税部分: ${fmt(taxableIncome)} = ${fmt(compensation)} - ${fmt(localAvgSalary3x)}`,
+      taxableIncome > 0 ? `应纳税额: ${fmt(result.tax)} (单独适用综合所得税率表，${(result.rate*100).toFixed(0)}%)` : `应纳税额: 0 (不超过免税额)`,
+    ]
+  };
+}
+
+function calcPensionContributionBenefit(input) {
+  const { annualContribution, annualComprehensiveIncome, totalOtherDeductions } = input;
+  const deductibleAmount = Math.min(annualContribution, OTHER_DEDUCTION_LIMITS.personalPensionMax);
+  const taxableBefore = Math.max(0, annualComprehensiveIncome - ANNUAL_BASIC_DEDUCTION - (totalOtherDeductions || 0));
+  const taxableAfter = Math.max(0, annualComprehensiveIncome - ANNUAL_BASIC_DEDUCTION - (totalOtherDeductions || 0) - deductibleAmount);
+  const taxBefore = calcProgressiveTax(taxableBefore, COMPREHENSIVE_TAX_BRACKETS).tax;
+  const taxAfter = calcProgressiveTax(taxableAfter, COMPREHENSIVE_TAX_BRACKETS).tax;
+  const taxSaving = taxBefore - taxAfter;
+
+  return {
+    deductibleAmount,
+    taxSaving,
+    breakdown: [
+      `年度缴费额: ${fmt(annualContribution)}`,
+      `可扣除金额: ${fmt(deductibleAmount)} (顶格12,000元/年)`,
+      `扣除前应纳税所得额: ${fmt(taxableBefore)} → 税额: ${fmt(taxBefore)}`,
+      `扣除后应纳税所得额: ${fmt(taxableAfter)} → 税额: ${fmt(taxAfter)}`,
+      `节税金额: ${fmt(taxSaving)}`,
+    ]
+  };
+}
+
+function calcPensionWithdrawalTax(input) {
+  const { withdrawalAmount } = input;
+  const tax = Math.round(withdrawalAmount * 0.03);
+  return {
+    tax,
+    afterTaxAmount: withdrawalAmount - tax,
+    breakdown: [
+      `领取金额: ${fmt(withdrawalAmount)}`,
+      `应纳税额: ${fmt(tax)} = ${fmt(withdrawalAmount)} × 3% (不并入综合所得，单独按3%计税)`,
+      `税后金额: ${fmt(withdrawalAmount - tax)}`,
+    ]
+  };
+}
+
+// ---------- F. 非居民个人 ----------
+
+function calcNonResidentTax(input) {
+  const { monthlySalary, monthlyLabor, monthlyRoyalty, monthlyAuthorization, monthSpecialDeduction } = input;
+  const salaryTaxable = Math.max(0, monthlySalary - MONTHLY_BASIC_DEDUCTION - (monthSpecialDeduction || 0));
+  const laborAmount = monthlyLabor * 0.8;
+  const royaltyAmount = monthlyRoyalty * 0.8 * 0.7;
+  const authAmount = monthlyAuthorization * 0.8;
+  const totalTaxable = Math.max(0, salaryTaxable + laborAmount + royaltyAmount + authAmount);
+  const result = calcProgressiveTax(totalTaxable, MONTHLY_TAX_BRACKETS);
+
+  return {
+    taxableIncome: totalTaxable,
+    tax: result.tax,
+    rate: result.rate,
+    breakdown: [
+      `工资薪金应纳税所得额: ${fmt(salaryTaxable)} = ${fmt(monthlySalary)} - 5,000 - ${fmt(monthSpecialDeduction || 0)}`,
+      `劳务报酬收入额: ${fmt(laborAmount)}`,
+      `稿酬收入额: ${fmt(royaltyAmount)}`,
+      `特许权使用费收入额: ${fmt(authAmount)}`,
+      `合计应纳税所得额: ${fmt(totalTaxable)}`,
+      `应纳税额: ${fmt(result.tax)} (月度税率表, ${(result.rate*100).toFixed(0)}%)`,
+    ]
+  };
+}
+
+// ============================================================
+// SECTION 4: UI RENDERING & EVENT HANDLING
+// ============================================================
+
+let activeMainTab = 0;
+let activeSubTab = {};
+
+// Sub-tab definitions
+const subTabDefs = {
+  0: { // 预扣预缴
+    salary: '工资薪金',
+    labor: '劳务报酬',
+    royalty: '稿酬',
+    authorization: '特许权使用费',
+    nonresident: '非居民个人',
+  },
+  2: { // 经营所得
+    audit: '查账征收',
+    deemed: '核定征收',
+  },
+  3: { // 其他所得
+    rental: '财产租赁',
+    transfer: '财产转让',
+    dividend: '利息股息红利',
+    occasional: '偶然所得',
+  },
+  4: { // 特殊场景
+    bonus: '全年一次性奖金',
+    equity: '股权激励',
+    severance: '解除劳动合同补偿',
+    pension: '个人养老金',
+  },
+};
+
+function switchMainTab(idx) {
+  activeMainTab = idx;
+  activeSubTab[idx] = activeSubTab[idx] || Object.keys(subTabDefs[idx] || {})[0] || 'default';
+
+  document.querySelectorAll('.main-tab').forEach((el, i) => {
+    el.classList.toggle('active', i === idx);
+  });
+
+  renderSubTabs();
+  renderForm();
+  renderResult({});
+}
+
+function switchSubTab(key) {
+  activeSubTab[activeMainTab] = key;
+  renderSubTabs();
+  renderForm();
+  renderResult({});
+}
+
+function renderSubTabs() {
+  const container = document.getElementById('subTabs');
+  const defs = subTabDefs[activeMainTab];
+  if (!defs) { container.innerHTML = ''; return; }
+
+  const active = activeSubTab[activeMainTab];
+  container.innerHTML = `<div class="sub-tabs">${Object.entries(defs).map(([k, v]) =>
+    `<button class="sub-tab${k === active ? ' active' : ''}" data-key="${k}">${v}</button>`
+  ).join('')}</div>`;
+
+  container.querySelectorAll('.sub-tab').forEach(el => {
+    el.addEventListener('click', () => switchSubTab(el.dataset.key));
+  });
+}
+
+// ============================================================
+// FORM RENDERING — Each calculator's HTML form
+// ============================================================
+
+function renderForm() {
+  const container = document.getElementById('calcForm');
+  const tab = activeMainTab;
+  const sub = activeSubTab[tab];
+
+  switch (tab) {
+    case 0: return renderWithholdingForm(sub, container);
+    case 1: return renderSettlementForm(container);
+    case 2: return renderBusinessForm(sub, container);
+    case 3: return renderOtherIncomeForm(sub, container);
+    case 4: return renderSpecialForm(sub, container);
+  }
+}
+
+function fld(id, label, opts = {}) {
+  const { unit, hint, type = 'number', placeholder, value, cls, step, disabled } = opts;
+  // value 作为 placeholder 显示（灰色提示，点击自动消失），实际值从空开始
+  const ph = placeholder || (value != null ? String(value) : '');
+  return `<div class="form-group${cls ? ' ' + cls : ''}">
+    <label class="form-label" for="${id}">${label}${unit ? ' <span class="unit">(' + unit + ')</span>' : ''}</label>
+    <input class="form-input" type="${type}" id="${id}" placeholder="${ph}"${step ? ' step="' + step + '"' : ''}${disabled ? ' disabled' : ''}>
+    ${hint ? '<div class="form-hint">' + hint + '</div>' : ''}
+  </div>`;
+}
+
+function fldSelect(id, label, options, opts = {}) {
+  const { hint } = opts;
+  return `<div class="form-group">
+    <label class="form-label" for="${id}">${label}</label>
+    <select class="form-select" id="${id}">${options.map(o => `<option value="${o.value}">${o.label}</option>`).join('')}</select>
+    ${hint ? '<div class="form-hint">' + hint + '</div>' : ''}
+  </div>`;
+}
+
+function toggle(id, label, checked = false) {
+  return `<div class="toggle-row">
+    <span class="toggle-label">${label}</span>
+    <label class="toggle"><input type="checkbox" id="${id}" ${checked ? 'checked' : ''}><span class="toggle-track"></span><span class="toggle-thumb"></span></label>
+  </div>`;
+}
+
+function btn(label, onClick, opts = {}) {
+  return `<button class="btn ${opts.cls || ''}" onclick="${onClick}" style="${opts.style || ''}">${label}</button>`;
+}
+
+// ---- 预扣预缴 forms ----
+
+function renderWithholdingForm(sub, container) {
+  let html = '';
+  if (sub === 'salary') {
+    html = `<div class="card"><div class="card-header">工资薪金累计预扣法</div><div class="card-body">
+      <div class="mode-switch" id="salaryMode">
+        <button class="mode-btn active" data-mode="year">全年模拟</button>
+        <button class="mode-btn" data-mode="month">单月精算</button>
+      </div>
+      <div id="salaryFields"></div>
+      <div class="btn-group"><button class="btn btn-outline btn-block" onclick="clearSalaryForm()">重置</button></div>
+    </div></div>`;
+    container.innerHTML = html;
+
+    document.getElementById('salaryMode').addEventListener('click', function(e) {
+      const btn = e.target.closest('.mode-btn');
+      if (!btn) return;
+      this.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderSalaryFields(btn.dataset.mode);
+      runCalculation();
+    });
+
+    renderSalaryFields('year');
+    bindCalcInputs(container);
+    return;
+  } else if (sub === 'labor') {
+    html = `<div class="card"><div class="card-header">劳务报酬所得 预扣预缴</div><div class="card-body">
+      ${fld('lw_income', '每次收入额', { unit: '元', value: 40000 })}
+      ${fld('lw_count', '预计全年次数', { unit: '次', value: 1, hint: '用于估算全年劳务报酬的预缴税额' })}
+      <div class="btn-group"><button class="btn btn-outline btn-block" onclick="setVal('lw_income','')">清除</button></div>
+    </div></div>`;
+  } else if (sub === 'royalty') {
+    html = `<div class="card"><div class="card-header">稿酬所得 预扣预缴</div><div class="card-body">
+      ${fld('rw_income', '每次收入额', { unit: '元', value: 20000 })}
+      ${fld('rw_count', '预计全年次数', { unit: '次', value: 1 })}
+      <div class="btn-group"><button class="btn btn-outline btn-block" onclick="setVal('rw_income','')">清除</button></div>
+    </div></div>`;
+  } else if (sub === 'authorization') {
+    html = `<div class="card"><div class="card-header">特许权使用费所得 预扣预缴</div><div class="card-body">
+      ${fld('aw_income', '每次收入额', { unit: '元', value: 10000 })}
+      ${fld('aw_count', '预计全年次数', { unit: '次', value: 1 })}
+      <div class="btn-group"><button class="btn btn-outline btn-block" onclick="setVal('aw_income','')">清除</button></div>
+    </div></div>`;
+  } else if (sub === 'nonresident') {
+    html = `<div class="card"><div class="card-header">非居民个人 月度应纳税额</div><div class="card-body">
+      <div class="section-sub">非居民个人取得工资、劳务报酬、稿酬、特许权使用费四类所得，按月分项计算后合并，适用月度税率表</div>
+      ${fld('nr_salary', '当月工资薪金收入', { unit: '元', value: 20000 })}
+      ${fld('nr_labor', '当月劳务报酬收入', { unit: '元', value: 5000 })}
+      ${fld('nr_royalty', '当月稿酬收入', { unit: '元', value: 0 })}
+      ${fld('nr_auth', '当月特许权使用费收入', { unit: '元', value: 0 })}
+      ${fld('nr_specialDed', '当月专项扣除(三险一金)', { unit: '元', value: 0, hint: '非居民个人也可享受专项扣除' })}
+      <div class="btn-group"><button class="btn btn-outline btn-block" onclick="clearNonResidentForm()">清除</button></div>
+    </div></div>`;
+  }
+  container.innerHTML = html;
+  bindCalcInputs(container);
+}
+
+// ---- 工资薪金动态表单 ----
+
+function getSalaryMode() {
+  const el = document.querySelector('#salaryMode .mode-btn.active');
+  return el ? el.dataset.mode : 'year';
+}
+
+function renderSalaryFields(mode) {
+  const container = document.getElementById('salaryFields');
+  if (!container) return;
+  if (mode === 'year') {
+    container.innerHTML = `
+      ${fld('sy_monthlySalary', '每月税前工资', { unit: '元', value: 10000 })}
+      ${fld('sy_monthlySpecial', '每月专项扣除(三险一金)', { unit: '元', value: 1500 })}
+      ${fld('sy_monthlySpecialAdd', '每月专项附加扣除', { unit: '元', value: 1000, hint: '含子女教育/房贷利息/赡养老人/婴幼儿照护等7项' })}
+      ${fld('sy_monthlyOther', '每月其他扣除', { unit: '元', value: 0, hint: '含企业年金/职业年金/商业健康保险/个人养老金/公益捐赠等' })}
+      <div class="form-hint">假设全年每月工资和各项扣除不变，自动模拟12个月累计预扣全过程</div>
+    `;
+  } else {
+    container.innerHTML = `
+      ${fld('sm_month', '当前计算月份', { type: 'number', value: 1, step: '1' })}
+      ${fld('sm_monthlySalary', '每月税前工资', { unit: '元', value: 10000 })}
+      ${fld('sm_monthlySpecial', '每月专项扣除(三险一金)', { unit: '元', value: 1500 })}
+      ${fld('sm_monthlySpecialAdd', '每月专项附加扣除', { unit: '元', value: 1000, hint: '含子女教育/房贷利息/赡养老人/婴幼儿照护等7项' })}
+      ${fld('sm_monthlyOther', '每月其他扣除', { unit: '元', value: 0, hint: '含企业年金/职业年金/商业健康保险/个人养老金/公益捐赠等' })}
+      <div class="form-hint">按<strong>每月相同</strong>自动推算1~当前月的累计值；如各月工资不同请用全年模拟参考再逐月调整</div>
+    `;
+  }
+  bindCalcInputs(container);
+}
+
+// ---- 汇算清缴 form ----
+
+function renderSettlementForm(container) {
+  container.innerHTML = `
+    <div class="card"><div class="card-header">综合所得收入</div><div class="card-body">
+      ${fld('as_salary', '全年工资薪金收入', { unit: '元', value: 120000 })}
+      ${fld('as_labor', '全年劳务报酬收入总额', { unit: '元', value: 20000, hint: '多笔请自行加总后填入' })}
+      ${fld('as_royalty', '全年稿酬收入总额', { unit: '元', value: 10000, hint: '多笔请自行加总后填入' })}
+      ${fld('as_auth', '全年特许权使用费收入总额', { unit: '元', value: 0, hint: '多笔请自行加总后填入' })}
+    </div></div>
+    <div class="card"><div class="card-header">专项扣除 (三险一金 · 年度合计)</div><div class="card-body">
+      <div class="form-row">
+        ${fld('as_pension', '养老保险', { unit: '元', value: 9600, cls: 'form-group' })}
+        ${fld('as_medical', '医疗保险', { unit: '元', value: 2400, cls: 'form-group' })}
+      </div>
+      <div class="form-row">
+        ${fld('as_unemploy', '失业保险', { unit: '元', value: 600, cls: 'form-group' })}
+        ${fld('as_housefund', '住房公积金', { unit: '元', value: 12000, cls: 'form-group' })}
+      </div>
+    </div></div>
+    <div class="card"><div class="card-header">专项附加扣除 (年度合计)</div><div class="card-body">
+      ${fld('as_infant', '3岁以下婴幼儿照护', { unit: '元', hint: '2,000元/月/每个婴幼儿', value: 0 })}
+      ${fld('as_childEdu', '子女教育', { unit: '元', hint: '2,000元/月/每个子女', value: 0 })}
+      ${fld('as_contEdu', '继续教育', { unit: '元', hint: '学历400元/月, 职业资格3,600元/年', value: 0 })}
+      ${fld('as_illness', '大病医疗', { unit: '元', hint: '自付超15,000元部分, 限额80,000元/年', value: 0 })}
+      ${fld('as_loan', '住房贷款利息', { unit: '元', hint: '1,000元/月 (与住房租金互斥)', value: 0 })}
+      ${fld('as_rent', '住房租金', { unit: '元', hint: '1,500/1,100/800元/月 (与房贷利息互斥)', value: 0 })}
+      ${fld('as_elderly', '赡养老人', { unit: '元', hint: '独生3,000元/月, 非独生最高1,500元/月', value: 0 })}
+    </div></div>
+    <div class="card"><div class="card-header">其他扣除 (年度合计)</div><div class="card-body">
+      ${fld('as_annuity', '企业/职业年金', { unit: '元', value: 0 })}
+      ${fld('as_health', '商业健康保险', { unit: '元', hint: '限额2,400元/年', value: 0 })}
+      ${fld('as_penPension', '个人养老金缴费', { unit: '元', hint: '限额12,000元/年', value: 0 })}
+      ${fld('as_charity', '公益慈善捐赠', { unit: '元', hint: '不超过应纳税所得额30%', value: 0 })}
+    </div></div>
+    <div class="card"><div class="card-header">全年已预缴税额</div><div class="card-body">
+      ${fld('as_prepaid', '全年已预扣预缴税额合计', { unit: '元', value: 0, hint: '各扣缴义务人已预扣税额的总和(可从个税APP查询)' })}
+    </div></div>
+    <div class="btn-group"><button class="btn btn-outline btn-block" onclick="clearSettlementForm()">清除全部</button></div>
+  `;
+  bindCalcInputs(container);
+}
+
+// ---- 经营所得 forms ----
+
+function renderBusinessForm(sub, container) {
+  let html = '';
+  if (sub === 'audit') {
+    html = `<div class="card"><div class="card-header">经营所得 — 查账征收</div><div class="card-body">
+      <div class="mode-switch" id="auditMode">
+        <button class="mode-btn active" data-mode="prepay">分期预缴</button>
+        <button class="mode-btn" data-mode="annual">年度汇算</button>
+      </div>
+      <div id="auditFields"></div>
+    </div></div>`;
+    // Note: auditFields rendered after container.innerHTML, mode switch bound there
+  } else if (sub === 'deemed') {
+    html = `
+    <div class="card"><div class="card-header">经营所得 — 核定征收</div><div class="card-body">
+      ${fld('bd_revenue', '全年收入总额', { unit: '元', value: 500000 })}
+      ${fldSelect('bd_industry', '行业', [
+        { value: 'industrial', label: '工业/交通运输业/商业 (5%-20%)' },
+        { value: 'construction', label: '建筑业/房地产开发业 (7%-20%)' },
+        { value: 'catering', label: '饮食服务业 (7%-25%)' },
+        { value: 'entertainment', label: '娱乐业 (20%-40%)' },
+        { value: 'other', label: '其他行业 (10%-30%)' },
+      ])}
+      ${fld('bd_deemedRate', '核定应税所得率', { unit: '%', value: 5, step: '0.5', hint: '填写百分数, 如5表示5%' })}
+      ${toggle('bd_isIndividual', '个体工商户 (适用2023-2027减半优惠)', true)}
+      ${fld('bd_otherRelief', '其他政策减免税额', { unit: '元', value: 0 })}
+    </div></div>`;
+  }
+  container.innerHTML = html;
+  if (sub === 'audit') {
+    document.getElementById('auditMode').addEventListener('click', function(e) {
+      const btn = e.target.closest('.mode-btn');
+      if (!btn) return;
+      this.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderAuditFields(btn.dataset.mode);
+      runCalculation();
+    });
+    renderAuditFields('prepay');
+  }
+  bindCalcInputs(container);
+}
+
+// ---- 查账征收动态表单 ----
+
+function getAuditMode() {
+  const el = document.querySelector('#auditMode .mode-btn.active');
+  return el ? el.dataset.mode : 'prepay';
+}
+
+function renderAuditFields(mode) {
+  const container = document.getElementById('auditFields');
+  if (!container) return;
+  if (mode === 'annual') {
+    container.innerHTML = `
+      ${fld('ba_revenue', '全年收入总额', { unit: '元', value: 500000 })}
+      ${fld('ba_costs', '成本', { unit: '元', value: 300000 })}
+      ${fld('ba_expenses', '费用', { unit: '元', value: 50000 })}
+      ${fld('ba_losses', '损失', { unit: '元', value: 0 })}
+      ${toggle('ba_hasComprehensive', '有综合所得（如有，不再扣除基本费用及专项扣除）', true)}
+      ${fld('ba_basicDed', '额外基本减除费用', { unit: '元', value: 60000, hint: '无综合所得时可用，60,000元/年' })}
+      ${fld('ba_specialDed', '额外专项扣除合计', { unit: '元', value: 0 })}
+      ${fld('ba_specialAddDed', '额外专项附加扣除合计', { unit: '元', value: 0 })}
+      ${fld('ba_otherDed', '额外其他扣除合计', { unit: '元', value: 0 })}
+      ${toggle('ba_isIndividual', '个体工商户/个人独资企业 (适用2023-2027减半优惠)', true)}
+      ${fld('ba_otherRelief', '其他政策减免税额', { unit: '元', value: 0 })}
+    `;
+  } else {
+    container.innerHTML = `
+      ${fld('bp_month', '当前所属期（第几月）', { type: 'number', value: 3, step: '1' })}
+      ${fld('bp_cumRevenue', '截至本期累计收入总额', { unit: '元', value: 150000 })}
+      ${fld('bp_cumCosts', '截至本期累计成本', { unit: '元', value: 90000 })}
+      ${fld('bp_cumExpenses', '截至本期累计费用', { unit: '元', value: 15000 })}
+      ${fld('bp_cumLosses', '截至本期累计损失', { unit: '元', value: 0 })}
+      ${fld('bp_prepaidTax', '截至上期已预缴税额', { unit: '元', value: 0 })}
+      ${toggle('bp_isIndividual', '个体工商户/个人独资企业 (适用2023-2027减半优惠)', true)}
+      ${fld('bp_otherRelief', '其他政策减免税额', { unit: '元', value: 0 })}
+      <div class="form-hint">经营所得按年计征，分期预缴。按累计数据计算本期应预缴税额，年终汇算清缴多退少补。</div>
+    `;
+  }
+  bindCalcInputs(container);
+}
+
+// ---- 其他所得 forms ----
+
+function renderOtherIncomeForm(sub, container) {
+  let html = '';
+  if (sub === 'rental') {
+    html = `
+    <div class="card"><div class="card-header">财产租赁所得</div><div class="card-body">
+      ${fld('pr_rent', '月租金收入', { unit: '元', value: 4500 })}
+      ${fld('pr_taxes', '当月税费（印花税/城建税等）', { unit: '元', value: 0 })}
+      ${fld('pr_repair', '当月修缮费用', { unit: '元', hint: '限额800元/月, 超出可结转', value: 0 })}
+      ${fld('pr_priorRepair', '上月未扣完修缮费结转', { unit: '元', value: 0 })}
+      ${toggle('pr_isHousing', '个人按市场价出租住房 (优惠税率10%)', true)}
+    </div></div>`;
+  } else if (sub === 'transfer') {
+    html = `
+    <div class="card"><div class="card-header">财产转让所得</div><div class="card-body">
+      ${fld('pt_income', '转让收入', { unit: '元', value: 600000 })}
+      ${fld('pt_original', '财产原值', { unit: '元', value: 410000 })}
+      ${fld('pt_expenses', '合理税费', { unit: '元', value: 35000 })}
+    </div></div>`;
+  } else if (sub === 'dividend') {
+    html = `
+    <div class="card"><div class="card-header">利息、股息、红利所得</div><div class="card-body">
+      ${fld('div_amount', '股息红利金额', { unit: '元', value: 50000 })}
+      ${fld('div_holdingMonths', '持股期限', { unit: '月', hint: '>12个月免税, 1-12个月减半, ≤1个月全额', value: 6 })}
+      ${toggle('div_isListed', '上市公司股票', true)}
+    </div></div>`;
+  } else if (sub === 'occasional') {
+    html = `
+    <div class="card"><div class="card-header">偶然所得</div><div class="card-body">
+      ${fld('oc_income', '收入金额', { unit: '元', value: 50000 })}
+      ${fldSelect('oc_type', '类型', [
+        { value: 'lottery', label: '彩票中奖 (≤10,000元免税)' },
+        { value: 'invoice', label: '发票中奖 (≤800元免税)' },
+        { value: 'other', label: '其他偶然所得 (全额征税)' },
+      ])}
+    </div></div>`;
+  }
+  container.innerHTML = html;
+  bindCalcInputs(container);
+}
+
+// ---- 特殊场景 forms ----
+
+function renderSpecialForm(sub, container) {
+  let html = '';
+  if (sub === 'bonus') {
+    html = `
+    <div class="card"><div class="card-header">全年一次性奖金 — 两种计税方式对比</div><div class="card-body">
+      <div class="section-sub">填入全年收入情况，对比「单独计税」和「并入综合所得」哪种更省税</div>
+      ${fld('ab_bonus', '全年一次性奖金金额', { unit: '元', value: 60000 })}
+      ${fld('ab_annualSalary', '全年工资薪金收入（不含奖金）', { unit: '元', value: 120000 })}
+      ${fld('ab_otherIncome', '其他综合所得收入额', { unit: '元', value: 0, hint: '劳务报酬×80% + 稿酬×80%×70% + 特许权使用费×80%' })}
+      ${fld('ab_totalDeductions', '全年总扣除额', { unit: '元', value: 96000, hint: '60,000基本减除 + 三险一金 + 专项附加扣除 + 其他扣除' })}
+      ${fld('ab_prepaidWithoutBonus', '全年已预缴税额（不含奖金）', { unit: '元', value: 5000, hint: '工资等其他综合所得已预扣的税，可从个税APP查询' })}
+    </div></div>`;
+  } else if (sub === 'equity') {
+    html = `
+    <div class="card"><div class="card-header">股权激励所得</div><div class="card-body">
+      ${fld('eq_income', '股权激励收入', { unit: '元', hint: '股票期权=(行权价-施权价)×股数<br>限制性股票=(登记日市价+解禁日市价)÷2×股数-支付金额', value: 100000 })}
+      <div class="form-hint" style="margin-top:8px;">2027年12月31日前不并入综合所得，单独适用综合所得税率表</div>
+    </div></div>`;
+  } else if (sub === 'severance') {
+    html = `
+    <div class="card"><div class="card-header">解除劳动合同一次性补偿金</div><div class="card-body">
+      ${fld('sv_compensation', '经济补偿金总额', { unit: '元', value: 300000 })}
+      ${fld('sv_avgSalary3x', '当地上年职工年平均工资×3', { unit: '元', hint: '免税额度, 超过部分单独适用综合所得税率表', value: 250000 })}
+    </div></div>`;
+  } else if (sub === 'pension') {
+    html = `
+    <div class="card"><div class="card-header">个人养老金</div><div class="card-body">
+      <div class="section-title">缴费环节 — 节税测算</div>
+      ${fld('pp_contribution', '年度缴费额', { unit: '元', value: 12000, hint: '限额12,000元/年' })}
+      ${fld('pp_comprehensiveIncome', '综合所得收入额(缴费前)', { unit: '元', value: 200000 })}
+      ${fld('pp_otherDeductions', '其他扣除合计(含专项+专项附加)', { unit: '元', value: 96000 })}
+      <div class="section-title" style="margin-top:16px;">领取环节 — 应纳税额</div>
+      ${fld('pp_withdrawal', '预计领取金额', { unit: '元', value: 100000, hint: '领取时不并入综合所得, 单独按3%计税' })}
+    </div></div>`;
+  }
+  container.innerHTML = html;
+  bindCalcInputs(container);
+}
+
+// ---- Binding input events for real-time calculation ----
+
+let calcTimeout = null;
+function bindCalcInputs(container) {
+  container.querySelectorAll('input, select').forEach(el => {
+    el.addEventListener('input', () => {
+      clearTimeout(calcTimeout);
+      calcTimeout = setTimeout(() => runCalculation(), 300);
+    });
+    el.addEventListener('change', () => {
+      clearTimeout(calcTimeout);
+      calcTimeout = setTimeout(() => runCalculation(), 300);
+    });
+  });
+  // Initial calculation
+  runCalculation();
+}
+
+// ---- Main calculation dispatcher ----
+
+function runCalculation() {
+  const tab = activeMainTab;
+  const sub = activeSubTab[tab] || 'default';
+  let result;
+
+  switch (tab) {
+    case 0: result = calcWithholding(sub); break;
+    case 1: result = calcSettlement(); break;
+    case 2: result = calcBusiness(sub); break;
+    case 3: result = calcOtherIncome(sub); break;
+    case 4: result = calcSpecial(sub); break;
+    default: result = {};
+  }
+
+  renderResult(result);
+}
+
+// ---- Individual calculator runners ----
+
+function calcWithholding(sub) {
+  if (sub === 'salary') {
+    const mode = getSalaryMode();
+    if (mode === 'year') {
+      const salary = getVal('sy_monthlySalary') || 0;
+      const sp = getVal('sy_monthlySpecial') || 0;
+      const spa = getVal('sy_monthlySpecialAdd') || 0;
+      const other = getVal('sy_monthlyOther') || 0;
+      const salaries = new Array(12).fill(salary);
+      const result = simulateAnnualSalaryWithholding({
+        monthlySalaries: salaries,
+        monthlySpecialDeduction: sp,
+        monthlySpecialAddDeduction: spa,
+        monthlyOtherDeduction: other,
+      });
+      result._isSimulation = true;
+      result._monthlySalary = salary;
+      result._sp = sp; result._spa = spa; result._other = other;
+      return result;
+    } else {
+      const month = Math.max(1, Math.min(12, parseInt(getVal('sm_month')) || 1));
+      const salary = getVal('sm_monthlySalary') || 0;
+      const sp = getVal('sm_monthlySpecial') || 0;
+      const spa = getVal('sm_monthlySpecialAdd') || 0;
+      const other = getVal('sm_monthlyOther') || 0;
+      return calcSalaryWithholding({
+        month,
+        monthlySalary: salary,
+        cumulativeSalary: salary * (month - 1),
+        cumulativeDeduction: MONTHLY_BASIC_DEDUCTION * (month - 1),
+        cumulativeSpecialDeduction: sp * (month - 1),
+        cumulativeSpecialAddDeduction: spa * (month - 1),
+        cumulativeOtherDeduction: other * (month - 1),
+        cumulativePrepaidTax: month > 1 ? simulateSingleUpTo(month - 1, salary, sp, spa, other) : 0,
+        monthSpecialDeduction: sp,
+        monthSpecialAddDeduction: spa,
+        monthOtherDeduction: other,
+      });
+    }
+  } else if (sub === 'labor') {
+    const r = calcLaborServiceWithholding({ income: getVal('lw_income') });
+    const count = parseInt(getVal('lw_count')) || 1;
+    r.estimatedAnnualTax = r.tax * count;
+    r.breakdown.push(`预计全年预扣税: ${fmt(r.estimatedAnnualTax)} = ${fmt(r.tax)} × ${count}次`);
+    return r;
+  } else if (sub === 'royalty') {
+    const r = calcRoyaltyWithholding({ income: getVal('rw_income') });
+    const count = parseInt(getVal('rw_count')) || 1;
+    r.estimatedAnnualTax = r.tax * count;
+    r.breakdown.push(`预计全年预扣税: ${fmt(r.estimatedAnnualTax)} = ${fmt(r.tax)} × ${count}次`);
+    return r;
+  } else if (sub === 'authorization') {
+    const r = calcAuthorizationWithholding({ income: getVal('aw_income') });
+    const count = parseInt(getVal('aw_count')) || 1;
+    r.estimatedAnnualTax = r.tax * count;
+    r.breakdown.push(`预计全年预扣税: ${fmt(r.estimatedAnnualTax)} = ${fmt(r.tax)} × ${count}次`);
+    return r;
+  } else if (sub === 'nonresident') {
+    return calcNonResidentTax({
+      monthlySalary: getVal('nr_salary'),
+      monthlyLabor: getVal('nr_labor'),
+      monthlyRoyalty: getVal('nr_royalty'),
+      monthlyAuthorization: getVal('nr_auth'),
+      monthSpecialDeduction: getVal('nr_specialDed'),
+    });
+  }
+  return {};
+}
+
+function calcSettlement() {
+  const laborIncomes = getVal('as_labor') > 0 ? [getVal('as_labor')] : [];
+  const royaltyIncomes = getVal('as_royalty') > 0 ? [getVal('as_royalty')] : [];
+  const authIncomes = getVal('as_auth') > 0 ? [getVal('as_auth')] : [];
+
+  const incomeResult = calcComprehensiveIncomeAmount({
+    salaryIncome: getVal('as_salary'),
+    laborServiceIncomes: laborIncomes,
+    royaltyIncomes: royaltyIncomes,
+    authorizationIncomes: authIncomes,
+  });
+
+  const taxResult = calcAnnualSettlementTax({
+    comprehensiveIncomeAmount: incomeResult.totalComprehensiveIncome,
+    specialDeductions: {
+      pension: getVal('as_pension'), medical: getVal('as_medical'),
+      unemployment: getVal('as_unemploy'), housingFund: getVal('as_housefund'),
+    },
+    specialAddDeductions: {
+      infantCare: getVal('as_infant'), childEducation: getVal('as_childEdu'),
+      continuingEducation: getVal('as_contEdu'), seriousIllness: getVal('as_illness'),
+      housingLoanInterest: getVal('as_loan'), housingRent: getVal('as_rent'),
+      elderlySupport: getVal('as_elderly'),
+    },
+    otherDeductions: {
+      annuity: getVal('as_annuity'), commercialHealth: getVal('as_health'),
+      pensionContribution: getVal('as_penPension'), charitableDonation: getVal('as_charity'),
+    },
+  });
+
+  const prepaid = getVal('as_prepaid');
+  const settlementResult = calcSettlementResult(taxResult.tax, prepaid);
+
+  return {
+    ...incomeResult,
+    ...taxResult,
+    ...settlementResult,
+    allBreakdowns: [
+      { title: '收入额计算', items: incomeResult.breakdown },
+      { title: '应纳税额计算', items: taxResult.breakdown },
+      { title: '汇算结果', items: settlementResult.breakdown },
+    ]
+  };
+}
+
+function calcBusiness(sub) {
+  if (sub === 'audit') {
+    const mode = getAuditMode();
+    if (mode === 'prepay') {
+      return calcBusinessPrepayment({
+        month: parseInt(getVal('bp_month')) || 1,
+        cumulativeRevenue: getVal('bp_cumRevenue'),
+        cumulativeCosts: getVal('bp_cumCosts'),
+        cumulativeExpenses: getVal('bp_cumExpenses'),
+        cumulativeLosses: getVal('bp_cumLosses'),
+        cumulativePrepaidTax: getVal('bp_prepaidTax'),
+        isIndividual: getChecked('bp_isIndividual'),
+        otherRelief: getVal('bp_otherRelief'),
+      });
+    }
+    return calcBusinessIncomeByAudit({
+      totalRevenue: getVal('ba_revenue'),
+      costs: getVal('ba_costs'),
+      expenses: getVal('ba_expenses'),
+      losses: getVal('ba_losses'),
+      otherRelief: getVal('ba_otherRelief'),
+      hasComprehensiveIncome: getChecked('ba_hasComprehensive'),
+      annualBasicDeduction: getVal('ba_basicDed'),
+      specialDeductionTotal: getVal('ba_specialDed'),
+      specialAddDeductionTotal: getVal('ba_specialAddDed'),
+      otherDeductionTotal: getVal('ba_otherDed'),
+      isSolePropOrIndividual: getChecked('ba_isIndividual'),
+    });
+  } else if (sub === 'deemed') {
+    const indKey = document.getElementById('bd_industry')?.value || 'industrial';
+    const ratePct = getVal('bd_deemedRate');
+    const deemRate = ratePct > 1 ? ratePct / 100 : ratePct; // support both % and decimal
+    return calcBusinessIncomeByDeemed({
+      totalRevenue: getVal('bd_revenue'),
+      deemedRate: deemRate || 0.05,
+      otherRelief: getVal('bd_otherRelief'),
+      isIndividual: getChecked('bd_isIndividual'),
+    });
+  }
+  return {};
+}
+
+function calcOtherIncome(sub) {
+  if (sub === 'rental') {
+    return calcPropertyRentalTax({
+      monthlyRent: getVal('pr_rent'), taxesAndFees: getVal('pr_taxes'),
+      repairCost: getVal('pr_repair'), priorRemainingRepair: getVal('pr_priorRepair'),
+      isResidentialHousing: getChecked('pr_isHousing'),
+    });
+  } else if (sub === 'transfer') {
+    return calcPropertyTransferTax({
+      transferIncome: getVal('pt_income'), originalCost: getVal('pt_original'),
+      reasonableExpenses: getVal('pt_expenses'),
+    });
+  } else if (sub === 'dividend') {
+    return calcDividendTax({
+      dividendAmount: getVal('div_amount'),
+      holdingMonths: getVal('div_holdingMonths'),
+      isListed: getChecked('div_isListed'),
+    });
+  } else if (sub === 'occasional') {
+    return calcOccasionalIncomeTax({
+      income: getVal('oc_income'),
+      type: document.getElementById('oc_type')?.value || 'lottery',
+    });
+  }
+  return {};
+}
+
+function calcSpecial(sub) {
+  if (sub === 'bonus') {
+    return calcAnnualBonusComparison({
+      bonusAmount: getVal('ab_bonus'),
+      annualSalaryIncome: getVal('ab_annualSalary'),
+      otherComprehensiveIncomeAmount: getVal('ab_otherIncome'),
+      totalDeductions: getVal('ab_totalDeductions'),
+      annualPrepaidTaxWithoutBonus: getVal('ab_prepaidWithoutBonus'),
+    });
+  } else if (sub === 'equity') {
+    return calcEquityIncentiveTax({ equityIncome: getVal('eq_income') });
+  } else if (sub === 'severance') {
+    return calcSeveranceTax({ compensation: getVal('sv_compensation'), localAvgSalary3x: getVal('sv_avgSalary3x') });
+  } else if (sub === 'pension') {
+    const contribBenefit = calcPensionContributionBenefit({
+      annualContribution: getVal('pp_contribution'),
+      annualComprehensiveIncome: getVal('pp_comprehensiveIncome'),
+      totalOtherDeductions: getVal('pp_otherDeductions'),
+    });
+    const withdrawalTax = calcPensionWithdrawalTax({ withdrawalAmount: getVal('pp_withdrawal') });
+    return {
+      contributionBenefit: contribBenefit,
+      withdrawalTax: withdrawalTax,
+      combined: true,
+      breakdown: [
+        ...contribBenefit.breakdown.map(b => `[缴费抵扣] ${b}`),
+        '---',
+        ...withdrawalTax.breakdown.map(b => `[领取计税] ${b}`),
+      ]
+    };
+  }
+  return {};
+}
+
+// ---- Simulation Table Rendering ----
+
+function renderSimulationTable(result) {
+  if (!result.months || !result.months.length) return '';
+  if (!result._monthlySalary) {
+    return '<div class="card"><div class="card-body" style="text-align:center;color:var(--text3);padding:24px">请输入每月工资开始模拟</div></div>';
+  }
+  let html = `<div class="result-card">
+    <div class="result-header">全年模拟结果</div>
+    <div class="result-body">
+      <div class="result-row"><span class="rkey">每月工资</span><span class="rval">${fmt(result._monthlySalary)}</span></div>
+      <div class="result-row"><span class="rkey">每月专项扣除</span><span class="rval">${fmt(result._sp)}</span></div>
+      <div class="result-row"><span class="rkey">每月专项附加扣除</span><span class="rval">${fmt(result._spa)}</span></div>
+      <div class="result-row"><span class="rkey">全年预扣税合计</span><span class="rval" style="color:var(--danger);font-size:1.1em">${fmt(result.totalAnnualTax)}</span></div>
+      <div style="overflow-x:auto;margin-top:10px">
+        <table class="month-table">
+          <thead><tr><th>月份</th><th>月工资</th><th>累计应纳税所得额</th><th>税率</th><th>本月预扣税</th><th>累计预扣税</th></tr></thead>
+          <tbody>`;
+  result.months.forEach((m, i) => {
+    const taxableIncome = (result._monthlySalary || 0) * (i + 1) - MONTHLY_BASIC_DEDUCTION * (i + 1) - (result._sp || 0) * (i + 1) - (result._spa || 0) * (i + 1) - (result._other || 0) * (i + 1);
+    const bracket = calcProgressiveTax(Math.max(0, taxableIncome), COMPREHENSIVE_TAX_BRACKETS);
+    html += `<tr>
+      <td>${m.month}月</td>
+      <td>${fmt(result._monthlySalary)}</td>
+      <td>${fmt(Math.max(0, taxableIncome))}</td>
+      <td>${(bracket.rate * 100).toFixed(0)}%</td>
+      <td class="tax-col">${fmt(m.tax)}</td>
+      <td>${fmt(m.cumTax)}</td>
+    </tr>`;
+  });
+  html += `<tr><td>合计</td><td>${fmt(result._monthlySalary * 12)}</td><td>—</td><td>—</td><td class="tax-col">${fmt(result.totalAnnualTax)}</td><td>—</td></tr>`;
+  html += `</tbody></table></div></div></div>`;
+  return html;
+}
+
+// ---- Bonus Comparison Rendering ----
+
+function renderBonusComparison(result) {
+  const s = result.separateMethod;
+  const c = result.combinedMethod;
+  const isSep = result.recommendation === 'separate';
+  const isComb = result.recommendation === 'combined';
+  const saving = Math.abs(result.savingsWithSeparate);
+
+  let html = '<div class="result-card"><div class="result-header">两种计税方式对比</div><div class="result-body">';
+
+  html += '<div class="compare-box">';
+  // 方式一：单独计税
+  html += `<div class="compare-item${isSep ? ' best' : ''}">
+    <div class="compare-label" style="font-weight:600;margin-bottom:4px">方式一：单独计税</div>
+    <div style="font-size:.65rem;color:var(--text3);margin-bottom:4px">奖金÷12找月度税率，单独计算</div>
+    <div class="compare-amount">${fmt(s.bonusTax)}</div>
+    <div style="font-size:.65rem;color:var(--text3)">奖金应纳税额</div>
+    <div style="font-size:.7rem;margin-top:4px;color:var(--text2)">合计总税: ${fmt(s.totalTax)}</div>
+    ${isSep ? '<span class="badge badge-best" style="margin-top:4px">推荐</span>' : ''}
+  </div>`;
+  // 方式二：并入综合所得
+  html += `<div class="compare-item${isComb ? ' best' : ''}">
+    <div class="compare-label" style="font-weight:600;margin-bottom:4px">方式二：并入综合所得</div>
+    <div style="font-size:.65rem;color:var(--text3);margin-bottom:4px">奖金并入全年收入，合并计税</div>
+    <div class="compare-amount">${fmt(c.bonusTax)}</div>
+    <div style="font-size:.65rem;color:var(--text3)">并入后增加税额</div>
+    <div style="font-size:.7rem;margin-top:4px;color:var(--text2)">合计总税: ${fmt(c.totalTax)}</div>
+    ${isComb ? '<span class="badge badge-best" style="margin-top:4px">推荐</span>' : ''}
+  </div>`;
+  html += '</div>';
+
+  if (result.savingsWithSeparate !== 0) {
+    html += `<div style="text-align:center;margin-top:10px;padding:8px;background:var(--success-l);border-radius:8px;font-size:.73rem;color:var(--success);font-weight:600">
+      建议选择「${isSep ? '单独计税' : '并入综合所得'}」，可节省 <span style="font-size:.9rem">${fmt(saving)}</span>
+    </div>`;
+  } else {
+    html += `<div style="text-align:center;margin-top:10px;padding:8px;background:var(--bg);border-radius:8px;font-size:.73rem;color:var(--text2)">两种方式结果相同</div>`;
+  }
+
+  html += '</div></div>'; // result-body / result-card
+
+  if (result.breakdown && result.breakdown.length) {
+    html += `<div class="result-card">${renderBreakdown(result.breakdown)}</div>`;
+  }
+
+  return html;
+}
+
+// ---- Result rendering ----
+
+function renderResult(result) {
+  const container = document.getElementById('calcResult');
+
+  // Simulation table (全年模拟) — 优先判断，避免被空结果过滤
+  if (result && result._isSimulation) {
+    let html = renderSimulationTable(result);
+    if (result.breakdown && result.breakdown.length) {
+      html += `<div class="result-card">${renderBreakdown(result.breakdown)}</div>`;
+    }
+    container.innerHTML = html;
+    bindBreakdownToggles(container);
+    return;
+  }
+
+  if (!result || (!result.tax && !result.taxableIncome && !result.currentPrepayTax && !result.refund && !result.supplement && !result.combined && !result.separateMethod && result.tax !== 0)) {
+    container.innerHTML = '<div class="card"><div class="card-body" style="text-align:center;color:var(--text3);padding:24px">请输入数据开始计算</div></div>';
+    return;
+  }
+
+  let html = '';
+
+  // Bonus comparison (全年一次性奖金对比)
+  if (result.separateMethod) {
+    html = renderBonusComparison(result);
+    container.innerHTML = html;
+    bindBreakdownToggles(container);
+    return;
+  }
+
+  // Settlement special: multiple breakdown groups
+  if (result.allBreakdowns) {
+    html = renderSettlementResult(result);
+    container.innerHTML = html;
+    bindBreakdownToggles(container);
+    return;
+  }
+
+  // Pension combined result
+  if (result.combined) {
+    html = `<div class="result-card">
+      <div class="result-header">计算结果</div>
+      <div class="result-body">
+        <div class="result-row"><span class="rkey">缴费可抵扣金额</span><span class="rval">${fmt(result.contributionBenefit.deductibleAmount)}</span></div>
+        <div class="result-row"><span class="rkey">缴费环节节税额</span><span class="rval" style="color:var(--success)">${fmt(result.contributionBenefit.taxSaving)}</span></div>
+        <div class="result-row"><span class="rkey">领取时应纳税额</span><span class="rval">${fmt(result.withdrawalTax.tax)}</span></div>
+        <div class="result-row"><span class="rkey">领取时税后金额</span><span class="rval">${fmt(result.withdrawalTax.afterTaxAmount)}</span></div>
+      </div>`;
+    html += renderBreakdown(result.breakdown);
+    html += '</div>';
+    container.innerHTML = html;
+    bindBreakdownToggles(container);
+    return;
+  }
+
+  // Standard result card
+  html += '<div class="result-card"><div class="result-header">计算结果</div><div class="result-body">';
+
+  // Main amount display
+  if (result.refund !== undefined) {
+    if (result.isRefund) {
+      html += `<div class="result-main"><div class="result-amount refund">${fmt(result.refund)}</div><div class="result-label">应退税额</div></div>`;
+    } else if (result.supplement > 0) {
+      html += `<div class="result-main"><div class="result-amount owe">${fmt(result.supplement)}</div><div class="result-label">应补税额</div></div>`;
+    } else {
+      html += `<div class="result-main"><div class="result-amount">0</div><div class="result-label">无需补退税</div></div>`;
+    }
+  } else if (result.tax !== undefined && result.taxableIncome !== undefined) {
+    const cssClass = result.tax > 0 ? 'owe' : '';
+    html += `<div class="result-main"><div class="result-amount ${cssClass}">${fmt(result.tax)}</div><div class="result-label">应纳税额</div></div>`;
+    if (result.taxableIncome !== undefined) {
+      html += `<div class="result-row"><span class="rkey">应纳税所得额</span><span class="rval">${fmt(result.taxableIncome)}</span></div>`;
+    }
+    if (result.rate !== undefined) {
+      html += `<div class="result-row"><span class="rkey">适用税率</span><span class="rval">${(result.rate*100).toFixed(0)}%</span></div>`;
+    }
+  }
+
+  // Business prepayment result
+  if (result.currentPrepayTax !== undefined) {
+    html += `<div class="result-main"><div class="result-amount owe">${fmt(result.currentPrepayTax)}</div><div class="result-label">本期应预缴税额</div></div>`;
+    html += `<div class="result-row"><span class="rkey">累计应纳税所得额</span><span class="rval">${fmt(result.cumulativeTaxableIncome)}</span></div>`;
+    html += `<div class="result-row"><span class="rkey">累计应纳税额</span><span class="rval">${fmt(result.cumulativeTax)}</span></div>`;
+    html += `<div class="result-row"><span class="rkey">适用税率</span><span class="rval">${(result.rate*100).toFixed(0)}%</span></div>`;
+  }
+
+  // Specific result rows
+  if (result.currentMonthTax !== undefined) {
+    html += `<div class="result-row"><span class="rkey">本期应预扣预缴税额</span><span class="rval">${fmt(result.currentMonthTax)}</span></div>`;
+    html += `<div class="result-row"><span class="rkey">累计应纳税所得额</span><span class="rval">${fmt(result.cumulativeTaxableIncome)}</span></div>`;
+    html += `<div class="result-row"><span class="rkey">累计应纳税额</span><span class="rval">${fmt(result.cumulativeTax)}</span></div>`;
+  }
+
+  if (result.estimatedAnnualTax !== undefined) {
+    html += `<div class="result-row"><span class="rkey">每次预扣税额</span><span class="rval">${fmt(result.tax)}</span></div>`;
+    html += `<div class="result-row"><span class="rkey">预计全年预扣税合计</span><span class="rval">${fmt(result.estimatedAnnualTax)}</span></div>`;
+  }
+
+  if (result.halfReduction !== undefined && result.halfReduction > 0) {
+    html += `<div class="result-row"><span class="rkey">减半优惠减免税额</span><span class="rval" style="color:var(--success)">-${fmt(result.halfReduction)}</span></div>`;
+  }
+
+  if (result.remainingRepair !== undefined && result.remainingRepair > 0) {
+    html += `<div class="result-row"><span class="rkey">未扣完修缮费结转</span><span class="rval">${fmt(result.remainingRepair)}</span></div>`;
+  }
+
+  if (result.isExempt) {
+    html += `<div class="result-row"><span class="rkey">状态</span><span class="rval" style="color:var(--success)">免税</span></div>`;
+  }
+
+  html += '</div>'; // result-body
+
+  // Breakdown
+  if (result.breakdown && result.breakdown.length) {
+    html += renderBreakdown(result.breakdown);
+  }
+
+  html += '</div>'; // result-card
+  container.innerHTML = html;
+  bindBreakdownToggles(container);
+}
+
+function renderSettlementResult(result) {
+  let html = '<div class="result-card"><div class="result-header">汇算清缴结果</div><div class="result-body">';
+
+  if (result.isRefund) {
+    html += `<div class="result-main"><div class="result-amount refund">${fmt(result.refund)}</div><div class="result-label">应退税额</div></div>`;
+  } else if (result.supplement > 0) {
+    html += `<div class="result-main"><div class="result-amount owe">${fmt(result.supplement)}</div><div class="result-label">应补税额</div></div>`;
+  } else {
+    html += `<div class="result-main"><div class="result-amount">0</div><div class="result-label">无需补退税</div></div>`;
+  }
+
+  html += `<div class="result-row"><span class="rkey">综合所得收入额</span><span class="rval">${fmt(result.totalComprehensiveIncome)}</span></div>`;
+  html += `<div class="result-row"><span class="rkey">应纳税所得额</span><span class="rval">${fmt(result.taxableIncome)}</span></div>`;
+  html += `<div class="result-row"><span class="rkey">年度应纳税额</span><span class="rval">${fmt(result.tax)}</span></div>`;
+  html += `<div class="result-row"><span class="rkey">全年已预缴税额</span><span class="rval">${fmt(result.totalPrepaidTax)}</span></div>`;
+  html += `<div class="result-row"><span class="rkey">适用税率</span><span class="rval">${(result.rate*100).toFixed(0)}%</span></div>`;
+
+  html += '</div>'; // result-body
+
+  // Multiple breakdown groups
+  result.allBreakdowns.forEach(group => {
+    html += `<div class="breakdown" style="margin:0 16px 8px;border-top:1px solid var(--border);padding-top:8px">`;
+    html += `<div class="breakdown-toggle"><span class="arrow">▶</span> ${group.title}</div>`;
+    html += `<div class="breakdown-content">${group.items.map(item => `<div class="breakdown-step">${item}</div>`).join('')}</div>`;
+    html += `</div>`;
+  });
+
+  html += '</div>'; // result-card
+  return html;
+}
+
+function renderBreakdown(items) {
+  if (!items || !items.length) return '';
+  return `<div class="breakdown">
+    <div class="breakdown-toggle"><span class="arrow">▶</span> 查看计算明细</div>
+    <div class="breakdown-content">${items.map(item => `<div class="breakdown-step">${item}</div>`).join('')}</div>
+  </div>`;
+}
+
+function bindBreakdownToggles(container) {
+  container.querySelectorAll('.breakdown-toggle').forEach(el => {
+    el.addEventListener('click', () => {
+      el.classList.toggle('open');
+      const content = el.nextElementSibling;
+      if (content) content.classList.toggle('show');
+    });
+  });
+}
+
+// ---- Clear buttons ----
+
+function clearSalaryForm() {
+  const mode = getSalaryMode();
+  if (mode === 'year') {
+    setVal('sy_monthlySalary', '');
+    setVal('sy_monthlySpecial', '');
+    setVal('sy_monthlySpecialAdd', '');
+    setVal('sy_monthlyOther', '');
+  } else {
+    setVal('sm_month', '1');
+    setVal('sm_monthlySalary', '');
+    setVal('sm_monthlySpecial', '');
+    setVal('sm_monthlySpecialAdd', '');
+    setVal('sm_monthlyOther', '');
+  }
+  runCalculation();
+}
+
+function clearSettlementForm() {
+  document.querySelectorAll('#calcForm input[type="number"]').forEach(el => { el.value = ''; });
+  setVal('as_salary', '120000');
+  runCalculation();
+}
+
+// ---- Tax Rate Drawer ----
+
+function buildDrawerContent() {
+  let html = '<h4>一、综合所得个人所得税税率表（含速算扣除数）</h4>';
+  html += '<table><tr><th>级数</th><th>全年应纳税所得额</th><th>税率</th><th>速算扣除数</th></tr>';
+  COMPREHENSIVE_TAX_BRACKETS.forEach((b, i) => {
+    const range = i === 0 ? '不超过36,000元' : i === 6 ? '超过960,000元' : `超过${fmtInt(b.maxIncome === 36000 ? 36000 : COMPREHENSIVE_TAX_BRACKETS[i-1].maxIncome)}元至${fmtInt(b.maxIncome)}元`;
+    html += `<tr><td>${i+1}</td><td>${range}</td><td>${(b.rate*100).toFixed(0)}%</td><td>${fmtInt(b.quickDeduction)}</td></tr>`;
+  });
+  html += '</table>';
+
+  html += '<h4>二、经营所得个人所得税税率表（含速算扣除数）</h4>';
+  html += '<table><tr><th>级数</th><th>全年应纳税所得额</th><th>税率</th><th>速算扣除数</th></tr>';
+  BUSINESS_TAX_BRACKETS.forEach((b, i) => {
+    const range = i === 0 ? '不超过30,000元' : i === 4 ? '超过500,000元' : `超过${fmtInt(BUSINESS_TAX_BRACKETS[i-1].maxIncome)}元至${fmtInt(b.maxIncome)}元`;
+    html += `<tr><td>${i+1}</td><td>${range}</td><td>${(b.rate*100).toFixed(0)}%</td><td>${fmtInt(b.quickDeduction)}</td></tr>`;
+  });
+  html += '</table>';
+
+  html += '<h4>三、劳务报酬所得预扣率表</h4>';
+  html += '<table><tr><th>级数</th><th>预扣预缴应纳税所得额</th><th>预扣率</th><th>速算扣除数</th></tr>';
+  LABOR_WITHHOLDING_BRACKETS.forEach((b, i) => {
+    const range = i === 0 ? '不超过20,000元' : i === 2 ? '超过50,000元' : `20,000元至50,000元`;
+    html += `<tr><td>${i+1}</td><td>${range}</td><td>${(b.rate*100).toFixed(0)}%</td><td>${fmtInt(b.quickDeduction)}</td></tr>`;
+  });
+  html += '</table>';
+
+  html += '<h4>四、月度税率表（非居民个人/全年一次性奖金用）</h4>';
+  html += '<table><tr><th>级数</th><th>月应纳税所得额</th><th>税率</th><th>速算扣除数</th></tr>';
+  MONTHLY_TAX_BRACKETS.forEach((b, i) => {
+    const range = i === 0 ? '不超过3,000元' : i === 6 ? '超过80,000元' : `超过${fmtInt(MONTHLY_TAX_BRACKETS[i-1].maxIncome)}元至${fmtInt(b.maxIncome)}元`;
+    html += `<tr><td>${i+1}</td><td>${range}</td><td>${(b.rate*100).toFixed(0)}%</td><td>${fmtInt(b.quickDeduction)}</td></tr>`;
+  });
+  html += '</table>';
+
+  html += '<h4>五、居民个人综合所得基本减除费用</h4>';
+  html += '<p style="font-size:.72rem;margin:8px 0;color:var(--text2)">基本减除费用：<strong>60,000元/年</strong>（即5,000元/月）</p>';
+
+  html += '<h4>六、专项附加扣除标准（月度）</h4>';
+  html += '<table><tr><th>项目</th><th>标准</th><th>备注</th></tr>';
+  Object.entries(SPECIAL_ADD_DEDUCTIONS).forEach(([k, v]) => {
+    const monthly = v.monthly || (v.annual ? v.annual + '元/年' : (v.annualMax ? '最高' + v.annualMax.toLocaleString() + '元/年' : '最高' + (v.monthlyMax || 0).toLocaleString() + '元/月'));
+    html += `<tr><td>${v.label}</td><td>${monthly}</td><td>${v.note}</td></tr>`;
+  });
+  html += '</table>';
+
+  html += '<h4>七、其他所得适用税率</h4>';
+  html += '<table><tr><th>所得类型</th><th>税率</th></tr>';
+  html += '<tr><td>利息、股息、红利所得</td><td>20% (上市公司持股>1年免税, 1月-1年减半)</td></tr>';
+  html += '<tr><td>财产租赁所得</td><td>20% (个人出租住房减按10%)</td></tr>';
+  html += '<tr><td>财产转让所得</td><td>20%</td></tr>';
+  html += '<tr><td>偶然所得</td><td>20% (彩票≤1万元/发票≤800元免税)</td></tr>';
+  html += '</table>';
+
+  html += '<h4>八、核定征收应税所得率</h4>';
+  html += '<table><tr><th>行业</th><th>应税所得率范围</th></tr>';
+  Object.values(DEEMED_PROFIT_RATES).forEach(v => {
+    html += `<tr><td>${v.label}</td><td>${(v.min*100).toFixed(0)}%-${(v.max*100).toFixed(0)}%</td></tr>`;
+  });
+  html += '</table>';
+
+  document.getElementById('drawerBody').innerHTML = html;
+}
+
+document.getElementById('btnRate').addEventListener('click', () => {
+  buildDrawerContent();
+  document.getElementById('overlay').classList.add('show');
+});
+
+document.getElementById('drawerClose').addEventListener('click', () => {
+  document.getElementById('overlay').classList.remove('show');
+});
+
+document.getElementById('overlay').addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) {
+    document.getElementById('overlay').classList.remove('show');
+  }
+});
+
+// ---- Share Image Generation ----
+
+document.getElementById('btnShare').addEventListener('click', () => {
+  const resultCard = document.getElementById('calcResult');
+  if (!resultCard || !resultCard.textContent.trim()) {
+    alert('请先计算，再生成分享图片');
+    return;
+  }
+
+  const canvas = document.getElementById('shareCanvas');
+  const ctx = canvas.getContext('2d');
+
+  // Get result text
+  const text = resultCard.innerText;
+  const lines = text.split('\n').filter(l => l.trim()).slice(0, 20);
+
+  // Canvas sizing
+  const width = 750;
+  const lineHeight = 36;
+  const padding = 40;
+  const height = padding * 2 + lines.length * lineHeight + 80;
+  canvas.width = width;
+  canvas.height = Math.min(height, 1600);
+
+  // Background
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Header
+  ctx.fillStyle = '#1a73e8';
+  ctx.fillRect(0, 0, width, 70);
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 30px -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('小波财税 · 个税计算器', width / 2, 48);
+
+  // Content
+  ctx.fillStyle = '#202124';
+  ctx.font = '22px -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif';
+  ctx.textAlign = 'left';
+  lines.forEach((line, i) => {
+    const y = 100 + i * lineHeight;
+    if (y < canvas.height - 40) {
+      ctx.fillText(line.trim(), padding, y);
+    }
+  });
+
+  // Footer
+  ctx.fillStyle = '#9aa0a6';
+  ctx.font = '16px -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('微信号：xbcs260611 · 计算结果仅供参考', width / 2, canvas.height - 20);
+
+  // Download
+  canvas.toBlob(blob => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = '个税计算结果.png';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, 'image/png');
+
+  // Show preview in a new window for mobile
+  const dataUrl = canvas.toDataURL('image/png');
+  const w = window.open('', '_blank');
+  if (w) {
+    w.document.write(`<img src="${dataUrl}" style="max-width:100%" /><p style="font-family:sans-serif;text-align:center;color:#666">长按图片保存到相册</p>`);
+  }
+});
+
+// ---- Tab Navigation ----
+
+document.getElementById('mainTabs').addEventListener('click', (e) => {
+  const tab = e.target.closest('.main-tab');
+  if (!tab) return;
+  switchMainTab(parseInt(tab.dataset.tab));
+});
+
+// ---- Form clear button delegation ----
+
+function clearNonResidentForm() {
+  ['nr_salary','nr_labor','nr_royalty','nr_auth','nr_specialDed'].forEach(id => setVal(id, ''));
+  runCalculation();
+}
+
+// Expose for inline onclick
+window.clearSalaryForm = clearSalaryForm;
+window.clearSettlementForm = clearSettlementForm;
+window.clearNonResidentForm = clearNonResidentForm;
+
+// ============================================================
+// SECTION 5: INITIALIZATION
+// ============================================================
+
+function init() {
+  activeSubTab[0] = 'salary';
+  activeSubTab[2] = 'audit';
+  activeSubTab[4] = 'bonus';
+
+  switchMainTab(0);
+
+  // Test mode via ?test URL parameter
+  if (window.location.search.includes('test')) {
+    runTests();
+  }
+}
+
+// ---- Textbook Example Tests ----
+
+function runTests() {
+  const tests = [];
+  let pass = 0, fail = 0;
+
+  function assert(example, fn, input, expected, key = 'tax', tolerance = 1) {
+    const result = fn(input);
+    const actual = key === 'tax' ? result.tax : key === 'currentMonthTax' ? result.currentMonthTax :
+      key === 'taxableIncome' ? result.taxableIncome : key === 'refund' ? result.refund :
+      key === 'supplement' ? result.supplement : result[key];
+    const ok = Math.abs(actual - expected) <= tolerance;
+    if (ok) pass++; else fail++;
+    tests.push({ example, ok, actual, expected, key });
+  }
+
+  // [例5-3] 工资累计预扣 — 第1个月
+  assert('例5-3-第1月', calcSalaryWithholding, {
+    month: 1, monthlySalary: 10000, cumulativeSalary: 0, cumulativeDeduction: 0,
+    cumulativeSpecialDeduction: 0, cumulativeSpecialAddDeduction: 0, cumulativeOtherDeduction: 0,
+    cumulativePrepaidTax: 0, monthSpecialDeduction: 1500, monthSpecialAddDeduction: 1000, monthOtherDeduction: 0,
+  }, 75, 'currentMonthTax', 1); // (10000-5000-1500-1000)×3% = 2500×3% = 75
+
+  // [例5-7] 劳务报酬
+  assert('例5-7', calcLaborServiceWithholding, { income: 40000 }, 7600, 'tax', 1);
+  // 40000×(1-20%) = 32000, 32000×30%-2000 = 7600
+
+  // [例5-8] 稿酬
+  assert('例5-8', calcRoyaltyWithholding, { income: 20000 }, 2240, 'tax', 1);
+  // 20000×(1-20%)×70% = 11200, 11200×20% = 2240
+
+  // 股息红利 — 持股6个月（减半）
+  assert('股息-持股6月', calcDividendTax, { dividendAmount: 10000, holdingMonths: 6, isListed: true }, 1000, 'tax', 1);
+  // 10000×50%×20% = 1000
+
+  // 股息红利 — 持股>12个月（免税）
+  assert('股息-持股13月', calcDividendTax, { dividendAmount: 10000, holdingMonths: 13, isListed: true }, 0, 'tax', 0);
+
+  // 财产租赁
+  assert('财产租赁', calcPropertyRentalTax, {
+    monthlyRent: 4500, taxesAndFees: 0, repairCost: 0, priorRemainingRepair: 0, isResidentialHousing: true
+  }, 360, 'tax', 1);
+  // (4500-0)×(1-20%)×10% = 3600×10% = 360
+
+  // 财产转让
+  assert('例5-15', calcPropertyTransferTax, {
+    transferIncome: 600000, originalCost: 410000, reasonableExpenses: 35000
+  }, 31000, 'tax', 1);
+  // (600000-410000-35000)×20% = 155000×20% = 31000
+
+  // 全年一次性奖金
+  assert('例5-17', calcAnnualBonusSeparate, { bonusAmount: 60000 }, 5790, 'tax', 1);
+  // 60000/12 = 5000 → 月度税率10%, 速算扣除数210, 60000×10%-210 = 5790
+
+  console.log(`%c===== 教材例题验证结果 =====`, 'font-weight:bold;font-size:16px');
+  tests.forEach(t => {
+    const style = t.ok ? 'color:green' : 'color:red;font-weight:bold';
+    console.log(`%c${t.example}: ${t.ok ? '✅' : '❌'} ${t.key}=${t.actual} (期望: ${t.expected})`, style);
+  });
+  console.log(`%c通过: ${pass}, 失败: ${fail}, 总计: ${pass+fail}`, 'font-weight:bold;font-size:14px');
+}
+
+// Start
+init();
+</script>
+</body>
+</html>
