@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title description">
+  <title id="title">小波财税免费计算工具</title>
+  <desc id="description">个人所得税与社保公积金在线计算工具</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop stop-color="#0F766E"/>
+      <stop offset="1" stop-color="#0B5E58"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <circle cx="1050" cy="100" r="230" fill="#D97706" opacity=".12"/>
+  <rect x="94" y="110" width="132" height="132" rx="30" fill="#FFFFFF" opacity=".16"/>
+  <path d="M129 145h62v17h-62zm0 26h27v35h-27zm36 0h26v35h-26z" fill="#fff"/>
+  <text x="94" y="340" fill="#FFFFFF" font-family="PingFang SC, Microsoft YaHei, sans-serif" font-size="70" font-weight="700">小波财税</text>
+  <text x="94" y="410" fill="#CCFBF1" font-family="PingFang SC, Microsoft YaHei, sans-serif" font-size="38">个人所得税 · 社保公积金 · 在线计算工具</text>
+  <text x="94" y="520" fill="#FFFFFF" opacity=".7" font-family="PingFang SC, Microsoft YaHei, sans-serif" font-size="28">打开即用｜计算仅在本地浏览器完成</text>
+</svg>

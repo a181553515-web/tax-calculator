@@ -5,9 +5,16 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
 <meta name="format-detection" content="telephone=no">
 <meta name="theme-color" content="#0F766E">
-<meta property="og:title" content="个人所得税计算器 · 小波的财税日记">
-<meta property="og:description" content="打开即用 · 一站式个税计算">
-<title>个人所得税计算器 v2.0-beta</title>
+<meta name="description" content="小波财税个人所得税计算器：支持工资薪金、年终奖、汇算清缴、经营所得等常见个税测算场景。">
+<link rel="canonical" href="https://xiaobo-tax.cn/">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<meta property="og:title" content="2026个人所得税计算器｜工资、年终奖、汇算清缴 - 小波财税">
+<meta property="og:description" content="打开即用，一站式个人所得税测算。">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://xiaobo-tax.cn/">
+<meta property="og:image" content="https://xiaobo-tax.cn/assets/og-xiaobo-tax.svg">
+<meta name="twitter:card" content="summary_large_image">
+<title>2026个人所得税计算器｜工资、年终奖、汇算清缴 - 小波财税</title>
 <style>
 /* ===== CSS Reset & Design Tokens ===== */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -1185,6 +1192,7 @@ body {
 <footer class="footer" role="contentinfo">
   <p>@ 小波的财税日记 · 微信号：xbcs260611</p>
   <p>© 2026 个人所得税计算器 v2.0-beta</p>
+  <p>🔒 所有计算仅在当前浏览器完成，不上传收入或扣除数据</p>
   <p>⚠️ 计算结果仅供参考，最终以税务机关认定为准</p>
 </footer>
 </div>
@@ -1526,8 +1534,11 @@ function runTests(){var tests=[],pass=0,fail=0;function assert(ex,fn,inp,exp,key
  assert('例5-3',calcSalaryWithholding,{month:1,monthlySalary:10000,monthSpecialDeduction:1500,monthSpecialAddDeduction:1000,monthOtherDeduction:0},75,'currentMonthTax');assert('例5-7',calcLaborServiceWithholding,{income:40000},7600);assert('股息',calcDividendTax,{dividendAmount:10000,holdingMonths:6,isListed:true},1000);assert('财产租赁',calcPropertyRentalTax,{monthlyRent:4500,isResidentialHousing:true},360);assert('例5-8',calcRoyaltyWithholding,{income:20000},2240);assert('股息>12月免税',calcDividendTax,{dividendAmount:10000,holdingMonths:13,isListed:true},0);assert('例5-15',calcPropertyTransferTax,{transferIncome:600000,originalCost:410000,reasonableExpenses:35000},31000);assert('例5-17',calcAnnualBonusSeparate,{bonusAmount:60000},5790);
  console.log('%c===== 教材例题验证 =====','font-weight:bold');tests.forEach(function(t){console.log('%c'+t.example+': '+(t.ok?'✅':'❌')+' 实际='+t.actual,t.ok?'color:green':'color:red')});console.log('%c通过: '+pass+'/失败: '+fail,'font-weight:bold')}
 
+function applySocialToTaxHandoff(){try{var raw=sessionStorage.getItem('xiaoboTax.socialToIncomeTax');if(!raw)return;sessionStorage.removeItem('xiaoboTax.socialToIncomeTax');var data=JSON.parse(raw),createdAt=new Date(data.createdAt||0).getTime();if(!Number.isFinite(createdAt)||Date.now()-createdAt>30*60*1000)return;var salary=document.getElementById('swm_salary'),special=document.getElementById('swm_special');if(!salary||!special)return;salary.value=toLocale(Number(data.salary)||0);special.value=toLocale(Number(data.specialDeduction)||0);var note=document.createElement('div');note.className='card-hint';note.style.cssText='margin:0 16px 12px;padding:10px 12px;background:#E6FFFA;border-radius:8px;color:#0F766E';note.textContent='已带入社保工具的税前工资和个人五险一金；请继续补充专项附加扣除等信息。';var form=document.getElementById('formArea');if(form)form.insertBefore(note,form.firstChild);runCalculation()}catch(e){try{sessionStorage.removeItem('xiaoboTax.socialToIncomeTax')}catch(_){}}}
+
 // ===== INIT =====
 document.getElementById('formArea').addEventListener('input',function(e){var id=e.target.id;if(id&&(/_salary|_income|_revenue|_rent$|_amount$|_bonus$|_compensation$|_contribution|_withdrawal|_labor$|_royalty$|_auth$|_insurance$/).test(id))scheduleCalc()});document.getElementById('formArea').addEventListener('click',function(e){var h=e.target.closest('.fold-hd');if(!h)return;var b=h.nextElementSibling,a=h.querySelector('.fold-ar');if(b.style.display==='none'){b.style.display='block';if(a)a.textContent='▼'}else{b.style.display='none';if(a)a.textContent='▶'}});renderMainTabs();renderSubTabs();renderForm();
+applySocialToTaxHandoff();
 if(window.location.search.includes('test'))setTimeout(runTests,500);
 </script>
 

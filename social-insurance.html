@@ -5,11 +5,16 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
 <meta name="format-detection" content="telephone=no">
 <meta name="theme-color" content="#0F766E">
-<meta name="description" content="社保公积金计算器 · 小波的财税日记。全国31省五险一金缴费明细，基数上下限自动匹配，在线计算。">
-<meta property="og:title" content="社保公积金计算器 v1.0-beta">
-<meta property="og:description" content="全国31省社保缴费基数、五险一金缴费明细在线免费计算。">
+<meta name="description" content="小波财税社保公积金计算器：按已核验统筹区政策计算，展示有效期与官方依据；未核验地区可按当地通知手工测算。">
+<link rel="canonical" href="https://xiaobo-tax.cn/social-insurance.html">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<meta property="og:title" content="社保公积金计算器｜政策核验与手工测算 - 小波财税">
+<meta property="og:description" content="按已核验统筹区政策计算，政策依据与有效期可追溯。">
 <meta property="og:type" content="website">
-<title>社保公积金计算器 v1.0-beta</title>
+<meta property="og:url" content="https://xiaobo-tax.cn/social-insurance.html">
+<meta property="og:image" content="https://xiaobo-tax.cn/assets/og-xiaobo-tax.svg">
+<meta name="twitter:card" content="summary_large_image">
+<title>2026社保公积金计算器｜政策核验与手工测算 - 小波财税</title>
 <style>
 /* ===== CSS Reset & Design Tokens ===== */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -478,6 +483,55 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+.policy-notice {
+  margin: var(--space-4) var(--space-4) 0;
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-brand-lighter);
+  border: 1px solid var(--color-brand-light);
+  border-radius: var(--radius-md);
+  color: var(--color-brand-darker);
+  font-size: var(--text-xs);
+  line-height: 1.7;
+}
+.policy-status {
+  margin: calc(var(--space-4) * -0.25) 0 var(--space-4);
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--color-accent-light);
+  color: var(--color-text-secondary);
+  font-size: var(--text-xs);
+  line-height: 1.65;
+}
+.policy-status a,
+.result-notes a { color: var(--color-brand-dark); font-weight: 700; }
+.manual-policy { margin: var(--space-4) 0; }
+.manual-policy summary { cursor: pointer; color: var(--color-brand-dark); font-weight: 700; }
+.manual-policy[open] summary { margin-bottom: var(--space-4); }
+.manual-required { color: var(--color-danger); font-size: var(--text-xs); font-weight: 600; }
+.button-row { display: flex; gap: var(--space-3); margin-top: var(--space-5); }
+.button-row button { flex: 1; }
+.button-row .btn-primary,
+.tax-link {
+  border: 1px solid var(--color-brand);
+  border-radius: var(--radius-sm);
+  background: var(--color-brand);
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.button-row .btn-primary { min-height: 42px; }
+.button-row .btn-reset {
+  min-height: 42px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  font: inherit;
+  cursor: pointer;
+}
+.tax-link { width: 100%; margin-top: var(--space-4); min-height: 44px; }
 </style>
 </head>
 <body>
@@ -488,10 +542,10 @@ body {
     <div class="header-top">
       <div class="header-brand">
         <div class="header-brand-icon">🧮</div>
-        社保公积金计算器
+        <h1 style="font-size:inherit;font-weight:inherit;margin:0">社保公积金计算器</h1>
       </div>
     </div>
-    <div class="header-sub">打开即用 · 五险一金在线计算</div>
+    <div class="header-sub">政策核验 · 来源可追溯 · 本地测算</div>
   </header>
 
   <!-- Main -->
@@ -586,13 +640,14 @@ body {
   <!-- Footer -->
   <footer class="footer" role="contentinfo">
     <p>@ 小波的财税日记 · 微信号：xbcs260611</p>
-    <p>© 2026 社保公积金计算器 v1.0-beta</p>
+    <p>© 2026 社保公积金计算器 v1.1-review</p>
+    <p>🔒 工资、地区和计算结果仅在当前浏览器处理</p>
     <p>⚠️ 计算结果仅供参考，具体以当地政策规定为准</p>
   </footer>
 
 </div>
 
-<script>
+<script type="text/plain" id="legacyProvinceCalculator">
 (function() {
 'use strict';
 
@@ -945,5 +1000,8 @@ runCalc();
 
 })();
 </script>
+<script src="js/social-policy-engine.js"></script>
+<script src="data/social-insurance/policies.v1.js"></script>
+<script src="js/social-insurance-app.js"></script>
 </body>
 </html>
