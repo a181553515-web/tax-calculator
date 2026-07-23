@@ -5,16 +5,11 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
 <meta name="format-detection" content="telephone=no">
 <meta name="theme-color" content="#0F766E">
-<meta name="description" content="小波财税社保公积金计算器：按已核验统筹区政策计算，展示有效期与官方依据；未核验地区可按当地通知手工测算。">
-<link rel="canonical" href="https://xiaobo-tax.cn/social-insurance.html">
-<link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<meta property="og:title" content="社保公积金计算器｜政策核验与手工测算 - 小波财税">
-<meta property="og:description" content="按已核验统筹区政策计算，政策依据与有效期可追溯。">
+<meta name="description" content="小波财税社保公积金计算器：安徽合肥、六安地区按实测口径测算，其他地区按省级或直辖市常见企业职工口径快速估算员工实收与企业用工成本。">
+<meta property="og:title" content="社保公积金计算器｜企业用工成本测算（参考）- 小波财税">
+<meta property="og:description" content="选择参保省份并输入工资，快速估算企业用工成本和员工实收。">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://xiaobo-tax.cn/social-insurance.html">
-<meta property="og:image" content="https://xiaobo-tax.cn/assets/og-xiaobo-tax.svg">
-<meta name="twitter:card" content="summary_large_image">
-<title>2026社保公积金计算器｜政策核验与手工测算 - 小波财税</title>
+<title>社保公积金计算器｜企业用工成本测算（参考）- 小波财税</title>
 <style>
 /* ===== CSS Reset & Design Tokens ===== */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -484,54 +479,17 @@ body {
   }
 }
 
-.policy-notice {
+.calculator-notice {
   margin: var(--space-4) var(--space-4) 0;
-  padding: var(--space-3) var(--space-4);
-  background: var(--color-brand-lighter);
-  border: 1px solid var(--color-brand-light);
-  border-radius: var(--radius-md);
-  color: var(--color-brand-darker);
+  padding: 10px 12px;
+  background: var(--color-accent-light);
+  border-left: 3px solid var(--color-warning);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
   font-size: var(--text-xs);
   line-height: 1.7;
 }
-.policy-status {
-  margin: calc(var(--space-4) * -0.25) 0 var(--space-4);
-  padding: var(--space-3);
-  border-radius: var(--radius-sm);
-  background: var(--color-accent-light);
-  color: var(--color-text-secondary);
-  font-size: var(--text-xs);
-  line-height: 1.65;
-}
-.policy-status a,
-.result-notes a { color: var(--color-brand-dark); font-weight: 700; }
-.manual-policy { margin: var(--space-4) 0; }
-.manual-policy summary { cursor: pointer; color: var(--color-brand-dark); font-weight: 700; }
-.manual-policy[open] summary { margin-bottom: var(--space-4); }
-.manual-required { color: var(--color-danger); font-size: var(--text-xs); font-weight: 600; }
-.button-row { display: flex; gap: var(--space-3); margin-top: var(--space-5); }
-.button-row button { flex: 1; }
-.button-row .btn-primary,
-.tax-link {
-  border: 1px solid var(--color-brand);
-  border-radius: var(--radius-sm);
-  background: var(--color-brand);
-  color: #fff;
-  font: inherit;
-  font-weight: 700;
-  cursor: pointer;
-}
-.button-row .btn-primary { min-height: 42px; }
-.button-row .btn-reset {
-  min-height: 42px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface);
-  color: var(--color-text-secondary);
-  font: inherit;
-  cursor: pointer;
-}
-.tax-link { width: 100%; margin-top: var(--space-4); min-height: 44px; }
+.calculator-notice strong { color: var(--color-warning); }
 </style>
 </head>
 <body>
@@ -545,29 +503,31 @@ body {
         <h1 style="font-size:inherit;font-weight:inherit;margin:0">社保公积金计算器</h1>
       </div>
     </div>
-    <div class="header-sub">政策核验 · 来源可追溯 · 本地测算</div>
+    <div class="header-sub">企业用工成本 · 快速测算</div>
   </header>
 
   <!-- Main -->
   <main>
 
+    <section class="calculator-notice" aria-label="测算说明"><strong>测算说明：</strong>安徽合肥、六安地区按实测口径测算；其他地区按省级或直辖市常见企业职工口径快速估算。适合招聘预算、用工成本沟通和员工薪酬测算；地市、统筹区、工伤行业及公积金可能不同，其他地区结果仅供参考，不作为申报或结算依据。</section>
+
     <!-- Input Card -->
     <div class="card fade-in">
-      <div class="card-header">📋 缴费信息</div>
+      <div class="card-header">📋 企业用工成本快速测算</div>
 
       <div class="form-row">
         <div class="form-group">
-          <label class="form-label" for="siProvince">省份/直辖市</label>
+          <label class="form-label" for="siProvince">参保地区</label>
           <select class="form-select" id="siProvince"></select>
         </div>
         <div class="form-group">
-          <label class="form-label" for="siSalary">缴费工资 <span class="unit">元/月</span></label>
-          <input class="form-input" type="text" id="siSalary" inputmode="numeric" placeholder="税前月工资">
+          <label class="form-label" for="siSalary">员工税前月薪 <span class="unit">元/月</span></label>
+          <input class="form-input" type="text" id="siSalary" inputmode="numeric" placeholder="例如：10000">
         </div>
       </div>
 
       <div class="form-group">
-        <label class="form-label" for="siIndustry">工伤保险行业</label>
+        <label class="form-label" for="siIndustry">工伤保险行业 <span class="unit">不确定时按一类估算</span></label>
         <select class="form-select" id="siIndustry">
           <option value="0.2">一类 (0.2%) — 软件/金融/商务服务</option>
           <option value="0.4">二类 (0.4%) — 零售/餐饮/居民服务</option>
@@ -641,13 +601,12 @@ body {
   <footer class="footer" role="contentinfo">
     <p>@ 小波的财税日记 · 微信号：xbcs260611</p>
     <p>© 2026 社保公积金计算器 v1.1-review</p>
-    <p>🔒 工资、地区和计算结果仅在当前浏览器处理</p>
-    <p>⚠️ 计算结果仅供参考，具体以当地政策规定为准</p>
+    <p>⚠️ 安徽合肥、六安地区按实测口径；其他地区按省级或直辖市常见参数估算，仅供参考</p>
   </footer>
 
 </div>
 
-<script type="text/plain" id="legacyProvinceCalculator">
+<script>
 (function() {
 'use strict';
 
@@ -881,7 +840,11 @@ function renderResult(r) {
   }
 
   // 底部备注
-  var notes = [];
+  var isMunicipality = ['北京', '上海', '天津', '重庆'].indexOf(rates.province) >= 0;
+  var scopeNote = rates.province === '安徽'
+    ? '测算口径：安徽合肥、六安地区按实测口径计算'
+    : '测算口径：按' + rates.province + (isMunicipality ? '市' : '省级') + '常见企业职工参数估算，未区分具体城市或统筹区，不作为申报、结算依据';
+  var notes = [scopeNote];
   if (rates.medicalNote) notes.push(rates.medicalNote);
   if (rates.fundEnabled) notes.push('公积金比例' + rates.fundRatio + '%');
   else notes.push('📝 未缴纳公积金');
@@ -892,13 +855,13 @@ function renderResult(r) {
     '<th>险种</th><th>单位比例</th><th>单位月缴</th><th>个人比例</th><th>个人月缴</th><th>合计</th>' +
     '</tr></thead><tbody>' + rows + '</tbody></table></div>' + notesHtml +
     '<div class="summary-grid">' +
-    '<div class="summary-card"><div class="summary-card__label">💰 个人到手工资</div>' +
+    '<div class="summary-card"><div class="summary-card__label">💰 员工实收（未扣个税）</div>' +
     '<div class="summary-card__amount">¥' + toLocale(r.takeHome) + '</div>' +
     '<div class="summary-card__sub">税前 ' + toLocale(r.salary) + ' − 个人 ' + toLocale(r.grandPerTotal) + '</div></div>' +
-    '<div class="summary-card"><div class="summary-card__label">🏢 企业用工成本</div>' +
+    '<div class="summary-card"><div class="summary-card__label">🏢 企业月用工成本（参考）</div>' +
     '<div class="summary-card__amount">¥' + toLocale(r.companyCost) + '</div>' +
     '<div class="summary-card__sub">工资 ' + toLocale(r.salary) + ' + 单位 ' + toLocale(r.grandEmpTotal) + '</div></div>' +
-    '<div class="summary-card summary-card--highlight"><div class="summary-card__label">📊 支出/实收比</div>' +
+    '<div class="summary-card summary-card--highlight"><div class="summary-card__label">📊 企业支出 / 员工实收（参考）</div>' +
     '<div class="summary-card__amount">' + round2(r.companyCost / r.salary).toFixed(2) + '</div>' +
     '<div class="summary-card__sub">企业每支出1元，个人实收约' + round2(r.takeHome / r.companyCost).toFixed(2) + '元</div></div>' +
     '</div>';
@@ -1000,8 +963,5 @@ runCalc();
 
 })();
 </script>
-<script src="js/social-policy-engine.js"></script>
-<script src="data/social-insurance/policies.v1.js"></script>
-<script src="js/social-insurance-app.js"></script>
 </body>
 </html>

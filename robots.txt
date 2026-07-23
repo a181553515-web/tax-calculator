@@ -1,4 +1,3 @@
 User-agent: *
 Allow: /
-# 仅收录已公开的两个工具入口；政策数据通过页面内版本信息追溯。
 Sitemap: https://xiaobo-tax.cn/sitemap.xml
