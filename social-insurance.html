@@ -13,6 +13,7 @@
 <meta property="og:site_name" content="小波财税">
 <meta property="og:url" content="https://xiaobo-tax.cn/social-insurance.html">
 <meta property="og:image" content="https://xiaobo-tax.cn/assets/xiaobo-tax-share-v2.jpg">
+<meta property="og:image:url" content="https://xiaobo-tax.cn/assets/xiaobo-tax-share-v2.jpg">
 <meta property="og:image:secure_url" content="https://xiaobo-tax.cn/assets/xiaobo-tax-share-v2.jpg">
 <meta property="og:image:type" content="image/jpeg">
 <meta property="og:image:width" content="1730">
@@ -485,11 +486,29 @@ body {
 
 /* ===== Responsive ===== */
 @media (max-width: 600px) {
+  /* 与个税页保持同一移动端版心：外层不再叠加卡片的横向留白。 */
+  .app {
+    padding-left: 0;
+    padding-right: 0;
+  }
+  .card {
+    padding: var(--space-5);
+  }
   .form-row {
     grid-template-columns: 1fr;
   }
+  .form-group {
+    margin-bottom: var(--space-3);
+  }
   .summary-grid {
     grid-template-columns: 1fr;
+  }
+  .toggle-row {
+    gap: var(--space-3);
+  }
+  .toggle-label {
+    flex: 1;
+    line-height: 1.55;
   }
 }
 

@@ -22,6 +22,7 @@ test('两个工具页具备搜索与分享所需的压缩图片元信息', () =>
   assert.match(social, /<link rel="canonical" href="https:\/\/xiaobo-tax\.cn\/social-insurance\.html">/);
   [index, social].forEach((page) => {
     assert.ok(page.includes(`<meta property="og:image" content="${shareImageUrl}">`));
+    assert.ok(page.includes(`<meta property="og:image:url" content="${shareImageUrl}">`));
     assert.ok(page.includes(`<meta property="og:image:secure_url" content="${shareImageUrl}">`));
     assert.ok(page.includes(`<meta name="twitter:image" content="${shareImageUrl}">`));
     assert.ok(page.includes(`<meta itemprop="image" content="${shareImageUrl}">`));
