@@ -18,3 +18,7 @@ test('保留选地区即测算，并区分安徽实测与其他地区参考说�
   assert.match(html, /provSel\.addEventListener\('change', runCalc\)/);
   assert.doesNotMatch(html, /手工录入当地政策参数|SocialPolicyEngine|social-insurance-app\.js/);
 });
+
+test('社保页在窄屏下将双列表单改为单列', () => {
+  assert.match(html, /@media \(max-width: 600px\) \{\s*\.form-row \{\s*grid-template-columns: 1fr;/);
+});
