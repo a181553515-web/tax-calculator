@@ -559,6 +559,16 @@ body {
         </div>
       </div>
 
+      <div class="form-group" id="siAnhuiAreaGroup">
+        <label class="form-label" for="siAnhuiArea">安徽参保区域 <span class="unit">用于匹配公积金基数</span></label>
+        <select class="form-select" id="siAnhuiArea">
+          <option value="合肥市区">合肥市区</option>
+          <option value="合肥县市">合肥县市（肥东、肥西、长丰、庐江、巢湖）</option>
+          <option value="六安市区">六安市区</option>
+          <option value="六安县区">六安县区（霍邱、金寨、霍山、舒城、叶集）</option>
+        </select>
+      </div>
+
       <div class="form-group">
         <label class="form-label" for="siIndustry">工伤保险行业 <span class="unit">不确定时按一类估算</span></label>
         <select class="form-select" id="siIndustry">
@@ -604,7 +614,7 @@ body {
       </div>
 
       <div class="toggle-row">
-        <span class="toggle-label">🩺 长期护理险（第六险，部分省市试点）</span>
+        <span class="toggle-label">🩺 长期护理险（当地已实施时开启，单位和个人各约0.15%）</span>
         <label class="toggle">
           <input type="checkbox" id="siLongTermCare">
           <span class="toggle-track"></span>
@@ -659,20 +669,20 @@ function toLocale(n) {
   return (n < 0 ? '-' : '') + result + '.' + parts[1];
 }
 
-// ===== 省级社保基数上下限（2026年数据） =====
+// ===== 当前公开社保基数上下限（安徽为实测口径，其他地区为参考预设） =====
 var PROVINCE_BASES = {
   '北京':   { min: 7162,  max: 35811, fundMin: 2540,  fundMax: 35811 },
-  '天津':   { min: 4750,  max: 23750, fundMin: 2320,  fundMax: 23750 },
+  '天津':   { min: 5124,  max: 25620, fundMin: 2320,  fundMax: 23750 },
   '河北':   { min: 4311,  max: 21556, fundMin: 2200,  fundMax: 21556 },
   '山西':   { min: 4480,  max: 22400, fundMin: 2150,  fundMax: 22400 },
   '内蒙古': { min: 4538,  max: 22689, fundMin: 2180,  fundMax: 22689 },
-  '辽宁':   { min: 4575,  max: 22875, fundMin: 2230,  fundMax: 22875 },
+  '辽宁':   { min: 4359,  max: 21792, fundMin: 2230,  fundMax: 22875 },
   '吉林':   { min: 4436,  max: 22180, fundMin: 2020,  fundMax: 22180 },
   '黑龙江': { min: 4623,  max: 23115, fundMin: 2080,  fundMax: 23115 },
   '上海':   { min: 7460,  max: 37302, fundMin: 2690,  fundMax: 37302 },
   '江苏':   { min: 4952,  max: 24762, fundMin: 2260,  fundMax: 41400 },
-  '浙江':   { min: 4879,  max: 24396, fundMin: 2490,  fundMax: 40694 },
-  '安徽':   { min: 4311,  max: 21556, fundMin: 2100,  fundMax: 21556 },
+  '浙江':   { min: 4986,  max: 25299, fundMin: 2490,  fundMax: 40694 },
+  '安徽':   { min: 4311,  max: 21556, fundMin: 2320,  fundMax: 31564 },
   '福建':   { min: 4043,  max: 22607, fundMin: 2100,  fundMax: 22607 },
   '江西':   { min: 3915,  max: 19575, fundMin: 2000,  fundMax: 19575 },
   '山东':   { min: 4952,  max: 24762, fundMin: 2200,  fundMax: 24762 },
@@ -692,6 +702,14 @@ var PROVINCE_BASES = {
   '青海':   { min: 4538,  max: 22689, fundMin: 2100,  fundMax: 22689 },
   '宁夏':   { min: 4480,  max: 22400, fundMin: 2100,  fundMax: 22400 },
   '新疆':   { min: 4575,  max: 22875, fundMin: 2100,  fundMax: 22875 }
+};
+
+// 2026年度合肥、六安住房公积金基数（自然年度口径）
+var ANHUI_FUND_AREAS = {
+  '合肥市区': { min: 2320, max: 31564 },
+  '合肥县市': { min: 2100, max: 31564 },
+  '六安市区': { min: 2170, max: 25945 },
+  '六安县区': { min: 2100, max: 25945 }
 };
 
 // ===== 省级社保比例 [单位, 个人] =====
@@ -731,6 +749,8 @@ var PROVINCE_RATES = {
 
 // ===== DOM 引用 =====
 var provSel = document.getElementById('siProvince');
+var anhuiAreaGroup = document.getElementById('siAnhuiAreaGroup');
+var anhuiAreaSel = document.getElementById('siAnhuiArea');
 var salaryInp = document.getElementById('siSalary');
 var fundEnabled = document.getElementById('siFundEnabled');
 var fundRatioSel = document.getElementById('siFundRatio');
@@ -766,6 +786,12 @@ function getRates() {
   rates.siMax = bases.max;
   rates.fundMin = bases.fundMin;
   rates.fundMax = bases.fundMax;
+  if (prov === '安徽') {
+    var area = ANHUI_FUND_AREAS[anhuiAreaSel.value] || ANHUI_FUND_AREAS['合肥市区'];
+    rates.areaLabel = anhuiAreaSel.value || '合肥市区';
+    rates.fundMin = area.min;
+    rates.fundMax = area.max;
+  }
 
   rates.injury = parseFloat(industrySel.value);
   rates.longTermCare = longTermCheck.checked ? 0.15 : 0;
@@ -773,7 +799,7 @@ function getRates() {
   var fundRatio = parseInt(fundRatioSel.value);
   if (rates.fundMaxRatio && fundRatio > rates.fundMaxRatio) fundRatio = rates.fundMaxRatio;
   rates.fundRatio = fundRatio;
-  rates.medicalAidFixed = medicalAidCheck.checked ? 12 : 0;
+  rates.medicalAidFixed = medicalAidCheck.checked && prov === '安徽' ? 12 : 0;
 
   return rates;
 }
@@ -875,11 +901,12 @@ function renderResult(r) {
   // 底部备注
   var isMunicipality = ['北京', '上海', '天津', '重庆'].indexOf(rates.province) >= 0;
   var scopeNote = rates.province === '安徽'
-    ? '测算口径：安徽合肥、六安地区按实测口径计算'
+    ? '测算口径：安徽合肥、六安地区按实测口径计算（' + rates.areaLabel + '）'
     : '测算口径：按' + rates.province + (isMunicipality ? '市' : '省级') + '常见企业职工参数估算，未区分具体城市或统筹区，不作为申报、结算依据';
   var notes = [scopeNote];
+  if (rates.province === '安徽') notes.push('2026年社保基数暂按现行4311～21556元测算，正式新标准公布后可能补差');
   if (rates.medicalNote) notes.push(rates.medicalNote);
-  if (rates.fundEnabled) notes.push('公积金比例' + rates.fundRatio + '%');
+  if (rates.fundEnabled) notes.push('公积金基数' + toLocale(r.fundBase) + '元，比例' + rates.fundRatio + '%');
   else notes.push('📝 未缴纳公积金');
   var notesHtml = '<div class="result-notes">' + notes.join('；') + '</div>';
 
@@ -951,9 +978,18 @@ function runCalc() {
   renderResult(r);
 }
 
+function syncRegionalControls() {
+  var isAnhui = provSel.value === '安徽';
+  anhuiAreaGroup.style.display = isAnhui ? 'block' : 'none';
+  medicalAidCheck.disabled = !isAnhui;
+  if (!isAnhui) medicalAidCheck.checked = false;
+}
+
 // ===== 重置 =====
 function resetAll() {
   provSel.value = '';
+  anhuiAreaSel.value = '合肥市区';
+  syncRegionalControls();
   salaryInp.value = '';
   fundEnabled.checked = false;
   fundRatioSel.value = '8';
@@ -968,7 +1004,11 @@ function resetAll() {
 }
 
 // ===== 事件绑定 =====
-provSel.addEventListener('change', runCalc);
+provSel.addEventListener('change', function() {
+  syncRegionalControls();
+  runCalc();
+});
+anhuiAreaSel.addEventListener('change', runCalc);
 salaryInp.addEventListener('focus', function() {
   this.value = (this.value || '').replace(/,/g, '');
 });
@@ -992,6 +1032,7 @@ longTermCheck.addEventListener('change', runCalc);
 resetBtn.addEventListener('click', resetAll);
 
 // ===== 初始运行 =====
+syncRegionalControls();
 runCalc();
 
 })();
