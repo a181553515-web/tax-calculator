@@ -90,7 +90,38 @@ var data = {
       regions: [
         { id:'province-reference', label:'江苏省级常见口径（参考）', status:'reference' },
         { id:'nanjing', label:'南京市', status:'verified', effectiveFrom:'2026-07-01', effectiveTo:'2027-06-30', fund:{ min:2660, max:42400 }, source:'https://gjj.nanjing.gov.cn/zwgk/tzgg/202607/t20260717_5878580.html' },
-        { id:'suzhou', label:'苏州市（一般单位）', status:'verified', effectiveFrom:'2026-07-01', effectiveTo:'2027-06-30', fund:{ min:4952, max:40600 }, note:'公积金下限一般按社保最低基数；实际工资较低且经核准的，不低于当地最低工资标准', source:'https://www.suzhou.gov.cn/szsrmzf/zwgg/202607/501539493f89439aa33768e34a069914.shtml' }
+        { id:'suzhou', label:'苏州市（一般单位）', status:'verified', effectiveFrom:'2026-07-01', effectiveTo:'2027-06-30', fund:{ min:4952, max:40600 }, note:'公积金下限一般按社保最低基数；实际工资较低且经核准的，不低于当地最低工资标准', source:'https://www.suzhou.gov.cn/szsrmzf/zwgg/202607/501539493f89439aa33768e34a069914.shtml' },
+        { id:'changzhou', label:'常州市', status:'verified', effectiveFrom:'2026-07-01', effectiveTo:'2027-06-30', fund:{ min:2660, max:34080 }, source:'https://gjj.changzhou.gov.cn/content/suitable/show?catid=142&id=13974' },
+        { id:'lianyungang', label:'连云港市', status:'verified', effectiveFrom:'2026-01-01', effectiveTo:'2026-12-31', fund:{ min:2260, max:31545 }, source:'https://www.lyg.gov.cn/zglygzfmhwz/xwfbh/content/5a72f436-44c0-4f27-9b9d-f5c6be51dace.shtml' },
+        { id:'taizhou-urban', label:'泰州市区（海陵、姜堰、医药高新区〔高港〕）', status:'verified', effectiveFrom:'2026-01-01', effectiveTo:'2026-12-31', fund:{ min:2660, max:30258 }, source:'https://gjj.taizhou.gov.cn/xwzx/tzgg/art/2026/art_0d3c5588297a49238c3c81696f195096.html' },
+        { id:'taizhou-counties', label:'泰州靖江、泰兴、兴化', status:'verified', effectiveFrom:'2026-01-01', effectiveTo:'2026-12-31', fund:{ min:2430, max:30258 }, source:'https://gjj.taizhou.gov.cn/xwzx/tzgg/art/2026/art_0d3c5588297a49238c3c81696f195096.html' },
+        { id:'yancheng-main', label:'盐城市区、大丰、东台', status:'verified', effectiveFrom:'2026-07-01', effectiveTo:'2027-06-30', fund:{ min:2260, max:31314 }, note:'含市直、亭湖、盐都、开发区、盐南高新区', source:'https://ycgjj.yancheng.gov.cn/art/2026/7/24/art_6592_4441692.html' },
+        { id:'yancheng-counties', label:'盐城建湖、射阳、阜宁、滨海、响水', status:'verified', effectiveFrom:'2026-07-01', effectiveTo:'2027-06-30', fund:{ min:2010, max:31314 }, source:'https://ycgjj.yancheng.gov.cn/art/2026/7/24/art_6592_4441692.html' }
+      ]
+    },
+    '浙江': {
+      defaultRegion: 'province-reference',
+      regions: [
+        { id:'province-reference', label:'浙江省级常见口径（参考）', status:'reference' },
+        { id:'ningbo-urban', label:'宁波市区（海曙、江北、镇海、北仑、鄞州、奉化）', status:'verified', effectiveFrom:'2026-07-01', effectiveTo:'2027-06-30', fund:{ min:2660, max:38907 }, note:'上限暂按2025年度38907元执行，官方公布新标准后需更新', source:'https://www.haishu.gov.cn/col/col1229100020/art/2026/art_ed8daf35d53e482893accae0bcb57abd.html' },
+        { id:'ningbo-counties', label:'宁波余姚、慈溪、宁海、象山', status:'verified', effectiveFrom:'2026-07-01', effectiveTo:'2027-06-30', fund:{ min:2430, max:38907 }, note:'上限暂按2025年度38907元执行，官方公布新标准后需更新', source:'https://www.haishu.gov.cn/col/col1229100020/art/2026/art_ed8daf35d53e482893accae0bcb57abd.html' }
+      ]
+    },
+    '福建': {
+      defaultRegion: 'province-reference',
+      regions: [
+        { id:'province-reference', label:'福建省级常见口径（参考）', status:'reference' },
+        { id:'fuzhou', label:'福州市', status:'verified', effectiveFrom:'2026-07-01', effectiveTo:'2027-06-30', fund:{ min:2195, max:32430 }, source:'https://zfgjj.fuzhou.gov.cn/zwgk/gzdt/tzgg/202606/t20260630_5341026.htm' },
+        { id:'quanzhou-main', label:'泉州市区、石狮、晋江、南安、惠安', status:'verified', effectiveFrom:'2026-07-01', effectiveTo:'2027-06-30', fund:{ min:2195, max:24795 }, note:'含鲤城、丰泽、洛江、泉港及台商投资区', source:'https://qzgjj.quanzhou.gov.cn/zwgk/fgwj/zcjd/202606/t20260629_3304596.htm' },
+        { id:'quanzhou-counties', label:'泉州安溪、永春、德化', status:'verified', effectiveFrom:'2026-07-01', effectiveTo:'2027-06-30', fund:{ min:2045, max:24795 }, source:'https://qzgjj.quanzhou.gov.cn/zwgk/fgwj/zcjd/202606/t20260629_3304596.htm' },
+        { id:'sanming', label:'三明市', status:'verified', effectiveFrom:'2026-07-01', effectiveTo:'2027-06-30', fund:{ min:1895, max:26810 }, source:'https://www.sm.gov.cn/zw/ztzl/smszfgjjzt/zcfg_21865/dfxzcfg/202606/t20260625_2231863.htm' }
+      ]
+    },
+    '江西': {
+      defaultRegion: 'province-reference',
+      regions: [
+        { id:'province-reference', label:'江西省级常见口径（参考）', status:'reference' },
+        { id:'ganzhou', label:'赣州市', status:'verified', effectiveFrom:'2026-07-01', effectiveTo:'2027-06-30', fund:{ min:1950, max:24304 }, source:'https://zfgjj.ganzhou.gov.cn/gzszfjj/c103430/202607/616e6f447b994708997219f5e2e1748f.shtml' }
       ]
     },
     '山东': {
@@ -100,7 +131,17 @@ var data = {
         { id:'jinan-urban', label:'济南市区（历下、市中、槐荫、天桥、历城）', status:'verified', effectiveFrom:'2026-07-01', effectiveTo:'2027-06-30', fund:{ min:2400, max:33902 }, source:'https://gjj.jinan.gov.cn/col/col111465/art/2026/art_1df4b8a8b2604fd185a8e9130c55a5ba.html' },
         { id:'jinan-counties', label:'济南其他区县（长清、章丘、济阳、莱芜、钢城、平阴、商河）', status:'verified', effectiveFrom:'2026-07-01', effectiveTo:'2027-06-30', fund:{ min:2210, max:33902 }, source:'https://gjj.jinan.gov.cn/col/col111465/art/2026/art_1df4b8a8b2604fd185a8e9130c55a5ba.html' },
         { id:'qingdao-urban', label:'青岛市区（含即墨区）', status:'verified', effectiveFrom:'2026-07-01', effectiveTo:'2027-06-30', fund:{ min:2400, max:34342.75 }, source:'https://www.qingdao.gov.cn/zwgk/zdgk/fgwj/zcwj/szbmgw/202607/t20260706_10652620.shtml' },
-        { id:'qingdao-counties', label:'青岛胶州、平度、莱西', status:'verified', effectiveFrom:'2026-07-01', effectiveTo:'2027-06-30', fund:{ min:2210, max:34342.75 }, source:'https://www.qingdao.gov.cn/zwgk/zdgk/fgwj/zcwj/szbmgw/202607/t20260706_10652620.shtml' }
+        { id:'qingdao-counties', label:'青岛胶州、平度、莱西', status:'verified', effectiveFrom:'2026-07-01', effectiveTo:'2027-06-30', fund:{ min:2210, max:34342.75 }, source:'https://www.qingdao.gov.cn/zwgk/zdgk/fgwj/zcwj/szbmgw/202607/t20260706_10652620.shtml' },
+        { id:'zibo-tier-one', label:'淄博张店、淄川、临淄、高新区、经开区', status:'verified', effectiveFrom:'2026-07-01', effectiveTo:'2027-06-30', fund:{ min:2400, max:26736.5 }, source:'https://zfgjj.zibo.gov.cn/art/2026/7/7/art_448_3009603.html' },
+        { id:'zibo-tier-two', label:'淄博博山、周村、桓台', status:'verified', effectiveFrom:'2026-07-01', effectiveTo:'2027-06-30', fund:{ min:2210, max:26736.5 }, source:'https://zfgjj.zibo.gov.cn/art/2026/7/7/art_448_3009603.html' },
+        { id:'zibo-tier-three', label:'淄博高青、沂源', status:'verified', effectiveFrom:'2026-07-01', effectiveTo:'2027-06-30', fund:{ min:2020, max:26736.5 }, source:'https://zfgjj.zibo.gov.cn/art/2026/7/7/art_448_3009603.html' },
+        { id:'yantai-main', label:'烟台市直及其他区市', status:'verified', effectiveFrom:'2026-07-01', effectiveTo:'2027-06-30', fund:{ min:2400, max:28692 }, source:'https://gjj.yantai.gov.cn/col/col4103/art/2026/art_657f50be3e25423a8574676332528ac8.html' },
+        { id:'yantai-counties', label:'烟台莱阳、栖霞、海阳', status:'verified', effectiveFrom:'2026-07-01', effectiveTo:'2027-06-30', fund:{ min:2210, max:28692 }, source:'https://gjj.yantai.gov.cn/col/col4103/art/2026/art_657f50be3e25423a8574676332528ac8.html' },
+        { id:'taian-tier-one', label:'泰安泰山、新泰、肥城', status:'verified', effectiveFrom:'2026-07-01', effectiveTo:'2027-06-30', fund:{ min:2210, max:23809 }, source:'https://gjjzx.taian.gov.cn/art/2026/6/30/art_45724_10296492.html' },
+        { id:'taian-tier-two', label:'泰安岱岳、宁阳、东平', status:'verified', effectiveFrom:'2026-07-01', effectiveTo:'2027-06-30', fund:{ min:2020, max:23809 }, source:'https://gjjzx.taian.gov.cn/art/2026/6/30/art_45724_10296492.html' },
+        { id:'weihai', label:'威海市', status:'verified', effectiveFrom:'2026-07-01', effectiveTo:'2027-06-30', fund:{ min:2400, max:24950 }, source:'https://www.weihai.gov.cn/art/2026/7/10/art_58820_6474088.html' },
+        { id:'linyi-urban', label:'临沂市区（兰山、罗庄、河东、市直、沂河新区）', status:'verified', effectiveFrom:'2026-07-01', effectiveTo:'2027-06-30', fund:{ min:2210, max:25484 }, source:'https://gjj.linyi.gov.cn/info/1142/9241.htm' },
+        { id:'linyi-counties', label:'临沂其他九县', status:'verified', effectiveFrom:'2026-07-01', effectiveTo:'2027-06-30', fund:{ min:2020, max:25484 }, note:'沂南、郯城、沂水、兰陵、费县、平邑、莒南、蒙阴、临沭', source:'https://gjj.linyi.gov.cn/info/1142/9241.htm' }
       ]
     }
   }

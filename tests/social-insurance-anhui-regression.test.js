@@ -65,7 +65,9 @@ test('南京苏州济南青岛首批地市公积金参数来自2026年度公开�
   assert.deepEqual(find(shandong, 'jinan-counties').fund, { min:2210, max:33902 });
   assert.deepEqual(find(shandong, 'qingdao-urban').fund, { min:2400, max:34342.75 });
   assert.deepEqual(find(shandong, 'qingdao-counties').fund, { min:2210, max:34342.75 });
-  [...jiangsu, ...shandong].filter(region => region.status === 'verified').forEach(region => {
+  ['nanjing', 'suzhou'].map(id => find(jiangsu, id)).concat(
+    ['jinan-urban', 'jinan-counties', 'qingdao-urban', 'qingdao-counties'].map(id => find(shandong, id))
+  ).forEach(region => {
     assert.equal(region.effectiveFrom, '2026-07-01');
     assert.equal(region.effectiveTo, '2027-06-30');
     assert.match(region.source, /^https:\/\//);
