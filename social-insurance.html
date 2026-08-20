@@ -559,14 +559,9 @@ body {
         </div>
       </div>
 
-      <div class="form-group" id="siAnhuiAreaGroup">
-        <label class="form-label" for="siAnhuiArea">安徽参保区域 <span class="unit">用于匹配公积金基数</span></label>
-        <select class="form-select" id="siAnhuiArea">
-          <option value="合肥市区">合肥市区</option>
-          <option value="合肥县市">合肥县市（肥东、肥西、长丰、庐江、巢湖）</option>
-          <option value="六安市区">六安市区</option>
-          <option value="六安县区">六安县区（霍邱、金寨、霍山、舒城、叶集）</option>
-        </select>
+      <div class="form-group" id="siRegionGroup">
+        <label class="form-label" for="siRegion">参保城市/统筹区 <span class="unit">用于匹配当地参数</span></label>
+        <select class="form-select" id="siRegion"></select>
       </div>
 
       <div class="form-group">
@@ -649,6 +644,7 @@ body {
 
 </div>
 
+<script src="social-policy-data.js"></script>
 <script>
 (function() {
 'use strict';
@@ -669,88 +665,15 @@ function toLocale(n) {
   return (n < 0 ? '-' : '') + result + '.' + parts[1];
 }
 
-// ===== 当前公开社保基数上下限（安徽为实测口径，其他地区为参考预设） =====
-var PROVINCE_BASES = {
-  '北京':   { min: 7162,  max: 35811, fundMin: 2540,  fundMax: 35811 },
-  '天津':   { min: 5124,  max: 25620, fundMin: 2320,  fundMax: 23750 },
-  '河北':   { min: 4311,  max: 21556, fundMin: 2200,  fundMax: 21556 },
-  '山西':   { min: 4480,  max: 22400, fundMin: 2150,  fundMax: 22400 },
-  '内蒙古': { min: 4538,  max: 22689, fundMin: 2180,  fundMax: 22689 },
-  '辽宁':   { min: 4359,  max: 21792, fundMin: 2230,  fundMax: 22875 },
-  '吉林':   { min: 4436,  max: 22180, fundMin: 2020,  fundMax: 22180 },
-  '黑龙江': { min: 4623,  max: 23115, fundMin: 2080,  fundMax: 23115 },
-  '上海':   { min: 7460,  max: 37302, fundMin: 2690,  fundMax: 37302 },
-  '江苏':   { min: 4952,  max: 24762, fundMin: 2260,  fundMax: 41400 },
-  '浙江':   { min: 4986,  max: 25299, fundMin: 2490,  fundMax: 40694 },
-  '安徽':   { min: 4311,  max: 21556, fundMin: 2320,  fundMax: 31564 },
-  '福建':   { min: 4043,  max: 22607, fundMin: 2100,  fundMax: 22607 },
-  '江西':   { min: 3915,  max: 19575, fundMin: 2000,  fundMax: 19575 },
-  '山东':   { min: 4952,  max: 24762, fundMin: 2200,  fundMax: 24762 },
-  '河南':   { min: 4382,  max: 21910, fundMin: 2200,  fundMax: 21910 },
-  '湖北':   { min: 4500,  max: 22500, fundMin: 2210,  fundMax: 34560 },
-  '湖南':   { min: 4480,  max: 22400, fundMin: 2100,  fundMax: 22400 },
-  '广东':   { min: 4775,  max: 23875, fundMin: 2500,  fundMax: 39828 },
-  '广西':   { min: 4245,  max: 21225, fundMin: 2000,  fundMax: 21225 },
-  '海南':   { min: 4428,  max: 22140, fundMin: 2010,  fundMax: 22140 },
-  '重庆':   { min: 4450,  max: 22250, fundMin: 2200,  fundMax: 22250 },
-  '四川':   { min: 4350,  max: 21750, fundMin: 2170,  fundMax: 22938 },
-  '贵州':   { min: 4260,  max: 21300, fundMin: 2130,  fundMax: 21300 },
-  '云南':   { min: 4428,  max: 22140, fundMin: 2020,  fundMax: 22140 },
-  '西藏':   { min: 4750,  max: 23750, fundMin: 2180,  fundMax: 23750 },
-  '陕西':   { min: 4382,  max: 21910, fundMin: 2200,  fundMax: 21910 },
-  '甘肃':   { min: 4610,  max: 22014, fundMin: 2120,  fundMax: 22014 },
-  '青海':   { min: 4538,  max: 22689, fundMin: 2100,  fundMax: 22689 },
-  '宁夏':   { min: 4480,  max: 22400, fundMin: 2100,  fundMax: 22400 },
-  '新疆':   { min: 4575,  max: 22875, fundMin: 2100,  fundMax: 22875 }
-};
-
-// 2026年度合肥、六安住房公积金基数（自然年度口径）
-var ANHUI_FUND_AREAS = {
-  '合肥市区': { min: 2320, max: 31564 },
-  '合肥县市': { min: 2100, max: 31564 },
-  '六安市区': { min: 2170, max: 25945 },
-  '六安县区': { min: 2100, max: 25945 }
-};
-
-// ===== 省级社保比例 [单位, 个人] =====
-var PROVINCE_RATES = {
-  '北京':   { pension:[16,8], medical:[9.8,2], unemployment:[0.5,0.5], medicalFixed:3, medicalNote:'个人另+3元/月大病统筹' },
-  '天津':   { pension:[16,8], medical:[9,2],   unemployment:[0.5,0.5] },
-  '河北':   { pension:[16,8], medical:[8,2],   unemployment:[0.5,0.5] },
-  '山西':   { pension:[16,8], medical:[8,2],   unemployment:[0.5,0.5] },
-  '内蒙古': { pension:[16,8], medical:[8,2],   unemployment:[0.5,0.5] },
-  '辽宁':   { pension:[16,8], medical:[8,2],   unemployment:[0.5,0.5] },
-  '吉林':   { pension:[16,8], medical:[8,2],   unemployment:[0.5,0.5] },
-  '黑龙江': { pension:[16,8], medical:[8,2],   unemployment:[0.5,0.5] },
-  '上海':   { pension:[16,8], medical:[10,2],  unemployment:[0.5,0.5], fundMaxRatio:7 },
-  '江苏':   { pension:[16,8], medical:[7.8,2], unemployment:[0.5,0.5] },
-  '浙江':   { pension:[14,8], medical:[9.5,2], unemployment:[0.5,0.5], medicalNote:'养老单位14%（浙江试点）' },
-  '安徽':   { pension:[16,8], medical:[6.4,2], unemployment:[0.5,0.5] },
-  '福建':   { pension:[16,8], medical:[8,2],   unemployment:[0.5,0.5] },
-  '江西':   { pension:[16,8], medical:[8,2],   unemployment:[0.5,0.5] },
-  '山东':   { pension:[16,8], medical:[8.5,2], unemployment:[0.5,0.5] },
-  '河南':   { pension:[16,8], medical:[8,2],   unemployment:[0.5,0.5] },
-  '湖北':   { pension:[16,8], medical:[8,2],   unemployment:[0.7,0.3], maternityEmployer:0.7, medicalNote:'生育0.7%另计+大病7元个人' },
-  '湖南':   { pension:[16,8], medical:[8,2],   unemployment:[0.5,0.5] },
-  '广东':   { pension:[16,8], medical:[8,2],   unemployment:[0.8,0.2] },
-  '广西':   { pension:[16,8], medical:[8,2],   unemployment:[0.5,0.5] },
-  '海南':   { pension:[16,8], medical:[8,2],   unemployment:[0.5,0.5] },
-  '重庆':   { pension:[16,8], medical:[8,2],   unemployment:[0.5,0.5] },
-  '四川':   { pension:[16,8], medical:[8.7,2], unemployment:[0.6,0.4], medicalNote:'含大病补充0.75%' },
-  '贵州':   { pension:[16,8], medical:[8,2],   unemployment:[0.5,0.5] },
-  '云南':   { pension:[16,8], medical:[8,2],   unemployment:[0.5,0.5] },
-  '西藏':   { pension:[16,8], medical:[8,2],   unemployment:[0.5,0.5] },
-  '陕西':   { pension:[16,8], medical:[8,2],   unemployment:[0.5,0.5] },
-  '甘肃':   { pension:[16,8], medical:[8,2],   unemployment:[0.5,0.5] },
-  '青海':   { pension:[16,8], medical:[8,2],   unemployment:[0.5,0.5] },
-  '宁夏':   { pension:[16,8], medical:[8,2],   unemployment:[0.5,0.5] },
-  '新疆':   { pension:[16,8], medical:[8,2],   unemployment:[0.5,0.5] }
-};
+// ===== 政策数据（独立配置，便于按地区和生效期维护） =====
+var PROVINCE_BASES = SOCIAL_POLICY_DATA.provinceBases;
+var PROVINCE_RATES = SOCIAL_POLICY_DATA.provinceRates;
+var REGION_GROUPS = SOCIAL_POLICY_DATA.regionGroups;
 
 // ===== DOM 引用 =====
 var provSel = document.getElementById('siProvince');
-var anhuiAreaGroup = document.getElementById('siAnhuiAreaGroup');
-var anhuiAreaSel = document.getElementById('siAnhuiArea');
+var regionGroup = document.getElementById('siRegionGroup');
+var regionSel = document.getElementById('siRegion');
 var salaryInp = document.getElementById('siSalary');
 var fundEnabled = document.getElementById('siFundEnabled');
 var fundRatioSel = document.getElementById('siFundRatio');
@@ -772,6 +695,45 @@ provinces.forEach(function(p) {
   provSel.innerHTML += '<option value="' + p + '">' + p + '</option>';
 });
 
+function getReferenceRegion(prov) {
+  var isMunicipality = ['北京', '上海', '天津', '重庆'].indexOf(prov) >= 0;
+  return {
+    id: 'province-reference',
+    label: prov + (isMunicipality ? '全市' : '省级') + '常见口径（参考）',
+    status: 'reference'
+  };
+}
+
+function getRegionGroup(prov) {
+  return REGION_GROUPS[prov] || {
+    defaultRegion: 'province-reference',
+    regions: [getReferenceRegion(prov)]
+  };
+}
+
+function getSelectedRegion(prov) {
+  var group = getRegionGroup(prov);
+  var selected = group.regions.filter(function(region) {
+    return region.id === regionSel.value;
+  })[0];
+  return selected || group.regions[0] || getReferenceRegion(prov);
+}
+
+function syncRegionOptions() {
+  var prov = provSel.value;
+  if (!prov) {
+    regionGroup.style.display = 'none';
+    regionSel.innerHTML = '';
+    return;
+  }
+  var group = getRegionGroup(prov);
+  regionSel.innerHTML = group.regions.map(function(region) {
+    return '<option value="' + region.id + '">' + region.label + '</option>';
+  }).join('');
+  regionSel.value = group.defaultRegion || group.regions[0].id;
+  regionGroup.style.display = 'block';
+}
+
 // ===== 获取当前有效费率 =====
 function getRates() {
   var prov = provSel.value;
@@ -786,12 +748,23 @@ function getRates() {
   rates.siMax = bases.max;
   rates.fundMin = bases.fundMin;
   rates.fundMax = bases.fundMax;
-  if (prov === '安徽') {
-    var area = ANHUI_FUND_AREAS[anhuiAreaSel.value] || ANHUI_FUND_AREAS['合肥市区'];
-    rates.areaLabel = anhuiAreaSel.value || '合肥市区';
-    rates.fundMin = area.min;
-    rates.fundMax = area.max;
+  var region = getSelectedRegion(prov);
+  rates.regionId = region.id;
+  rates.regionLabel = region.label;
+  rates.regionStatus = region.status || 'reference';
+  rates.regionEffectiveFrom = region.effectiveFrom || '';
+  rates.regionEffectiveTo = region.effectiveTo || '';
+  rates.regionEffectivePeriod = region.effectivePeriod || '';
+  rates.regionNote = region.note || '';
+  if (region.social) {
+    rates.siMin = region.social.min;
+    rates.siMax = region.social.max;
   }
+  if (region.fund) {
+    rates.fundMin = region.fund.min;
+    rates.fundMax = region.fund.max;
+  }
+  if (region.rates) Object.assign(rates, region.rates);
 
   rates.injury = parseFloat(industrySel.value);
   rates.longTermCare = longTermCheck.checked ? 0.15 : 0;
@@ -799,7 +772,8 @@ function getRates() {
   var fundRatio = parseInt(fundRatioSel.value);
   if (rates.fundMaxRatio && fundRatio > rates.fundMaxRatio) fundRatio = rates.fundMaxRatio;
   rates.fundRatio = fundRatio;
-  rates.medicalAidFixed = medicalAidCheck.checked && prov === '安徽' ? 12 : 0;
+  var regionConfig = getRegionGroup(prov);
+  rates.medicalAidFixed = medicalAidCheck.checked && regionConfig.medicalAidAllowed ? 12 : 0;
 
   return rates;
 }
@@ -900,11 +874,19 @@ function renderResult(r) {
 
   // 底部备注
   var isMunicipality = ['北京', '上海', '天津', '重庆'].indexOf(rates.province) >= 0;
-  var scopeNote = rates.province === '安徽'
-    ? '测算口径：安徽合肥、六安地区按实测口径计算（' + rates.areaLabel + '）'
-    : '测算口径：按' + rates.province + (isMunicipality ? '市' : '省级') + '常见企业职工参数估算，未区分具体城市或统筹区，不作为申报、结算依据';
+  var scopeNote;
+  if (rates.regionStatus === 'measured') {
+    scopeNote = '测算口径：安徽合肥、六安地区按实测口径计算（' + rates.regionLabel + '）';
+  } else if (rates.regionStatus === 'verified') {
+    scopeNote = '测算口径：社保按' + rates.province + '省级参考参数，公积金按' + rates.regionLabel + '公开口径测算';
+  } else {
+    scopeNote = '测算口径：按' + rates.province + (isMunicipality ? '市' : '省级') + '常见企业职工参数估算，未区分具体城市或统筹区，不作为申报、结算依据';
+  }
   var notes = [scopeNote];
   if (rates.province === '安徽') notes.push('2026年社保基数暂按现行4311～21556元测算，正式新标准公布后可能补差');
+  if (rates.regionEffectiveFrom && rates.regionEffectiveTo) notes.push('公积金参数有效期' + rates.regionEffectiveFrom + '至' + rates.regionEffectiveTo);
+  else if (rates.regionEffectivePeriod) notes.push('公积金参数适用' + rates.regionEffectivePeriod);
+  if (rates.regionNote) notes.push(rates.regionNote);
   if (rates.medicalNote) notes.push(rates.medicalNote);
   if (rates.fundEnabled) notes.push('公积金基数' + toLocale(r.fundBase) + '元，比例' + rates.fundRatio + '%');
   else notes.push('📝 未缴纳公积金');
@@ -979,16 +961,16 @@ function runCalc() {
 }
 
 function syncRegionalControls() {
-  var isAnhui = provSel.value === '安徽';
-  anhuiAreaGroup.style.display = isAnhui ? 'block' : 'none';
-  medicalAidCheck.disabled = !isAnhui;
-  if (!isAnhui) medicalAidCheck.checked = false;
+  var group = provSel.value ? getRegionGroup(provSel.value) : null;
+  var medicalAidAllowed = !!(group && group.medicalAidAllowed);
+  medicalAidCheck.disabled = !medicalAidAllowed;
+  if (!medicalAidAllowed) medicalAidCheck.checked = false;
 }
 
 // ===== 重置 =====
 function resetAll() {
   provSel.value = '';
-  anhuiAreaSel.value = '合肥市区';
+  syncRegionOptions();
   syncRegionalControls();
   salaryInp.value = '';
   fundEnabled.checked = false;
@@ -1005,10 +987,11 @@ function resetAll() {
 
 // ===== 事件绑定 =====
 provSel.addEventListener('change', function() {
+  syncRegionOptions();
   syncRegionalControls();
   runCalc();
 });
-anhuiAreaSel.addEventListener('change', runCalc);
+regionSel.addEventListener('change', runCalc);
 salaryInp.addEventListener('focus', function() {
   this.value = (this.value || '').replace(/,/g, '');
 });
@@ -1032,6 +1015,7 @@ longTermCheck.addEventListener('change', runCalc);
 resetBtn.addEventListener('click', resetAll);
 
 // ===== 初始运行 =====
+syncRegionOptions();
 syncRegionalControls();
 runCalc();
 
