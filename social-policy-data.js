@@ -4,6 +4,10 @@
 var data = {
   version: '2026-08-20',
 
+  // 国家八类工伤保险行业基准费率。各省可通过 injuryRates 覆盖。
+  defaultInjuryRates: [0.2, 0.4, 0.7, 0.9, 1.1, 1.3, 1.6, 1.9],
+  defaultInjurySource: 'https://dghrss.dg.gov.cn/attachment/cmsfile/007330096/020105/201510/daofile/035733861444381862265.pdf',
+
   // 安徽为本地实测口径；其他省级数据用于未录入具体地市时快速估算。
   provinceBases: {
     '北京':   { min: 7162,  max: 35811, fundMin: 2540,  fundMax: 35811 },
@@ -18,7 +22,7 @@ var data = {
     '江苏':   { min: 4952,  max: 24762, fundMin: 2260,  fundMax: 41400 },
     '浙江':   { min: 4986,  max: 25299, fundMin: 2490,  fundMax: 40694 },
     '安徽':   { min: 4311,  max: 21556, fundMin: 2320,  fundMax: 31564 },
-    '福建':   { min: 4043,  max: 22607, fundMin: 2100,  fundMax: 22607 },
+    '福建':   { min: 4043,  max: 22607, medicalMin: 4579, medicalMax: 22893, fundMin: 2100,  fundMax: 22607 },
     '江西':   { min: 3915,  max: 19575, fundMin: 2000,  fundMax: 19575 },
     '山东':   { min: 4952,  max: 24762, fundMin: 2200,  fundMax: 24762 },
     '河南':   { min: 4382,  max: 21910, fundMin: 2200,  fundMax: 21910 },
@@ -48,17 +52,17 @@ var data = {
     '辽宁':   { pension:[16,8], medical:[8,2],   unemployment:[0.5,0.5] },
     '吉林':   { pension:[16,8], medical:[8,2],   unemployment:[0.5,0.5] },
     '黑龙江': { pension:[16,8], medical:[8,2],   unemployment:[0.5,0.5] },
-    '上海':   { pension:[16,8], medical:[10,2],  unemployment:[0.5,0.5], fundMaxRatio:7 },
+    '上海':   { pension:[16,8], medical:[9,2],   unemployment:[0.5,0.5], fundMaxRatio:7, medicalNote:'2026年3月起单位医保（含生育及地方附加）合计9%' },
     '江苏':   { pension:[16,8], medical:[7.8,2], unemployment:[0.5,0.5] },
-    '浙江':   { pension:[14,8], medical:[9.5,2], unemployment:[0.5,0.5], medicalNote:'养老单位14%（浙江试点）' },
+    '浙江':   { pension:[16,8], medical:[9.5,2], unemployment:[0.5,0.5], medicalNote:'医保费率按杭州等地区常见口径估算' },
     '安徽':   { pension:[16,8], medical:[6.4,2], unemployment:[0.5,0.5] },
     '福建':   { pension:[16,8], medical:[8,2],   unemployment:[0.5,0.5] },
-    '江西':   { pension:[16,8], medical:[8,2],   unemployment:[0.5,0.5] },
-    '山东':   { pension:[16,8], medical:[8.5,2], unemployment:[0.5,0.5] },
+    '江西':   { pension:[16,8], medical:[6.8,2], unemployment:[0.5,0.5], medicalNote:'医保含生育按南昌、赣州常见口径估算' },
+    '山东':   { pension:[16,8], medical:[8,2],   unemployment:[0.5,0.5], medicalNote:'医保含生育按济南、青岛常见口径估算' },
     '河南':   { pension:[16,8], medical:[8,2],   unemployment:[0.5,0.5] },
     '湖北':   { pension:[16,8], medical:[8,2],   unemployment:[0.7,0.3], maternityEmployer:0.7, medicalNote:'生育0.7%另计+大病7元个人' },
     '湖南':   { pension:[16,8], medical:[8,2],   unemployment:[0.5,0.5] },
-    '广东':   { pension:[16,8], medical:[8,2],   unemployment:[0.8,0.2] },
+    '广东':   { pension:[16,8], medical:[8,2],   unemployment:[0.8,0.2], injuryRates:[0.2,0.4,0.6,0.8,0.9,1.0,1.2,1.4], injurySource:'https://hrss.gd.gov.cn/zcfg/zcfgk/content/post_3269010.html', medicalNote:'省级项仅作兜底，广州、深圳请选择具体城市' },
     '广西':   { pension:[16,8], medical:[8,2],   unemployment:[0.5,0.5] },
     '海南':   { pension:[16,8], medical:[8,2],   unemployment:[0.5,0.5] },
     '重庆':   { pension:[16,8], medical:[8,2],   unemployment:[0.5,0.5] },
@@ -90,7 +94,7 @@ var data = {
       regions: [
         { id:'province-reference', label:'江苏省级常见口径（参考）', status:'reference' },
         { id:'nanjing', label:'南京市', status:'verified', effectiveFrom:'2026-07-01', effectiveTo:'2027-06-30', fund:{ min:2660, max:42400 }, source:'https://gjj.nanjing.gov.cn/zwgk/tzgg/202607/t20260717_5878580.html' },
-        { id:'suzhou', label:'苏州市（一般单位）', status:'verified', effectiveFrom:'2026-07-01', effectiveTo:'2027-06-30', fund:{ min:4952, max:40600 }, note:'公积金下限一般按社保最低基数；实际工资较低且经核准的，不低于当地最低工资标准', source:'https://www.suzhou.gov.cn/szsrmzf/zwgg/202607/501539493f89439aa33768e34a069914.shtml' },
+        { id:'suzhou', label:'苏州市（一般单位）', status:'verified', effectiveFrom:'2026-07-01', effectiveTo:'2027-06-30', fund:{ min:4952, max:40600 }, rates:{ medical:[7,2], maternityEmployer:0.8, medicalFixed:5, medicalNote:'职工医保单位7%、个人2%，生育单位0.8%，个人另缴大额医疗5元/月' }, note:'公积金下限一般按社保最低基数；实际工资较低且经核准的，不低于当地最低工资标准', source:'https://www.suzhou.gov.cn/szsrmzf/zwgg/202607/501539493f89439aa33768e34a069914.shtml', rateSource:'https://jiangsu.chinatax.gov.cn/art/2026/4/14/art_21737_921.html' },
         { id:'changzhou', label:'常州市', status:'verified', effectiveFrom:'2026-07-01', effectiveTo:'2027-06-30', fund:{ min:2660, max:34080 }, source:'https://gjj.changzhou.gov.cn/content/suitable/show?catid=142&id=13974' },
         { id:'lianyungang', label:'连云港市', status:'verified', effectiveFrom:'2026-01-01', effectiveTo:'2026-12-31', fund:{ min:2260, max:31545 }, source:'https://www.lyg.gov.cn/zglygzfmhwz/xwfbh/content/5a72f436-44c0-4f27-9b9d-f5c6be51dace.shtml' },
         { id:'taizhou-urban', label:'泰州市区（海陵、姜堰、医药高新区〔高港〕）', status:'verified', effectiveFrom:'2026-01-01', effectiveTo:'2026-12-31', fund:{ min:2660, max:30258 }, source:'https://gjj.taizhou.gov.cn/xwzx/tzgg/art/2026/art_0d3c5588297a49238c3c81696f195096.html' },
@@ -121,6 +125,7 @@ var data = {
       defaultRegion: 'province-reference',
       regions: [
         { id:'province-reference', label:'江西省级常见口径（参考）', status:'reference' },
+        { id:'nanchang', label:'南昌市', status:'verified', effectiveFrom:'2026-04-01', rates:{ medical:[6.8,2], injurySupplementEmployerFactor:0.3, medicalNote:'职工医保含生育单位6.8%、个人2%；补充工伤按行业基准费率的30%另计' }, note:'补充工伤保险随工伤保险一并测算', source:'https://www.nc.gov.cn/ncszf/ncsgfxwj/202604/71b7a78c36df4b1a83ba5b5320b6a1ea.shtml', rateSource:'https://ybj.nc.gov.cn/ncylbzj/jytagk/202511/73ad6df0be184096bdbad4565bfde7fc.shtml' },
         { id:'ganzhou', label:'赣州市', status:'verified', effectiveFrom:'2026-07-01', effectiveTo:'2027-06-30', fund:{ min:1950, max:24304 }, source:'https://zfgjj.ganzhou.gov.cn/gzszfjj/c103430/202607/616e6f447b994708997219f5e2e1748f.shtml' }
       ]
     },
@@ -142,6 +147,14 @@ var data = {
         { id:'weihai', label:'威海市', status:'verified', effectiveFrom:'2026-07-01', effectiveTo:'2027-06-30', fund:{ min:2400, max:24950 }, source:'https://www.weihai.gov.cn/art/2026/7/10/art_58820_6474088.html' },
         { id:'linyi-urban', label:'临沂市区（兰山、罗庄、河东、市直、沂河新区）', status:'verified', effectiveFrom:'2026-07-01', effectiveTo:'2027-06-30', fund:{ min:2210, max:25484 }, source:'https://gjj.linyi.gov.cn/info/1142/9241.htm' },
         { id:'linyi-counties', label:'临沂其他九县', status:'verified', effectiveFrom:'2026-07-01', effectiveTo:'2027-06-30', fund:{ min:2020, max:25484 }, note:'沂南、郯城、沂水、兰陵、费县、平邑、莒南、蒙阴、临沭', source:'https://gjj.linyi.gov.cn/info/1142/9241.htm' }
+      ]
+    },
+    '广东': {
+      defaultRegion: 'province-reference',
+      regions: [
+        { id:'province-reference', label:'广东省级常见口径（参考）', status:'reference' },
+        { id:'guangzhou', label:'广州市', status:'verified', effectiveFrom:'2022-12-01', effectiveTo:'2026-12-31', rates:{ medical:[6,2], maternityEmployer:0.85, medicalNote:'广州职工医保单位6%、个人2%，生育保险单位0.85%' }, source:'https://www.gz.gov.cn/gfxwj/sbmgfxwj/gzsylbzj/content/mpost_8689834.html' },
+        { id:'shenzhen', label:'深圳市（职工医保一档）', status:'verified', effectiveFrom:'2026-01-01', effectiveTo:'2026-12-31', bases:{ medical:{ min:6727, max:33633 } }, rates:{ medical:[6,2], maternityEmployer:0.5, medicalNote:'深圳职工医保一档单位6%、个人2%，生育保险单位0.5%；医保使用独立缴费基数' }, source:'https://hsa.sz.gov.cn/fzlm/znts/cnyc/content/post_12568243.html' }
       ]
     }
   }

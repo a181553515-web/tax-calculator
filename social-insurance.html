@@ -565,16 +565,16 @@ body {
       </div>
 
       <div class="form-group">
-        <label class="form-label" for="siIndustry">工伤保险行业 <span class="unit">不确定时按一类估算</span></label>
+        <label class="form-label" for="siIndustry">工伤保险行业类别 <span class="unit">按基准费率估算</span></label>
         <select class="form-select" id="siIndustry">
-          <option value="0.2">一类 (0.2%) — 软件/金融/商务服务</option>
-          <option value="0.4">二类 (0.4%) — 零售/餐饮/居民服务</option>
-          <option value="0.7">三类 (0.7%) — 农林牧渔/纺织</option>
-          <option value="0.9">四类 (0.9%) — 交通运输/建筑安装/装饰</option>
-          <option value="1.1">五类 (1.1%) — 制造业/房屋建筑/建筑劳务</option>
-          <option value="1.3">六类 (1.3%) — 化工/制药</option>
-          <option value="1.6">七类 (1.6%) — 矿山/石油开采</option>
-          <option value="1.9">八类 (1.9%) — 煤炭/非煤矿山</option>
+          <option value="1">一类 — 软件/金融/社会工作</option>
+          <option value="2">二类 — 批发零售/餐饮/商务服务</option>
+          <option value="3">三类 — 食品/纺织/电子制造</option>
+          <option value="4">四类 — 农业/医药制造/汽车制造</option>
+          <option value="5">五类 — 建筑安装/建筑装饰/道路运输</option>
+          <option value="6">六类 — 化工/冶炼/房屋建筑</option>
+          <option value="7">七类 — 石油天然气开采/石油加工</option>
+          <option value="8">八类 — 煤炭/金属矿/非金属矿采选</option>
         </select>
       </div>
 
@@ -609,7 +609,7 @@ body {
       </div>
 
       <div class="toggle-row">
-        <span class="toggle-label">🩺 长期护理险（当地已实施时开启，单位和个人各约0.15%）</span>
+        <span class="toggle-label" id="siLongTermCareLabel">🩺 长期护理险（未录入当地确认参数时不计入成本）</span>
         <label class="toggle">
           <input type="checkbox" id="siLongTermCare">
           <span class="toggle-track"></span>
@@ -669,6 +669,7 @@ function toLocale(n) {
 var PROVINCE_BASES = SOCIAL_POLICY_DATA.provinceBases;
 var PROVINCE_RATES = SOCIAL_POLICY_DATA.provinceRates;
 var REGION_GROUPS = SOCIAL_POLICY_DATA.regionGroups;
+var DEFAULT_INJURY_RATES = SOCIAL_POLICY_DATA.defaultInjuryRates;
 
 // ===== DOM 引用 =====
 var provSel = document.getElementById('siProvince');
@@ -681,6 +682,7 @@ var fundHint = document.getElementById('siFundHint');
 var medicalAidCheck = document.getElementById('siMedicalAid');
 var industrySel = document.getElementById('siIndustry');
 var longTermCheck = document.getElementById('siLongTermCare');
+var longTermLabel = document.getElementById('siLongTermCareLabel');
 var resetBtn = document.getElementById('siReset');
 var baseInfo = document.getElementById('siBaseInfo');
 var baseText = document.getElementById('siBaseText');
@@ -748,6 +750,12 @@ function getRates() {
   rates.siMax = bases.max;
   rates.fundMin = bases.fundMin;
   rates.fundMax = bases.fundMax;
+  rates.baseLimits = {
+    pension: { min:bases.min, max:bases.max },
+    medical: { min:bases.medicalMin || bases.min, max:bases.medicalMax || bases.max },
+    unemployment: { min:bases.unemploymentMin || bases.min, max:bases.unemploymentMax || bases.max },
+    injury: { min:bases.injuryMin || bases.min, max:bases.injuryMax || bases.max }
+  };
   var region = getSelectedRegion(prov);
   rates.regionId = region.id;
   rates.regionLabel = region.label;
@@ -756,9 +764,23 @@ function getRates() {
   rates.regionEffectiveTo = region.effectiveTo || '';
   rates.regionEffectivePeriod = region.effectivePeriod || '';
   rates.regionNote = region.note || '';
+  rates.regionHasRates = !!region.rates;
+  rates.regionHasBases = !!(region.social || region.bases);
+  rates.regionHasFund = !!region.fund;
   if (region.social) {
     rates.siMin = region.social.min;
     rates.siMax = region.social.max;
+    Object.keys(rates.baseLimits).forEach(function(key) {
+      rates.baseLimits[key] = { min:region.social.min, max:region.social.max };
+    });
+  }
+  if (region.bases) {
+    Object.keys(region.bases).forEach(function(key) {
+      rates.baseLimits[key] = {
+        min: region.bases[key].min,
+        max: region.bases[key].max
+      };
+    });
   }
   if (region.fund) {
     rates.fundMin = region.fund.min;
@@ -766,8 +788,12 @@ function getRates() {
   }
   if (region.rates) Object.assign(rates, region.rates);
 
-  rates.injury = parseFloat(industrySel.value);
-  rates.longTermCare = longTermCheck.checked ? 0.15 : 0;
+  rates.injuryRates = rates.injuryRates || DEFAULT_INJURY_RATES;
+  rates.injuryCategory = parseInt(industrySel.value, 10) || 1;
+  rates.injury = rates.injuryRates[rates.injuryCategory - 1];
+  rates.injurySupplementRate = rates.injury * (rates.injurySupplementEmployerFactor || 0);
+  rates.longTermCarePolicy = rates.longTermCarePolicy || null;
+  rates.longTermCareEnabled = longTermCheck.checked && !!rates.longTermCarePolicy;
   rates.fundEnabled = fundEnabled.checked;
   var fundRatio = parseInt(fundRatioSel.value);
   if (rates.fundMaxRatio && fundRatio > rates.fundMaxRatio) fundRatio = rates.fundMaxRatio;
@@ -779,28 +805,40 @@ function getRates() {
 }
 
 // ===== 计算 =====
+function clampBase(salary, limits) {
+  return Math.max(limits.min, Math.min(salary, limits.max));
+}
+
 function calcSI(rates, salary) {
-  var siBase = Math.max(rates.siMin, Math.min(salary, rates.siMax));
+  var pensionBase = clampBase(salary, rates.baseLimits.pension);
+  var medicalBase = clampBase(salary, rates.baseLimits.medical);
+  var unemploymentBase = clampBase(salary, rates.baseLimits.unemployment);
+  var injuryBase = clampBase(salary, rates.baseLimits.injury);
+  var siBase = pensionBase;
   var fundBase = Math.max(rates.fundMin, Math.min(salary, rates.fundMax));
 
   var isCapped = salary < rates.siMin ? 'floor' : (salary > rates.siMax ? 'ceiling' : 'normal');
   var isFundCapped = salary < rates.fundMin ? 'floor' : (salary > rates.fundMax ? 'ceiling' : 'normal');
 
-  var pensionEmp = round2(siBase * rates.pension[0] / 100);
-  var pensionPer = round2(siBase * rates.pension[1] / 100);
+  var pensionEmp = round2(pensionBase * rates.pension[0] / 100);
+  var pensionPer = round2(pensionBase * rates.pension[1] / 100);
 
-  var medicalEmp = round2(siBase * rates.medical[0] / 100);
-  var medicalPer = round2(siBase * rates.medical[1] / 100);
-  var maternityEmp = rates.maternityEmployer ? round2(siBase * rates.maternityEmployer / 100) : 0;
+  var medicalEmp = round2(medicalBase * rates.medical[0] / 100);
+  var medicalPer = round2(medicalBase * rates.medical[1] / 100);
+  var maternityEmp = rates.maternityEmployer ? round2(medicalBase * rates.maternityEmployer / 100) : 0;
   var medicalFixedPer = rates.medicalFixed || 0;
 
-  var unempEmp = round2(siBase * rates.unemployment[0] / 100);
-  var unempPer = round2(siBase * rates.unemployment[1] / 100);
+  var unempEmp = round2(unemploymentBase * rates.unemployment[0] / 100);
+  var unempPer = round2(unemploymentBase * rates.unemployment[1] / 100);
 
-  var injuryEmp = round2(siBase * rates.injury / 100);
+  var injuryEmp = round2(injuryBase * rates.injury / 100);
+  var injurySupplementEmp = round2(injuryBase * rates.injurySupplementRate / 100);
 
-  var ltcEmp = rates.longTermCare ? round2(siBase * rates.longTermCare / 100) : 0;
-  var ltcPer = rates.longTermCare ? round2(siBase * rates.longTermCare / 100) : 0;
+  var ltcPolicy = rates.longTermCareEnabled ? rates.longTermCarePolicy : null;
+  var ltcEmpRate = ltcPolicy ? (ltcPolicy.employerCostRate || 0) : 0;
+  var ltcPerRate = ltcPolicy ? (ltcPolicy.employeePayrollRate || 0) : 0;
+  var ltcEmp = round2(medicalBase * ltcEmpRate / 100);
+  var ltcPer = round2(medicalBase * ltcPerRate / 100);
 
   var medicalAidEmp = rates.medicalAidFixed || 0;
   var medicalAidPer = 0;
@@ -811,7 +849,7 @@ function calcSI(rates, salary) {
     fundPer = round2(fundBase * rates.fundRatio / 100);
   }
 
-  var siEmpTotal = round2(pensionEmp + medicalEmp + maternityEmp + medicalAidEmp + unempEmp + injuryEmp + ltcEmp);
+  var siEmpTotal = round2(pensionEmp + medicalEmp + maternityEmp + medicalAidEmp + unempEmp + injuryEmp + injurySupplementEmp + ltcEmp);
   var siPerTotal = round2(pensionPer + medicalPer + medicalFixedPer + medicalAidPer + unempPer + ltcPer);
   var grandEmpTotal = round2(siEmpTotal + fundEmp);
   var grandPerTotal = round2(siPerTotal + fundPer);
@@ -820,15 +858,16 @@ function calcSI(rates, salary) {
 
   return {
     rates: rates, salary: salary,
-    siBase: siBase, fundBase: fundBase,
+    siBase: siBase, pensionBase: pensionBase, medicalBase: medicalBase,
+    unemploymentBase: unemploymentBase, injuryBase: injuryBase, fundBase: fundBase,
     isCapped: isCapped, isFundCapped: isFundCapped,
     pensionEmp: pensionEmp, pensionPer: pensionPer,
     medicalEmp: medicalEmp, medicalPer: medicalPer,
     maternityEmp: maternityEmp,
     medicalFixedPer: medicalFixedPer,
     unempEmp: unempEmp, unempPer: unempPer,
-    injuryEmp: injuryEmp,
-    ltcEmp: ltcEmp, ltcPer: ltcPer,
+    injuryEmp: injuryEmp, injurySupplementEmp: injurySupplementEmp,
+    ltcEmpRate: ltcEmpRate, ltcPerRate: ltcPerRate, ltcEmp: ltcEmp, ltcPer: ltcPer,
     medicalAidEmp: medicalAidEmp,
     fundEmp: fundEmp, fundPer: fundPer,
     siEmpTotal: siEmpTotal, siPerTotal: siPerTotal,
@@ -840,14 +879,14 @@ function calcSI(rates, salary) {
 // ===== 渲染结果 =====
 function renderResult(r) {
   var rates = r.rates;
-  var hasLTC = rates.longTermCare > 0;
+  var hasLTC = rates.longTermCareEnabled;
   var hasMaternity = rates.maternityEmployer > 0;
 
   var medicalLabel = hasMaternity ? '医疗保险（基本）' : '医疗保险（含生育）';
 
   var rows = '';
   rows += buildRow('养老保险', rates.pension[0]+'%', r.pensionEmp, rates.pension[1]+'%', r.pensionPer);
-  rows += buildRow(medicalLabel, rates.medical[0]+'%', r.medicalEmp, rates.medical[1]+'%' + (r.medicalFixedPer ? '+' + r.medicalFixedPer + '元' : ''), r.medicalPer);
+  rows += buildRow(medicalLabel, rates.medical[0]+'%', r.medicalEmp, rates.medical[1]+'%' + (r.medicalFixedPer ? '+' + r.medicalFixedPer + '元' : ''), round2(r.medicalPer + r.medicalFixedPer));
   if (hasMaternity) {
     rows += buildRow('生育保险', rates.maternityEmployer+'%', r.maternityEmp, '—', 0);
   }
@@ -855,9 +894,12 @@ function renderResult(r) {
   if (r.medicalAidEmp > 0) {
     rows += buildRow('大病医疗救助', '12元/月·人', r.medicalAidEmp, '—', 0);
   }
-  rows += buildRow('工伤保险', rates.injury+'%', r.injuryEmp, '—', 0);
+  rows += buildRow('工伤保险（' + rates.injuryCategory + '类基准）', rates.injury+'%', r.injuryEmp, '—', 0);
+  if (r.injurySupplementEmp > 0) {
+    rows += buildRow('补充工伤保险', round2(rates.injurySupplementRate)+'%', r.injurySupplementEmp, '—', 0);
+  }
   if (hasLTC) {
-    rows += buildRow('长期护理险', rates.longTermCare+'%', r.ltcEmp, rates.longTermCare+'%', r.ltcPer);
+    rows += buildRow('长期护理险', r.ltcEmpRate+'%', r.ltcEmp, r.ltcPerRate+'%', r.ltcPer);
   }
   // 社保合计
   rows += '<tr class="si-row--total"><td><strong>社保合计</strong></td>' +
@@ -878,16 +920,20 @@ function renderResult(r) {
   if (rates.regionStatus === 'measured') {
     scopeNote = '测算口径：安徽合肥、六安地区按实测口径计算（' + rates.regionLabel + '）';
   } else if (rates.regionStatus === 'verified') {
-    scopeNote = '测算口径：社保按' + rates.province + '省级参考参数，公积金按' + rates.regionLabel + '公开口径测算';
+    scopeNote = '测算口径：已核验项目按' + rates.regionLabel + '公开口径，未单独列明项目沿用' + rates.province + '常见参考参数';
   } else {
     scopeNote = '测算口径：按' + rates.province + (isMunicipality ? '市' : '省级') + '常见企业职工参数估算，未区分具体城市或统筹区，不作为申报、结算依据';
   }
   var notes = [scopeNote];
   if (rates.province === '安徽') notes.push('2026年社保基数暂按现行4311～21556元测算，正式新标准公布后可能补差');
-  if (rates.regionEffectiveFrom && rates.regionEffectiveTo) notes.push('公积金参数有效期' + rates.regionEffectiveFrom + '至' + rates.regionEffectiveTo);
-  else if (rates.regionEffectivePeriod) notes.push('公积金参数适用' + rates.regionEffectivePeriod);
+  var effectiveSubject = (rates.regionHasRates || rates.regionHasBases) ? '地区参数' : '公积金参数';
+  if (rates.regionEffectiveFrom && rates.regionEffectiveTo) notes.push(effectiveSubject + '有效期' + rates.regionEffectiveFrom + '至' + rates.regionEffectiveTo);
+  else if (rates.regionEffectiveFrom) notes.push(effectiveSubject + '自' + rates.regionEffectiveFrom + '起适用');
+  else if (rates.regionEffectivePeriod) notes.push(effectiveSubject + '适用' + rates.regionEffectivePeriod);
   if (rates.regionNote) notes.push(rates.regionNote);
   if (rates.medicalNote) notes.push(rates.medicalNote);
+  notes.push('工伤按' + rates.injuryCategory + '类基准费率' + rates.injury + '%估算，未考虑参保单位实际浮动费率');
+  notes.push('本工具不适用于按工程项目参保的工伤保险');
   if (rates.fundEnabled) notes.push('公积金基数' + toLocale(r.fundBase) + '元，比例' + rates.fundRatio + '%');
   else notes.push('📝 未缴纳公积金');
   var notesHtml = '<div class="result-notes">' + notes.join('；') + '</div>';
@@ -908,11 +954,31 @@ function renderResult(r) {
     '<div class="summary-card__sub">企业每支出1元，个人实收约' + round2(r.takeHome / r.companyCost).toFixed(2) + '元</div></div>' +
     '</div>';
 
-  // 基数信息
-  var capClass = (r.isCapped !== 'normal') ? ' base-tag--capped' : '';
-  var capLabel = r.isCapped === 'floor' ? '按下限' : (r.isCapped === 'ceiling' ? '按上限' : '按实际');
-  baseText.innerHTML = '<strong>缴费基数 ¥' + toLocale(r.siBase) + '</strong>（' + capLabel + '）' +
-    '<span class="base-tag' + capClass + '" style="margin-left:6px">范围 ¥' + toLocale(rates.siMin) + ' ~ ¥' + toLocale(rates.siMax) + '</span>';
+  // 基数信息：医保基数使用独立范围时分开展示，避免用户误解。
+  function buildBaseLine(label, amount, limits) {
+    var state = amount === limits.min && r.salary < limits.min ? 'floor' : (amount === limits.max && r.salary > limits.max ? 'ceiling' : 'normal');
+    var stateClass = state === 'normal' ? '' : ' base-tag--capped';
+    var stateLabel = state === 'floor' ? '按下限' : (state === 'ceiling' ? '按上限' : '按实际');
+    return '<strong>' + label + ' ¥' + toLocale(amount) + '</strong>（' + stateLabel + '）' +
+      '<span class="base-tag' + stateClass + '" style="margin-left:6px">范围 ¥' + toLocale(limits.min) + ' ~ ¥' + toLocale(limits.max) + '</span>';
+  }
+  var baseItems = [
+    { label:'养老', amount:r.pensionBase, limits:rates.baseLimits.pension },
+    { label:'医保', amount:r.medicalBase, limits:rates.baseLimits.medical },
+    { label:'失业', amount:r.unemploymentBase, limits:rates.baseLimits.unemployment },
+    { label:'工伤', amount:r.injuryBase, limits:rates.baseLimits.injury }
+  ];
+  var baseGroups = [];
+  baseItems.forEach(function(item) {
+    var key = [item.amount, item.limits.min, item.limits.max].join('|');
+    var existing = baseGroups.filter(function(group) { return group.key === key; })[0];
+    if (existing) existing.labels.push(item.label);
+    else baseGroups.push({ key:key, labels:[item.label], amount:item.amount, limits:item.limits });
+  });
+  baseText.innerHTML = baseGroups.map(function(group) {
+    var label = baseGroups.length === 1 ? '缴费基数' : group.labels.join('/') + '基数';
+    return buildBaseLine(label, group.amount, group.limits);
+  }).join('<br>');
   baseInfo.style.display = 'flex';
 
   if (rates.province === '上海') {
@@ -965,6 +1031,18 @@ function syncRegionalControls() {
   var medicalAidAllowed = !!(group && group.medicalAidAllowed);
   medicalAidCheck.disabled = !medicalAidAllowed;
   if (!medicalAidAllowed) medicalAidCheck.checked = false;
+
+  var provincePolicy = provSel.value && PROVINCE_RATES[provSel.value]
+    ? PROVINCE_RATES[provSel.value].longTermCarePolicy
+    : null;
+  var region = provSel.value ? getSelectedRegion(provSel.value) : null;
+  var regionPolicy = region && region.rates ? region.rates.longTermCarePolicy : null;
+  var longTermPolicy = regionPolicy || provincePolicy;
+  longTermCheck.disabled = !longTermPolicy;
+  if (!longTermPolicy) longTermCheck.checked = false;
+  longTermLabel.textContent = longTermPolicy
+    ? '🩺 长期护理险（按当地已核验参数测算）'
+    : '🩺 长期护理险（当前地区暂不计入成本）';
 }
 
 // ===== 重置 =====
@@ -977,7 +1055,7 @@ function resetAll() {
   fundRatioSel.value = '8';
   fundHint.style.display = 'none';
   medicalAidCheck.checked = false;
-  industrySel.value = '0.2';
+  industrySel.value = '1';
   longTermCheck.checked = false;
   baseInfo.style.display = 'none';
   resultCard.style.display = 'none';
@@ -991,7 +1069,10 @@ provSel.addEventListener('change', function() {
   syncRegionalControls();
   runCalc();
 });
-regionSel.addEventListener('change', runCalc);
+regionSel.addEventListener('change', function() {
+  syncRegionalControls();
+  runCalc();
+});
 salaryInp.addEventListener('focus', function() {
   this.value = (this.value || '').replace(/,/g, '');
 });

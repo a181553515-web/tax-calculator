@@ -76,8 +76,14 @@ test('山东新增五市分区参数并保留小数上限', () => {
   });
 });
 
-test('北上广深未取得完整2026数值前不标记为地市已核验', () => {
+test('北京上海保持直辖市口径，广东新增广州深圳已核验费率', () => {
   assert.equal(policy.regionGroups['北京'], undefined);
   assert.equal(policy.regionGroups['上海'], undefined);
-  assert.equal(policy.regionGroups['广东'], undefined);
+  const guangdong = policy.regionGroups['广东'];
+  assert.equal(guangdong.defaultRegion, 'province-reference');
+  assert.deepEqual(findRegion('广东', 'guangzhou').rates.medical, [6, 2]);
+  assert.equal(findRegion('广东', 'guangzhou').rates.maternityEmployer, 0.85);
+  assert.deepEqual(findRegion('广东', 'shenzhen').rates.medical, [6, 2]);
+  assert.equal(findRegion('广东', 'shenzhen').rates.maternityEmployer, 0.5);
+  assert.deepEqual(findRegion('广东', 'shenzhen').bases.medical, { min:6727, max:33633 });
 });
