@@ -1192,6 +1192,22 @@ var CALC_MODE_CONFIG = {
   }
 };
 
+function updateSalaryPlaceholder() {
+  var config = CALC_MODE_CONFIG[currentCalcMode];
+  if (!config) return;
+  if (currentCalcMode !== 'gross') {
+    salaryInp.placeholder = config.placeholder;
+    return;
+  }
+  var rates = getRates();
+  var pensionMin = rates && rates.baseLimits && rates.baseLimits.pension
+    ? rates.baseLimits.pension.min
+    : 0;
+  salaryInp.placeholder = pensionMin > 0
+    ? '例如算最低基数请输入' + String(round2(pensionMin))
+    : config.placeholder;
+}
+
 function hideCalculationResult() {
   baseInfo.style.display = 'none';
   policyTrust.style.display = 'none';
@@ -1204,7 +1220,7 @@ function setCalcMode(mode, clearInput) {
   currentCalcMode = mode;
   var config = CALC_MODE_CONFIG[mode];
   amountLabel.textContent = config.label;
-  salaryInp.placeholder = config.placeholder;
+  updateSalaryPlaceholder();
   modeHint.textContent = config.hint;
   calcMode.querySelectorAll('.calc-mode-btn').forEach(function(button) {
     var active = button.dataset.mode === mode;
@@ -1302,10 +1318,12 @@ calcMode.addEventListener('click', function(event) {
 provSel.addEventListener('change', function() {
   syncRegionOptions();
   syncRegionalControls();
+  updateSalaryPlaceholder();
   runCalc();
 });
 regionSel.addEventListener('change', function() {
   syncRegionalControls();
+  updateSalaryPlaceholder();
   runCalc();
 });
 salaryInp.addEventListener('focus', function() {
@@ -1333,6 +1351,7 @@ resetBtn.addEventListener('click', resetAll);
 // ===== 初始运行 =====
 syncRegionOptions();
 syncRegionalControls();
+updateSalaryPlaceholder();
 runCalc();
 
 })();

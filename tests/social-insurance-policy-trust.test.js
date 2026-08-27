@@ -40,3 +40,11 @@ test('社保页加载独立计算引擎并提供三种测算模式', () => {
   assert.match(html, /label: '企业每人月预算'/);
   assert.match(html, /未扣个人所得税/);
 });
+
+test('税前工资输入提示随参保地区最低基数变化', () => {
+  assert.match(html, /function updateSalaryPlaceholder\(\)/);
+  assert.match(html, /rates\.baseLimits\.pension\.min/);
+  assert.match(html, /例如算最低基数请输入/);
+  assert.match(html, /provSel\.addEventListener\('change',[\s\S]*?updateSalaryPlaceholder\(\)/);
+  assert.match(html, /regionSel\.addEventListener\('change',[\s\S]*?updateSalaryPlaceholder\(\)/);
+});
