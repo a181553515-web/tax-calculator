@@ -33,5 +33,8 @@ test('社保页加载独立计算引擎并提供三种测算模式', () => {
   assert.match(html, /data-mode="gross"/);
   assert.match(html, /data-mode="take-home"/);
   assert.match(html, /data-mode="company-budget"/);
+  assert.match(html, />算社保公积金<\/button>/);
+  assert.match(html, />反算工资<\/button>/);
+  assert.match(html, />按预算算工资<\/button>/);
   assert.match(html, /未扣个人所得税/);
 });
