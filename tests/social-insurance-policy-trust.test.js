@@ -49,6 +49,6 @@ test('税前工资输入提示随参保地区最低基数变化', () => {
   assert.match(html, /regionSel\.addEventListener\('change',[\s\S]*?updateSalaryPlaceholder\(\)/);
 });
 
-test('社保计算器显示当前审核版本号', () => {
-  assert.match(html, /社保公积金计算器 v1\.2\.0-review/);
+test('社保计算器显示当前正式版本号', () => {
+  assert.match(html, /社保公积金计算器 v1\.2\.0<\/p>/);
 });
