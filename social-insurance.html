@@ -200,6 +200,40 @@ body {
   line-height: 1.5;
 }
 
+/* ===== Calculation Mode ===== */
+.calc-mode-switch {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  padding: 4px;
+  margin-bottom: var(--space-2);
+  background: var(--color-border-light);
+  border-radius: var(--radius-md);
+}
+.calc-mode-btn {
+  min-height: 40px;
+  padding: 6px 8px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+}
+.calc-mode-btn.active {
+  color: var(--color-brand-dark);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-xs);
+}
+.calc-mode-hint {
+  min-height: 20px;
+  margin: 0 2px var(--space-4);
+  color: var(--color-text-tertiary);
+  font-size: 11px;
+}
+
 /* ===== Form Elements ===== */
 .form-group {
   margin-bottom: var(--space-4);
@@ -347,6 +381,67 @@ body {
 .base-tag--capped {
   background: #FEE2E2;
   color: var(--color-danger);
+}
+
+/* ===== Policy Trust ===== */
+.policy-trust {
+  display: none;
+  margin: 0 var(--space-4) var(--space-3);
+  padding: 12px 14px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-light);
+  border-left: 3px solid var(--color-brand);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
+  font-size: 11px;
+  line-height: 1.65;
+}
+.policy-trust--warning { border-left-color: var(--color-warning); }
+.policy-trust__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-bottom: 5px;
+}
+.policy-trust__title {
+  color: var(--color-text-primary);
+  font-size: var(--text-xs);
+  font-weight: 700;
+}
+.policy-trust__badge {
+  flex-shrink: 0;
+  padding: 2px 8px;
+  border-radius: 20px;
+  background: var(--color-success-light);
+  color: var(--color-success);
+  font-size: 10px;
+  font-weight: 700;
+}
+.policy-trust__badge--measured {
+  background: var(--color-brand-light);
+  color: var(--color-brand-dark);
+}
+.policy-trust__badge--reference {
+  background: var(--color-accent-light);
+  color: var(--color-warning);
+}
+.policy-trust__row strong { color: var(--color-text-primary); }
+.policy-trust__links { margin-top: 4px; }
+.policy-trust__links a {
+  color: var(--color-brand);
+  font-weight: 600;
+  text-decoration: none;
+  margin-right: 12px;
+}
+.calc-feedback {
+  display: none;
+  margin: 0 var(--space-4) var(--space-3);
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  background: #FEE2E2;
+  color: var(--color-danger);
+  font-size: var(--text-xs);
 }
 
 /* ===== Reset Button ===== */
@@ -510,6 +605,11 @@ body {
     flex: 1;
     line-height: 1.55;
   }
+  .calc-mode-btn {
+    min-height: 38px;
+    padding: 5px 3px;
+    font-size: 11px;
+  }
 }
 
 .calculator-notice {
@@ -548,13 +648,20 @@ body {
     <div class="card fade-in">
       <div class="card-header">📋 企业用工成本快速测算</div>
 
+      <div class="calc-mode-switch" id="siCalcMode" role="tablist" aria-label="测算方式">
+        <button type="button" class="calc-mode-btn active" data-mode="gross" role="tab" aria-selected="true">税前工资</button>
+        <button type="button" class="calc-mode-btn" data-mode="take-home" role="tab" aria-selected="false">社保后目标</button>
+        <button type="button" class="calc-mode-btn" data-mode="company-budget" role="tab" aria-selected="false">企业总预算</button>
+      </div>
+      <div class="calc-mode-hint" id="siModeHint">输入税前月工资，测算个人缴费和企业用工成本</div>
+
       <div class="form-row">
         <div class="form-group">
           <label class="form-label" for="siProvince">参保地区</label>
           <select class="form-select" id="siProvince"></select>
         </div>
         <div class="form-group">
-          <label class="form-label" for="siSalary">员工税前月薪 <span class="unit">元/月</span></label>
+          <label class="form-label" for="siSalary"><span id="siAmountLabel">员工税前月薪</span> <span class="unit">元/月</span></label>
           <input class="form-input" type="text" id="siSalary" inputmode="numeric" placeholder="例如：10000">
         </div>
       </div>
@@ -627,6 +734,9 @@ body {
       <span id="siBaseText"></span>
     </div>
 
+    <div class="policy-trust" id="siPolicyTrust" aria-live="polite"></div>
+    <div class="calc-feedback" id="siCalcFeedback" role="alert"></div>
+
     <!-- Result -->
     <div class="card fade-in" id="resultCard" style="display:none">
       <div class="card-header">📊 缴费明细</div>
@@ -645,6 +755,7 @@ body {
 </div>
 
 <script src="social-policy-data.js"></script>
+<script src="social-calculation-engine.js"></script>
 <script>
 (function() {
 'use strict';
@@ -670,6 +781,9 @@ var PROVINCE_BASES = SOCIAL_POLICY_DATA.provinceBases;
 var PROVINCE_RATES = SOCIAL_POLICY_DATA.provinceRates;
 var REGION_GROUPS = SOCIAL_POLICY_DATA.regionGroups;
 var DEFAULT_INJURY_RATES = SOCIAL_POLICY_DATA.defaultInjuryRates;
+var POLICY_REVIEWED_AT = SOCIAL_POLICY_DATA.reviewedAt || SOCIAL_POLICY_DATA.version;
+var calcSI = SOCIAL_CALCULATION_ENGINE.calculate;
+var solveGrossSalary = SOCIAL_CALCULATION_ENGINE.solveGrossSalary;
 
 // ===== DOM 引用 =====
 var provSel = document.getElementById('siProvince');
@@ -686,8 +800,14 @@ var longTermLabel = document.getElementById('siLongTermCareLabel');
 var resetBtn = document.getElementById('siReset');
 var baseInfo = document.getElementById('siBaseInfo');
 var baseText = document.getElementById('siBaseText');
+var calcMode = document.getElementById('siCalcMode');
+var modeHint = document.getElementById('siModeHint');
+var amountLabel = document.getElementById('siAmountLabel');
+var policyTrust = document.getElementById('siPolicyTrust');
+var calcFeedback = document.getElementById('siCalcFeedback');
 var resultDiv = document.getElementById('siResult');
 var resultCard = document.getElementById('resultCard');
+var currentCalcMode = 'gross';
 
 // ===== 初始化省份下拉 =====
 var provinces = Object.keys(PROVINCE_BASES).sort();
@@ -764,6 +884,9 @@ function getRates() {
   rates.regionEffectiveTo = region.effectiveTo || '';
   rates.regionEffectivePeriod = region.effectivePeriod || '';
   rates.regionNote = region.note || '';
+  rates.regionSource = region.source || '';
+  rates.regionRateSource = region.rateSource || '';
+  rates.reviewedAt = region.reviewedAt || POLICY_REVIEWED_AT;
   rates.regionHasRates = !!region.rates;
   rates.regionHasBases = !!(region.social || region.bases);
   rates.regionHasFund = !!region.fund;
@@ -804,76 +927,102 @@ function getRates() {
   return rates;
 }
 
-// ===== 计算 =====
-function clampBase(salary, limits) {
-  return Math.max(limits.min, Math.min(salary, limits.max));
+function escapeHtml(value) {
+  return String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
 
-function calcSI(rates, salary) {
-  var pensionBase = clampBase(salary, rates.baseLimits.pension);
-  var medicalBase = clampBase(salary, rates.baseLimits.medical);
-  var unemploymentBase = clampBase(salary, rates.baseLimits.unemployment);
-  var injuryBase = clampBase(salary, rates.baseLimits.injury);
-  var siBase = pensionBase;
-  var fundBase = Math.max(rates.fundMin, Math.min(salary, rates.fundMax));
+function getPolicyTrustModel(rates) {
+  var allItems = ['社保费率', '社保基数', '公积金'];
+  var verifiedItems = [];
+  var statusLabel = '省级参考';
+  var badgeClass = 'policy-trust__badge--reference';
 
-  var isCapped = salary < rates.siMin ? 'floor' : (salary > rates.siMax ? 'ceiling' : 'normal');
-  var isFundCapped = salary < rates.fundMin ? 'floor' : (salary > rates.fundMax ? 'ceiling' : 'normal');
-
-  var pensionEmp = round2(pensionBase * rates.pension[0] / 100);
-  var pensionPer = round2(pensionBase * rates.pension[1] / 100);
-
-  var medicalEmp = round2(medicalBase * rates.medical[0] / 100);
-  var medicalPer = round2(medicalBase * rates.medical[1] / 100);
-  var maternityEmp = rates.maternityEmployer ? round2(medicalBase * rates.maternityEmployer / 100) : 0;
-  var medicalFixedPer = rates.medicalFixed || 0;
-
-  var unempEmp = round2(unemploymentBase * rates.unemployment[0] / 100);
-  var unempPer = round2(unemploymentBase * rates.unemployment[1] / 100);
-
-  var injuryEmp = round2(injuryBase * rates.injury / 100);
-  var injurySupplementEmp = round2(injuryBase * rates.injurySupplementRate / 100);
-
-  var ltcPolicy = rates.longTermCareEnabled ? rates.longTermCarePolicy : null;
-  var ltcEmpRate = ltcPolicy ? (ltcPolicy.employerCostRate || 0) : 0;
-  var ltcPerRate = ltcPolicy ? (ltcPolicy.employeePayrollRate || 0) : 0;
-  var ltcEmp = round2(medicalBase * ltcEmpRate / 100);
-  var ltcPer = round2(medicalBase * ltcPerRate / 100);
-
-  var medicalAidEmp = rates.medicalAidFixed || 0;
-  var medicalAidPer = 0;
-
-  var fundEmp = 0, fundPer = 0;
-  if (rates.fundEnabled) {
-    fundEmp = round2(fundBase * rates.fundRatio / 100);
-    fundPer = round2(fundBase * rates.fundRatio / 100);
+  if (rates.regionStatus === 'measured') {
+    verifiedItems = allItems.slice();
+    statusLabel = '安徽实测';
+    badgeClass = 'policy-trust__badge--measured';
+  } else if (rates.regionStatus === 'verified') {
+    if (rates.regionHasRates) verifiedItems.push('地区费率');
+    if (rates.regionHasBases) verifiedItems.push('社保基数');
+    if (rates.regionHasFund) verifiedItems.push('公积金');
+    statusLabel = verifiedItems.length === allItems.length ? '官方核验' : '部分官方核验';
+    badgeClass = '';
   }
 
-  var siEmpTotal = round2(pensionEmp + medicalEmp + maternityEmp + medicalAidEmp + unempEmp + injuryEmp + injurySupplementEmp + ltcEmp);
-  var siPerTotal = round2(pensionPer + medicalPer + medicalFixedPer + medicalAidPer + unempPer + ltcPer);
-  var grandEmpTotal = round2(siEmpTotal + fundEmp);
-  var grandPerTotal = round2(siPerTotal + fundPer);
-  var takeHome = round2(salary - grandPerTotal);
-  var companyCost = round2(salary + grandEmpTotal);
+  var referenceItems = [];
+  if (rates.regionStatus === 'reference') {
+    referenceItems = allItems.slice();
+  } else if (rates.regionStatus === 'verified') {
+    if (!rates.regionHasRates) referenceItems.push('社保费率');
+    if (!rates.regionHasBases) referenceItems.push('社保基数');
+    if (!rates.regionHasFund) referenceItems.push('公积金');
+  }
+
+  var effectiveText = '未单独标注';
+  if (rates.regionEffectiveFrom && rates.regionEffectiveTo) {
+    effectiveText = rates.regionEffectiveFrom + ' 至 ' + rates.regionEffectiveTo;
+  } else if (rates.regionEffectiveFrom) {
+    effectiveText = rates.regionEffectiveFrom + ' 起';
+  } else if (rates.regionEffectivePeriod) {
+    effectiveText = rates.regionEffectivePeriod;
+  }
+
+  var expired = false;
+  if (rates.regionEffectiveTo) {
+    expired = new Date(rates.regionEffectiveTo + 'T23:59:59').getTime() < Date.now();
+  }
+
+  var links = [];
+  if (rates.regionRateSource) {
+    links.push({ label:'费率官方来源', url:rates.regionRateSource });
+  }
+  if (rates.regionSource && rates.regionSource !== rates.regionRateSource) {
+    var sourceLabel = rates.regionHasFund ? '公积金官方来源' : '地区政策来源';
+    links.push({ label:sourceLabel, url:rates.regionSource });
+  }
 
   return {
-    rates: rates, salary: salary,
-    siBase: siBase, pensionBase: pensionBase, medicalBase: medicalBase,
-    unemploymentBase: unemploymentBase, injuryBase: injuryBase, fundBase: fundBase,
-    isCapped: isCapped, isFundCapped: isFundCapped,
-    pensionEmp: pensionEmp, pensionPer: pensionPer,
-    medicalEmp: medicalEmp, medicalPer: medicalPer,
-    maternityEmp: maternityEmp,
-    medicalFixedPer: medicalFixedPer,
-    unempEmp: unempEmp, unempPer: unempPer,
-    injuryEmp: injuryEmp, injurySupplementEmp: injurySupplementEmp,
-    ltcEmpRate: ltcEmpRate, ltcPerRate: ltcPerRate, ltcEmp: ltcEmp, ltcPer: ltcPer,
-    medicalAidEmp: medicalAidEmp,
-    fundEmp: fundEmp, fundPer: fundPer,
-    siEmpTotal: siEmpTotal, siPerTotal: siPerTotal,
-    grandEmpTotal: grandEmpTotal, grandPerTotal: grandPerTotal,
-    takeHome: takeHome, companyCost: companyCost
+    statusLabel: statusLabel,
+    badgeClass: badgeClass,
+    verifiedItems: verifiedItems,
+    referenceItems: referenceItems,
+    effectiveText: effectiveText,
+    expired: expired,
+    reviewedAt: rates.reviewedAt,
+    links: links
   };
+}
+
+function renderPolicyTrust(rates) {
+  var trust = getPolicyTrustModel(rates);
+  var rows = '';
+  if (trust.verifiedItems.length) {
+    rows += '<div class="policy-trust__row"><strong>已确认：</strong>' + escapeHtml(trust.verifiedItems.join('、')) + '</div>';
+  }
+  if (trust.referenceItems.length) {
+    rows += '<div class="policy-trust__row"><strong>参考项：</strong>' + escapeHtml(trust.referenceItems.join('、')) + '</div>';
+  }
+  rows += '<div class="policy-trust__row"><strong>' + (rates.regionStatus === 'reference' ? '参数整理：' : '最近复核：') + '</strong>' + escapeHtml(trust.reviewedAt || '未记录') +
+    '　<strong>适用期：</strong>' + escapeHtml(trust.effectiveText) + (trust.expired ? '（已过期，请复核）' : '') + '</div>';
+
+  if (!trust.links.length) {
+    rows += '<div class="policy-trust__row"><strong>来源：</strong>' +
+      (rates.regionStatus === 'measured' ? '安徽地区实际申报口径' : '暂未录入具体地市官方来源') + '</div>';
+  } else {
+    rows += '<div class="policy-trust__links">' + trust.links.map(function(link) {
+      return '<a href="' + escapeHtml(link.url) + '" target="_blank" rel="noopener noreferrer">' + escapeHtml(link.label) + ' ↗</a>';
+    }).join('') + '</div>';
+  }
+
+  policyTrust.className = 'policy-trust' + ((rates.regionStatus === 'reference' || trust.expired) ? ' policy-trust--warning' : '');
+  policyTrust.innerHTML = '<div class="policy-trust__head"><span class="policy-trust__title">🛡️ 参数可信度 · ' + escapeHtml(rates.regionLabel) + '</span>' +
+    '<span class="policy-trust__badge ' + trust.badgeClass + '">' + escapeHtml(trust.statusLabel) + '</span></div>' + rows;
+  policyTrust.style.display = 'block';
 }
 
 // ===== 渲染结果 =====
@@ -934,15 +1083,31 @@ function renderResult(r) {
   if (rates.medicalNote) notes.push(rates.medicalNote);
   notes.push('工伤按' + rates.injuryCategory + '类基准费率' + rates.injury + '%估算，未考虑参保单位实际浮动费率');
   notes.push('本工具不适用于按工程项目参保的工伤保险');
+  if (r.reverse) {
+    notes.push('反算的“社保后工资”仅扣除个人社保和公积金，未扣个人所得税');
+  }
   if (rates.fundEnabled) notes.push('公积金基数' + toLocale(r.fundBase) + '元，比例' + rates.fundRatio + '%');
   else notes.push('📝 未缴纳公积金');
   var notesHtml = '<div class="result-notes">' + notes.join('；') + '</div>';
+
+  var reverseSummary = '';
+  if (r.reverse) {
+    var reverseLabel = r.reverse.mode === 'company-budget' ? '企业总预算' : '目标社保后工资';
+    reverseSummary = '<div class="summary-card summary-card--highlight"><div class="summary-card__label">🎯 反算税前月工资</div>' +
+      '<div class="summary-card__amount">¥' + toLocale(r.salary) + '</div>' +
+      '<div class="summary-card__sub">' + reverseLabel + ' ' + toLocale(r.reverse.targetAmount) +
+      '，实际 ' + toLocale(r.reverse.actualAmount) +
+      (r.reverse.difference ? '，差额 ' + (r.reverse.difference > 0 ? '+' : '') + toLocale(r.reverse.difference) : '，精确匹配') + '</div></div>';
+  }
+
+  var costToSalaryRatio = r.salary > 0 ? round2(r.companyCost / r.salary).toFixed(2) : '—';
+  var takeHomeToCostRatio = r.companyCost > 0 ? round2(r.takeHome / r.companyCost).toFixed(2) : '—';
 
   var html = '<div class="table-wrap">' +
     '<table class="table"><thead><tr>' +
     '<th>险种</th><th>单位比例</th><th>单位月缴</th><th>个人比例</th><th>个人月缴</th><th>合计</th>' +
     '</tr></thead><tbody>' + rows + '</tbody></table></div>' + notesHtml +
-    '<div class="summary-grid">' +
+    '<div class="summary-grid">' + reverseSummary +
     '<div class="summary-card"><div class="summary-card__label">💰 员工实收（未扣个税）</div>' +
     '<div class="summary-card__amount">¥' + toLocale(r.takeHome) + '</div>' +
     '<div class="summary-card__sub">税前 ' + toLocale(r.salary) + ' − 个人 ' + toLocale(r.grandPerTotal) + '</div></div>' +
@@ -950,8 +1115,8 @@ function renderResult(r) {
     '<div class="summary-card__amount">¥' + toLocale(r.companyCost) + '</div>' +
     '<div class="summary-card__sub">工资 ' + toLocale(r.salary) + ' + 单位 ' + toLocale(r.grandEmpTotal) + '</div></div>' +
     '<div class="summary-card summary-card--highlight"><div class="summary-card__label">📊 企业支出 / 员工实收（参考）</div>' +
-    '<div class="summary-card__amount">' + round2(r.companyCost / r.salary).toFixed(2) + '</div>' +
-    '<div class="summary-card__sub">企业每支出1元，个人实收约' + round2(r.takeHome / r.companyCost).toFixed(2) + '元</div></div>' +
+    '<div class="summary-card__amount">' + costToSalaryRatio + '</div>' +
+    '<div class="summary-card__sub">企业每支出1元，个人实收约' + takeHomeToCostRatio + '元</div></div>' +
     '</div>';
 
   // 基数信息：医保基数使用独立范围时分开展示，避免用户误解。
@@ -980,6 +1145,7 @@ function renderResult(r) {
     return buildBaseLine(label, group.amount, group.limits);
   }).join('<br>');
   baseInfo.style.display = 'flex';
+  renderPolicyTrust(rates);
 
   if (rates.province === '上海') {
     fundRatioSel.querySelectorAll('option').forEach(function(opt) {
@@ -1008,21 +1174,85 @@ function buildRow(label, empRate, empAmt, perRate, perAmt) {
 }
 
 // ===== 联动计算 =====
+var CALC_MODE_CONFIG = {
+  gross: {
+    label: '员工税前月薪',
+    placeholder: '例如：10000',
+    hint: '输入税前月工资，测算个人缴费和企业用工成本'
+  },
+  'take-home': {
+    label: '目标社保后工资',
+    placeholder: '例如：9000',
+    hint: '反算税前工资：目标金额已扣个人社保和公积金，但未扣个税'
+  },
+  'company-budget': {
+    label: '企业月度总预算',
+    placeholder: '例如：15000',
+    hint: '反算税前工资：企业预算包含税前工资、单位社保和单位公积金'
+  }
+};
+
+function hideCalculationResult() {
+  baseInfo.style.display = 'none';
+  policyTrust.style.display = 'none';
+  calcFeedback.style.display = 'none';
+  resultCard.style.display = 'none';
+}
+
+function setCalcMode(mode, clearInput) {
+  if (!CALC_MODE_CONFIG[mode]) return;
+  currentCalcMode = mode;
+  var config = CALC_MODE_CONFIG[mode];
+  amountLabel.textContent = config.label;
+  salaryInp.placeholder = config.placeholder;
+  modeHint.textContent = config.hint;
+  calcMode.querySelectorAll('.calc-mode-btn').forEach(function(button) {
+    var active = button.dataset.mode === mode;
+    button.classList.toggle('active', active);
+    button.setAttribute('aria-selected', active ? 'true' : 'false');
+  });
+  if (clearInput) salaryInp.value = '';
+  hideCalculationResult();
+}
+
 var debounceTimer = null;
 function runCalc() {
   var rates = getRates();
   if (!rates) {
-    baseInfo.style.display = 'none';
-    resultCard.style.display = 'none';
+    hideCalculationResult();
     return;
   }
-  var salary = parseFloat(salaryInp.value.replace(/,/g, '')) || 0;
-  if (salary <= 0) {
-    baseInfo.style.display = 'none';
-    resultCard.style.display = 'none';
+  var inputAmount = parseFloat(salaryInp.value.replace(/,/g, '')) || 0;
+  if (inputAmount <= 0) {
+    hideCalculationResult();
     return;
   }
-  var r = calcSI(rates, salary);
+  calcFeedback.textContent = '';
+  calcFeedback.style.display = 'none';
+
+  var r;
+  if (currentCalcMode === 'gross') {
+    r = calcSI(rates, inputAmount);
+  } else {
+    var solved = solveGrossSalary(rates, inputAmount, currentCalcMode);
+    if (!solved.ok) {
+      baseInfo.style.display = 'none';
+      policyTrust.style.display = 'none';
+      resultCard.style.display = 'none';
+      calcFeedback.textContent = solved.reason === 'below-minimum'
+        ? '当前缴费设置下，该预算低于最低可计算成本 ¥' + toLocale(solved.minimumAmount) + '，请提高目标金额。'
+        : '暂时无法完成反算，请检查输入金额。';
+      calcFeedback.style.display = 'block';
+      return;
+    }
+    r = solved.result;
+    r.reverse = {
+      mode: currentCalcMode,
+      targetAmount: solved.targetAmount,
+      actualAmount: solved.actualAmount,
+      difference: solved.difference
+    };
+  }
   renderResult(r);
 }
 
@@ -1057,13 +1287,18 @@ function resetAll() {
   medicalAidCheck.checked = false;
   industrySel.value = '1';
   longTermCheck.checked = false;
-  baseInfo.style.display = 'none';
-  resultCard.style.display = 'none';
+  setCalcMode('gross', false);
   resultDiv.innerHTML = '<div class="result-placeholder">请在上方选择省份并填写缴费工资，自动计算</div>';
   resultCard.style.display = 'block';
 }
 
 // ===== 事件绑定 =====
+calcMode.addEventListener('click', function(event) {
+  var button = event.target.closest('.calc-mode-btn');
+  if (!button || button.dataset.mode === currentCalcMode) return;
+  setCalcMode(button.dataset.mode, true);
+  salaryInp.focus();
+});
 provSel.addEventListener('change', function() {
   syncRegionOptions();
   syncRegionalControls();

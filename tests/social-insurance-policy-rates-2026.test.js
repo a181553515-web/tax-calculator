@@ -5,6 +5,7 @@ const test = require('node:test');
 
 const policy = require(path.join(__dirname, '..', 'social-policy-data.js'));
 const html = fs.readFileSync(path.join(__dirname, '..', 'social-insurance.html'), 'utf8');
+const engineSource = fs.readFileSync(path.join(__dirname, '..', 'social-calculation-engine.js'), 'utf8');
 
 function findRegion(province, id) {
   return policy.regionGroups[province].regions.find(region => region.id === id);
@@ -25,8 +26,8 @@ test('医保可以使用独立于养老失业工伤的缴费基数', () => {
     [policy.provinceBases['福建'].medicalMin, policy.provinceBases['福建'].medicalMax],
     [4579, 22893]
   );
-  assert.match(html, /var medicalBase = clampBase\(salary, rates\.baseLimits\.medical\)/);
-  assert.match(html, /medicalBase: medicalBase/);
+  assert.match(engineSource, /var medicalBase = clampBase\(salary, rates\.baseLimits\.medical\)/);
+  assert.match(engineSource, /medicalBase: medicalBase/);
   assert.match(html, /医保基数/);
 });
 

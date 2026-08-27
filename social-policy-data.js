@@ -3,6 +3,7 @@
 
 var data = {
   version: '2026-08-20',
+  reviewedAt: '2026-08-20',
 
   // 国家八类工伤保险行业基准费率。各省可通过 injuryRates 覆盖。
   defaultInjuryRates: [0.2, 0.4, 0.7, 0.9, 1.1, 1.3, 1.6, 1.9],
