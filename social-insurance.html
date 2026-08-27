@@ -1092,7 +1092,7 @@ function renderResult(r) {
 
   var reverseSummary = '';
   if (r.reverse) {
-    var reverseLabel = r.reverse.mode === 'company-budget' ? '企业总预算' : '目标社保后工资';
+    var reverseLabel = r.reverse.mode === 'company-budget' ? '企业每人月预算' : '员工目标工资（社保后）';
     reverseSummary = '<div class="summary-card summary-card--highlight"><div class="summary-card__label">🎯 反算税前月工资</div>' +
       '<div class="summary-card__amount">¥' + toLocale(r.salary) + '</div>' +
       '<div class="summary-card__sub">' + reverseLabel + ' ' + toLocale(r.reverse.targetAmount) +
@@ -1181,14 +1181,14 @@ var CALC_MODE_CONFIG = {
     hint: '输入税前月工资，测算个人缴费和企业用工成本'
   },
   'take-home': {
-    label: '目标社保后工资',
+    label: '员工目标工资（社保后）',
     placeholder: '例如：9000',
-    hint: '反算税前工资：目标金额已扣个人社保和公积金，但未扣个税'
+    hint: '反算税前工资：员工目标工资已扣个人社保和公积金，但未扣个税'
   },
   'company-budget': {
-    label: '企业月度总预算',
+    label: '企业每人月预算',
     placeholder: '例如：15000',
-    hint: '反算税前工资：企业预算包含税前工资、单位社保和单位公积金'
+    hint: '反算税前工资：企业每人月预算包含税前工资、单位社保和单位公积金'
   }
 };
 

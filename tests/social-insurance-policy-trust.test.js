@@ -36,5 +36,7 @@ test('社保页加载独立计算引擎并提供三种测算模式', () => {
   assert.match(html, />算社保公积金<\/button>/);
   assert.match(html, />反算工资<\/button>/);
   assert.match(html, />按预算算工资<\/button>/);
+  assert.match(html, /label: '员工目标工资（社保后）'/);
+  assert.match(html, /label: '企业每人月预算'/);
   assert.match(html, /未扣个人所得税/);
 });
