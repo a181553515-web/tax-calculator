@@ -9,15 +9,38 @@ function clampBase(salary, limits) {
   return Math.max(limits.min, Math.min(salary, limits.max));
 }
 
-function calculate(rates, salary) {
-  var pensionBase = clampBase(salary, rates.baseLimits.pension);
-  var medicalBase = clampBase(salary, rates.baseLimits.medical);
-  var unemploymentBase = clampBase(salary, rates.baseLimits.unemployment);
-  var injuryBase = clampBase(salary, rates.baseLimits.injury);
+function getSocialBaseMode(options) {
+  var mode = options && options.socialBaseMode;
+  return mode === 'minimum' || mode === 'custom' ? mode : 'salary';
+}
+
+function getSocialBaseInput(salary, limits, mode, customAmount) {
+  if (mode === 'minimum') return limits.min;
+  if (mode === 'custom' && Number.isFinite(customAmount) && customAmount > 0) return customAmount;
+  return salary;
+}
+
+function getBaseState(value, limits) {
+  return value < limits.min ? 'floor' : (value > limits.max ? 'ceiling' : 'normal');
+}
+
+function calculate(rates, salary, options) {
+  var socialBaseMode = getSocialBaseMode(options);
+  var socialBaseAmount = Number(options && options.socialBaseAmount);
+  var socialBaseInputs = {
+    pension: getSocialBaseInput(salary, rates.baseLimits.pension, socialBaseMode, socialBaseAmount),
+    medical: getSocialBaseInput(salary, rates.baseLimits.medical, socialBaseMode, socialBaseAmount),
+    unemployment: getSocialBaseInput(salary, rates.baseLimits.unemployment, socialBaseMode, socialBaseAmount),
+    injury: getSocialBaseInput(salary, rates.baseLimits.injury, socialBaseMode, socialBaseAmount)
+  };
+  var pensionBase = clampBase(socialBaseInputs.pension, rates.baseLimits.pension);
+  var medicalBase = clampBase(socialBaseInputs.medical, rates.baseLimits.medical);
+  var unemploymentBase = clampBase(socialBaseInputs.unemployment, rates.baseLimits.unemployment);
+  var injuryBase = clampBase(socialBaseInputs.injury, rates.baseLimits.injury);
   var siBase = pensionBase;
   var fundBase = Math.max(rates.fundMin, Math.min(salary, rates.fundMax));
 
-  var isCapped = salary < rates.siMin ? 'floor' : (salary > rates.siMax ? 'ceiling' : 'normal');
+  var isCapped = getBaseState(socialBaseInputs.pension, rates.baseLimits.pension);
   var isFundCapped = salary < rates.fundMin ? 'floor' : (salary > rates.fundMax ? 'ceiling' : 'normal');
 
   var pensionEmp = round2(pensionBase * rates.pension[0] / 100);
@@ -60,6 +83,9 @@ function calculate(rates, salary) {
   return {
     rates: rates,
     salary: salary,
+    socialBaseMode: socialBaseMode,
+    socialBaseAmount: socialBaseMode === 'custom' ? socialBaseAmount : null,
+    socialBaseInputs: socialBaseInputs,
     siBase: siBase,
     pensionBase: pensionBase,
     medicalBase: medicalBase,
@@ -94,7 +120,7 @@ function calculate(rates, salary) {
   };
 }
 
-function solveGrossSalary(rates, targetAmount, mode) {
+function solveGrossSalary(rates, targetAmount, mode, options) {
   var metric = mode === 'company-budget' ? 'companyCost' : 'takeHome';
   var targetCents = Math.round(targetAmount * 100);
   if (!Number.isFinite(targetCents) || targetCents <= 0) {
@@ -102,7 +128,7 @@ function solveGrossSalary(rates, targetAmount, mode) {
   }
 
   function resultAt(grossCents) {
-    return calculate(rates, grossCents / 100);
+    return calculate(rates, grossCents / 100, options);
   }
 
   function metricCents(result) {

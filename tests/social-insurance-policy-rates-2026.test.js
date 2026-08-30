@@ -26,7 +26,7 @@ test('医保可以使用独立于养老失业工伤的缴费基数', () => {
     [policy.provinceBases['福建'].medicalMin, policy.provinceBases['福建'].medicalMax],
     [4579, 22893]
   );
-  assert.match(engineSource, /var medicalBase = clampBase\(salary, rates\.baseLimits\.medical\)/);
+  assert.match(engineSource, /var medicalBase = clampBase\(socialBaseInputs\.medical, rates\.baseLimits\.medical\)/);
   assert.match(engineSource, /medicalBase: medicalBase/);
   assert.match(html, /医保基数/);
 });

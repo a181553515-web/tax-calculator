@@ -41,14 +41,18 @@ test('社保页加载独立计算引擎并提供三种测算模式', () => {
   assert.match(html, /未扣个人所得税/);
 });
 
-test('税前工资输入提示随参保地区最低基数变化', () => {
-  assert.match(html, /function updateSalaryPlaceholder\(\)/);
-  assert.match(html, /rates\.baseLimits\.pension\.min/);
-  assert.match(html, /例如算最低基数请输入/);
-  assert.match(html, /provSel\.addEventListener\('change',[\s\S]*?updateSalaryPlaceholder\(\)/);
-  assert.match(html, /regionSel\.addEventListener\('change',[\s\S]*?updateSalaryPlaceholder\(\)/);
+test('三个模块共用轻量社保缴费基数设置', () => {
+  assert.match(html, /id="siSocialBaseMode"/);
+  assert.match(html, /data-base-mode="salary"/);
+  assert.match(html, /data-base-mode="minimum"/);
+  assert.match(html, /data-base-mode="custom"/);
+  assert.match(html, />按当地下限<\/button>/);
+  assert.match(html, /id="siCustomBaseGroup"/);
+  assert.match(html, /function getMinimumBaseSummary\(rates\)/);
+  assert.match(html, /solveGrossSalary\(rates, inputAmount, currentCalcMode, baseOptions\)/);
+  assert.doesNotMatch(html, /例如算最低基数请输入/);
 });
 
-test('社保计算器显示当前正式版本号', () => {
-  assert.match(html, /社保公积金计算器 v1\.2\.0<\/p>/);
+test('社保计算器显示当前本地审核版本号', () => {
+  assert.match(html, /社保公积金计算器 v1\.3\.0-review<\/p>/);
 });

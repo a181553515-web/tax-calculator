@@ -234,6 +234,49 @@ body {
   font-size: 11px;
 }
 
+/* ===== Social Contribution Base ===== */
+.base-mode-switch {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  padding: 4px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+}
+.base-mode-btn {
+  min-height: 38px;
+  padding: 5px 6px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  cursor: pointer;
+}
+.base-mode-btn.active {
+  color: var(--color-brand-dark);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-xs);
+}
+.base-mode-btn:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 1px;
+}
+.base-mode-note {
+  min-height: 18px;
+  margin: 5px 2px 0;
+  color: var(--color-text-tertiary);
+  font-size: 10px;
+  line-height: 1.5;
+}
+.custom-base-field {
+  display: none;
+  margin-top: var(--space-2);
+}
+
 /* ===== Form Elements ===== */
 .form-group {
   margin-bottom: var(--space-4);
@@ -610,6 +653,11 @@ body {
     padding: 5px 3px;
     font-size: 11px;
   }
+  .base-mode-btn {
+    padding-left: 2px;
+    padding-right: 2px;
+    font-size: 11px;
+  }
 }
 
 .calculator-notice {
@@ -669,6 +717,19 @@ body {
       <div class="form-group" id="siRegionGroup">
         <label class="form-label" for="siRegion">参保城市/统筹区 <span class="unit">用于匹配当地参数</span></label>
         <select class="form-select" id="siRegion"></select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">社保缴费基数 <span class="unit">三个模块通用</span></label>
+        <div class="base-mode-switch" id="siSocialBaseMode" role="group" aria-label="社保缴费基数方式">
+          <button type="button" class="base-mode-btn active" data-base-mode="salary" aria-pressed="true">按工资</button>
+          <button type="button" class="base-mode-btn" data-base-mode="minimum" aria-pressed="false">按当地下限</button>
+          <button type="button" class="base-mode-btn" data-base-mode="custom" aria-pressed="false">自定义</button>
+        </div>
+        <div class="base-mode-note" id="siSocialBaseNote"></div>
+        <div class="custom-base-field" id="siCustomBaseGroup">
+          <input class="form-input" type="text" id="siCustomBase" inputmode="decimal" aria-label="自定义社保缴费基数" placeholder="例如：4311">
+        </div>
       </div>
 
       <div class="form-group">
@@ -748,7 +809,7 @@ body {
   <!-- Footer -->
   <footer class="footer" role="contentinfo">
     <p>@ 小波的财税日记 · 微信号：xbcs260611</p>
-    <p>© 2026 社保公积金计算器 v1.2.0</p>
+    <p>© 2026 社保公积金计算器 v1.3.0-review</p>
     <p>⚠️ 计算结果仅供参考，具体以当地政策规定为准</p>
   </footer>
 
@@ -803,11 +864,16 @@ var baseText = document.getElementById('siBaseText');
 var calcMode = document.getElementById('siCalcMode');
 var modeHint = document.getElementById('siModeHint');
 var amountLabel = document.getElementById('siAmountLabel');
+var socialBaseMode = document.getElementById('siSocialBaseMode');
+var socialBaseNote = document.getElementById('siSocialBaseNote');
+var customBaseGroup = document.getElementById('siCustomBaseGroup');
+var customBaseInp = document.getElementById('siCustomBase');
 var policyTrust = document.getElementById('siPolicyTrust');
 var calcFeedback = document.getElementById('siCalcFeedback');
 var resultDiv = document.getElementById('siResult');
 var resultCard = document.getElementById('resultCard');
 var currentCalcMode = 'gross';
+var currentSocialBaseMode = 'salary';
 
 // ===== 初始化省份下拉 =====
 var provinces = Object.keys(PROVINCE_BASES).sort();
@@ -1083,6 +1149,11 @@ function renderResult(r) {
   if (rates.medicalNote) notes.push(rates.medicalNote);
   notes.push('工伤按' + rates.injuryCategory + '类基准费率' + rates.injury + '%估算，未考虑参保单位实际浮动费率');
   notes.push('本工具不适用于按工程项目参保的工伤保险');
+  if (r.socialBaseMode === 'minimum') {
+    notes.push('社保按当地各险种缴费下限测算，实际申报基数请按当地规定确定');
+  } else if (r.socialBaseMode === 'custom') {
+    notes.push('社保按自定义基数' + toLocale(r.socialBaseAmount) + '元起算，超出各险种范围时自动取上下限');
+  }
   if (r.reverse) {
     notes.push('反算的“社保后工资”仅扣除个人社保和公积金，未扣个人所得税');
   }
@@ -1120,29 +1191,30 @@ function renderResult(r) {
     '</div>';
 
   // 基数信息：医保基数使用独立范围时分开展示，避免用户误解。
-  function buildBaseLine(label, amount, limits) {
-    var state = amount === limits.min && r.salary < limits.min ? 'floor' : (amount === limits.max && r.salary > limits.max ? 'ceiling' : 'normal');
+  function buildBaseLine(label, amount, limits, inputAmount) {
+    var state = inputAmount < limits.min ? 'floor' : (inputAmount > limits.max ? 'ceiling' : 'normal');
     var stateClass = state === 'normal' ? '' : ' base-tag--capped';
-    var stateLabel = state === 'floor' ? '按下限' : (state === 'ceiling' ? '按上限' : '按实际');
+    var stateLabel = state === 'floor' ? '按下限' : (state === 'ceiling' ? '按上限' :
+      (r.socialBaseMode === 'minimum' ? '当地下限' : (r.socialBaseMode === 'custom' ? '自定义' : '按工资')));
     return '<strong>' + label + ' ¥' + toLocale(amount) + '</strong>（' + stateLabel + '）' +
       '<span class="base-tag' + stateClass + '" style="margin-left:6px">范围 ¥' + toLocale(limits.min) + ' ~ ¥' + toLocale(limits.max) + '</span>';
   }
   var baseItems = [
-    { label:'养老', amount:r.pensionBase, limits:rates.baseLimits.pension },
-    { label:'医保', amount:r.medicalBase, limits:rates.baseLimits.medical },
-    { label:'失业', amount:r.unemploymentBase, limits:rates.baseLimits.unemployment },
-    { label:'工伤', amount:r.injuryBase, limits:rates.baseLimits.injury }
+    { label:'养老', amount:r.pensionBase, input:r.socialBaseInputs.pension, limits:rates.baseLimits.pension },
+    { label:'医保', amount:r.medicalBase, input:r.socialBaseInputs.medical, limits:rates.baseLimits.medical },
+    { label:'失业', amount:r.unemploymentBase, input:r.socialBaseInputs.unemployment, limits:rates.baseLimits.unemployment },
+    { label:'工伤', amount:r.injuryBase, input:r.socialBaseInputs.injury, limits:rates.baseLimits.injury }
   ];
   var baseGroups = [];
   baseItems.forEach(function(item) {
-    var key = [item.amount, item.limits.min, item.limits.max].join('|');
+    var key = [item.amount, item.input, item.limits.min, item.limits.max].join('|');
     var existing = baseGroups.filter(function(group) { return group.key === key; })[0];
     if (existing) existing.labels.push(item.label);
-    else baseGroups.push({ key:key, labels:[item.label], amount:item.amount, limits:item.limits });
+    else baseGroups.push({ key:key, labels:[item.label], amount:item.amount, input:item.input, limits:item.limits });
   });
   baseText.innerHTML = baseGroups.map(function(group) {
     var label = baseGroups.length === 1 ? '缴费基数' : group.labels.join('/') + '基数';
-    return buildBaseLine(label, group.amount, group.limits);
+    return buildBaseLine(label, group.amount, group.limits, group.input);
   }).join('<br>');
   baseInfo.style.display = 'flex';
   renderPolicyTrust(rates);
@@ -1195,17 +1267,65 @@ var CALC_MODE_CONFIG = {
 function updateSalaryPlaceholder() {
   var config = CALC_MODE_CONFIG[currentCalcMode];
   if (!config) return;
-  if (currentCalcMode !== 'gross') {
-    salaryInp.placeholder = config.placeholder;
-    return;
+  salaryInp.placeholder = config.placeholder;
+}
+
+function getMinimumBaseSummary(rates) {
+  if (!rates || !rates.baseLimits) return '选择参保地区后自动匹配当地上下限';
+  var items = [
+    { label:'养老', amount:rates.baseLimits.pension.min },
+    { label:'医保', amount:rates.baseLimits.medical.min },
+    { label:'失业', amount:rates.baseLimits.unemployment.min },
+    { label:'工伤', amount:rates.baseLimits.injury.min }
+  ];
+  var groups = [];
+  items.forEach(function(item) {
+    var group = groups.filter(function(existing) { return existing.amount === item.amount; })[0];
+    if (group) group.labels.push(item.label);
+    else groups.push({ amount:item.amount, labels:[item.label] });
+  });
+  return groups.map(function(group) {
+    return group.labels.join('/') + ' ' + toLocale(group.amount) + '元';
+  }).join('；');
+}
+
+function getSocialBaseOptions() {
+  if (currentSocialBaseMode !== 'custom') {
+    return { socialBaseMode:currentSocialBaseMode };
   }
+  var amount = parseFloat(customBaseInp.value.replace(/,/g, ''));
+  if (!Number.isFinite(amount) || amount <= 0) return null;
+  return { socialBaseMode:'custom', socialBaseAmount:amount };
+}
+
+function syncSocialBaseControls() {
   var rates = getRates();
   var pensionMin = rates && rates.baseLimits && rates.baseLimits.pension
     ? rates.baseLimits.pension.min
     : 0;
-  salaryInp.placeholder = pensionMin > 0
-    ? '例如算最低基数请输入' + String(round2(pensionMin))
-    : config.placeholder;
+  customBaseInp.placeholder = pensionMin > 0 ? '例如：' + String(round2(pensionMin)) : '请输入基数';
+  customBaseGroup.style.display = currentSocialBaseMode === 'custom' ? 'block' : 'none';
+  socialBaseMode.querySelectorAll('.base-mode-btn').forEach(function(button) {
+    var active = button.dataset.baseMode === currentSocialBaseMode;
+    button.classList.toggle('active', active);
+    button.setAttribute('aria-pressed', active ? 'true' : 'false');
+  });
+
+  var minimumSummary = getMinimumBaseSummary(rates);
+  if (currentSocialBaseMode === 'minimum') {
+    socialBaseNote.textContent = '当前按当地下限：' + minimumSummary;
+  } else if (currentSocialBaseMode === 'custom') {
+    socialBaseNote.textContent = '输入一个基数，各险种超出当地范围时自动取上下限';
+  } else {
+    socialBaseNote.textContent = '按工资测算；当前下限：' + minimumSummary;
+  }
+}
+
+function setSocialBaseMode(mode) {
+  if (['salary', 'minimum', 'custom'].indexOf(mode) < 0) return;
+  currentSocialBaseMode = mode;
+  syncSocialBaseControls();
+  hideCalculationResult();
 }
 
 function hideCalculationResult() {
@@ -1243,14 +1363,21 @@ function runCalc() {
     hideCalculationResult();
     return;
   }
+  var baseOptions = getSocialBaseOptions();
+  if (!baseOptions) {
+    hideCalculationResult();
+    calcFeedback.textContent = '请输入自定义社保缴费基数。';
+    calcFeedback.style.display = 'block';
+    return;
+  }
   calcFeedback.textContent = '';
   calcFeedback.style.display = 'none';
 
   var r;
   if (currentCalcMode === 'gross') {
-    r = calcSI(rates, inputAmount);
+    r = calcSI(rates, inputAmount, baseOptions);
   } else {
-    var solved = solveGrossSalary(rates, inputAmount, currentCalcMode);
+    var solved = solveGrossSalary(rates, inputAmount, currentCalcMode, baseOptions);
     if (!solved.ok) {
       baseInfo.style.display = 'none';
       policyTrust.style.display = 'none';
@@ -1289,6 +1416,7 @@ function syncRegionalControls() {
   longTermLabel.textContent = longTermPolicy
     ? '🩺 长期护理险（按当地已核验参数测算）'
     : '🩺 长期护理险（当前地区暂不计入成本）';
+  syncSocialBaseControls();
 }
 
 // ===== 重置 =====
@@ -1297,6 +1425,9 @@ function resetAll() {
   syncRegionOptions();
   syncRegionalControls();
   salaryInp.value = '';
+  customBaseInp.value = '';
+  currentSocialBaseMode = 'salary';
+  syncSocialBaseControls();
   fundEnabled.checked = false;
   fundRatioSel.value = '8';
   fundHint.style.display = 'none';
@@ -1314,6 +1445,13 @@ calcMode.addEventListener('click', function(event) {
   if (!button || button.dataset.mode === currentCalcMode) return;
   setCalcMode(button.dataset.mode, true);
   salaryInp.focus();
+});
+socialBaseMode.addEventListener('click', function(event) {
+  var button = event.target.closest('.base-mode-btn');
+  if (!button || button.dataset.baseMode === currentSocialBaseMode) return;
+  setSocialBaseMode(button.dataset.baseMode);
+  if (currentSocialBaseMode === 'custom') customBaseInp.focus();
+  else runCalc();
 });
 provSel.addEventListener('change', function() {
   syncRegionOptions();
@@ -1335,6 +1473,18 @@ salaryInp.addEventListener('blur', function() {
   runCalc();
 });
 salaryInp.addEventListener('input', function() {
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(runCalc, 300);
+});
+customBaseInp.addEventListener('focus', function() {
+  this.value = (this.value || '').replace(/,/g, '');
+});
+customBaseInp.addEventListener('blur', function() {
+  var v = parseFloat(this.value.replace(/,/g, ''));
+  if (!isNaN(v)) this.value = toLocale(v);
+  runCalc();
+});
+customBaseInp.addEventListener('input', function() {
   clearTimeout(debounceTimer);
   debounceTimer = setTimeout(runCalc, 300);
 });
