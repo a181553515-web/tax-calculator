@@ -430,44 +430,56 @@ body {
 .policy-trust {
   display: none;
   margin: 0 var(--space-4) var(--space-3);
-  padding: 12px 14px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border-light);
-  border-left: 3px solid var(--color-brand);
-  border-radius: var(--radius-sm);
   color: var(--color-text-secondary);
   font-size: 11px;
   line-height: 1.65;
 }
-.policy-trust--warning { border-left-color: var(--color-warning); }
-.policy-trust__head {
+.policy-trust__details {
+  overflow: hidden;
+  background: rgba(255,255,255,0.72);
+  border: 1px solid var(--color-border-light);
+  border-left: 3px solid var(--color-brand);
+  border-radius: var(--radius-sm);
+}
+.policy-trust--warning .policy-trust__details { border-left-color: var(--color-warning); }
+.policy-trust__summary {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-2);
-  margin-bottom: 5px;
+  padding: 9px 12px;
+  cursor: pointer;
+  list-style: none;
 }
-.policy-trust__title {
-  color: var(--color-text-primary);
-  font-size: var(--text-xs);
-  font-weight: 700;
+.policy-trust__summary::-webkit-details-marker { display: none; }
+.policy-trust__summary:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: -2px;
 }
-.policy-trust__badge {
+.policy-trust__summary-main {
+  min-width: 0;
+  color: var(--color-text-secondary);
+}
+.policy-trust__summary-main strong { color: var(--color-brand-dark); }
+.policy-trust__action {
   flex-shrink: 0;
-  padding: 2px 8px;
-  border-radius: 20px;
-  background: var(--color-success-light);
-  color: var(--color-success);
+  color: var(--color-brand);
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 600;
 }
-.policy-trust__badge--measured {
-  background: var(--color-brand-light);
-  color: var(--color-brand-dark);
+.policy-trust__action::before { content: '查看参数说明'; }
+.policy-trust__action::after {
+  content: '⌄';
+  display: inline-block;
+  margin-left: 4px;
+  transition: transform var(--transition-fast);
 }
-.policy-trust__badge--reference {
-  background: var(--color-accent-light);
-  color: var(--color-warning);
+.policy-trust__details[open] .policy-trust__action::before { content: '收起参数说明'; }
+.policy-trust__details[open] .policy-trust__action::after { transform: rotate(180deg); }
+.policy-trust__body {
+  padding: 9px 12px 11px;
+  border-top: 1px solid var(--color-border-light);
+  background: var(--color-surface);
 }
 .policy-trust__row strong { color: var(--color-text-primary); }
 .policy-trust__links { margin-top: 4px; }
@@ -477,6 +489,12 @@ body {
   text-decoration: none;
   margin-right: 12px;
 }
+.policy-trust__notices {
+  margin-top: 7px;
+  padding-top: 7px;
+  border-top: 1px dashed var(--color-border);
+}
+.policy-trust__notice + .policy-trust__notice { margin-top: 3px; }
 .calc-feedback {
   display: none;
   margin: 0 var(--space-4) var(--space-3);
@@ -591,17 +609,6 @@ body {
   color: var(--color-text-tertiary);
   margin-top: 2px;
   line-height: 1.4;
-}
-
-/* ===== Notes ===== */
-.result-notes {
-  margin-top: var(--space-3);
-  padding: 8px 12px;
-  background: var(--color-accent-light);
-  border-radius: var(--radius-sm);
-  font-size: 11px;
-  color: var(--color-text-secondary);
-  line-height: 1.6;
 }
 
 /* ===== Footer ===== */
@@ -1006,12 +1013,10 @@ function getPolicyTrustModel(rates) {
   var allItems = ['社保费率', '社保基数', '公积金'];
   var verifiedItems = [];
   var statusLabel = '省级参考';
-  var badgeClass = 'policy-trust__badge--reference';
 
   if (rates.regionStatus === 'measured') {
     verifiedItems = allItems.slice();
     statusLabel = '安徽实测';
-    badgeClass = 'policy-trust__badge--measured';
   } else if (rates.regionStatus === 'verified') {
     if (rates.regionHasRates) verifiedItems.push('地区费率');
     if (rates.regionHasBases) verifiedItems.push('社保基数');
@@ -1054,7 +1059,6 @@ function getPolicyTrustModel(rates) {
 
   return {
     statusLabel: statusLabel,
-    badgeClass: badgeClass,
     verifiedItems: verifiedItems,
     referenceItems: referenceItems,
     effectiveText: effectiveText,
@@ -1064,7 +1068,8 @@ function getPolicyTrustModel(rates) {
   };
 }
 
-function renderPolicyTrust(rates) {
+function renderPolicyTrust(r, notices) {
+  var rates = r.rates;
   var trust = getPolicyTrustModel(rates);
   var rows = '';
   if (trust.verifiedItems.length) {
@@ -1085,9 +1090,23 @@ function renderPolicyTrust(rates) {
     }).join('') + '</div>';
   }
 
+  var baseModeLabel = r.socialBaseMode === 'minimum'
+    ? '社保按最低基数'
+    : (r.socialBaseMode === 'custom' ? '社保基数自定义' : '社保按工资');
+  var fundLabel = rates.fundEnabled ? '含公积金' : '未含公积金';
+  var summaryText = escapeHtml(rates.regionLabel) + ' · ' + escapeHtml(trust.statusLabel) +
+    '｜' + baseModeLabel + '｜' + fundLabel;
+  var noticesHtml = notices.length
+    ? '<div class="policy-trust__notices"><strong>注意事项：</strong>' + notices.map(function(note) {
+        return '<div class="policy-trust__notice">' + escapeHtml(note) + '</div>';
+      }).join('') + '</div>'
+    : '';
+
   policyTrust.className = 'policy-trust' + ((rates.regionStatus === 'reference' || trust.expired) ? ' policy-trust--warning' : '');
-  policyTrust.innerHTML = '<div class="policy-trust__head"><span class="policy-trust__title">🛡️ 参数可信度 · ' + escapeHtml(rates.regionLabel) + '</span>' +
-    '<span class="policy-trust__badge ' + trust.badgeClass + '">' + escapeHtml(trust.statusLabel) + '</span></div>' + rows;
+  policyTrust.innerHTML = '<details class="policy-trust__details"><summary class="policy-trust__summary">' +
+    '<span class="policy-trust__summary-main"><strong>计算口径：</strong>' + summaryText + '</span>' +
+    '<span class="policy-trust__action" aria-hidden="true"></span></summary>' +
+    '<div class="policy-trust__body">' + rows + noticesHtml + '</div></details>';
   policyTrust.style.display = 'block';
 }
 
@@ -1129,22 +1148,10 @@ function renderResult(r) {
       '<td><strong>¥' + toLocale(r.grandEmpTotal + r.grandPerTotal) + '</strong></td></tr>';
   }
 
-  // 底部备注
-  var isMunicipality = ['北京', '上海', '天津', '重庆'].indexOf(rates.province) >= 0;
-  var scopeNote;
-  if (rates.regionStatus === 'measured') {
-    scopeNote = '测算口径：安徽合肥、六安地区按实测口径计算（' + rates.regionLabel + '）';
-  } else if (rates.regionStatus === 'verified') {
-    scopeNote = '测算口径：已核验项目按' + rates.regionLabel + '公开口径，未单独列明项目沿用' + rates.province + '常见参考参数';
-  } else {
-    scopeNote = '测算口径：按' + rates.province + (isMunicipality ? '市' : '省级') + '常见企业职工参数估算，未区分具体城市或统筹区，不作为申报、结算依据';
-  }
-  var notes = [scopeNote];
+  // 默认收起的专业说明：只保留未在紧凑标题中出现的特殊事项。
+  var notes = [];
+  if (rates.regionStatus === 'reference') notes.push('未区分具体城市或统筹区，不作为申报、结算依据');
   if (rates.province === '安徽') notes.push('2026年社保基数暂按现行4311～21556元测算，正式新标准公布后可能补差');
-  var effectiveSubject = (rates.regionHasRates || rates.regionHasBases) ? '地区参数' : '公积金参数';
-  if (rates.regionEffectiveFrom && rates.regionEffectiveTo) notes.push(effectiveSubject + '有效期' + rates.regionEffectiveFrom + '至' + rates.regionEffectiveTo);
-  else if (rates.regionEffectiveFrom) notes.push(effectiveSubject + '自' + rates.regionEffectiveFrom + '起适用');
-  else if (rates.regionEffectivePeriod) notes.push(effectiveSubject + '适用' + rates.regionEffectivePeriod);
   if (rates.regionNote) notes.push(rates.regionNote);
   if (rates.medicalNote) notes.push(rates.medicalNote);
   notes.push('工伤按' + rates.injuryCategory + '类基准费率' + rates.injury + '%估算，未考虑参保单位实际浮动费率');
@@ -1158,8 +1165,6 @@ function renderResult(r) {
     notes.push('反算的“社保后工资”仅扣除个人社保和公积金，未扣个人所得税');
   }
   if (rates.fundEnabled) notes.push('公积金基数' + toLocale(r.fundBase) + '元，比例' + rates.fundRatio + '%');
-  else notes.push('📝 未缴纳公积金');
-  var notesHtml = '<div class="result-notes">' + notes.join('；') + '</div>';
 
   var reverseSummary = '';
   if (r.reverse) {
@@ -1177,7 +1182,7 @@ function renderResult(r) {
   var html = '<div class="table-wrap">' +
     '<table class="table"><thead><tr>' +
     '<th>险种</th><th>单位比例</th><th>单位月缴</th><th>个人比例</th><th>个人月缴</th><th>合计</th>' +
-    '</tr></thead><tbody>' + rows + '</tbody></table></div>' + notesHtml +
+    '</tr></thead><tbody>' + rows + '</tbody></table></div>' +
     '<div class="summary-grid">' + reverseSummary +
     '<div class="summary-card"><div class="summary-card__label">💰 员工实收（未扣个税）</div>' +
     '<div class="summary-card__amount">¥' + toLocale(r.takeHome) + '</div>' +
@@ -1217,7 +1222,7 @@ function renderResult(r) {
     return buildBaseLine(label, group.amount, group.limits, group.input);
   }).join('<br>');
   baseInfo.style.display = 'flex';
-  renderPolicyTrust(rates);
+  renderPolicyTrust(r, notes);
 
   if (rates.province === '上海') {
     fundRatioSel.querySelectorAll('option').forEach(function(opt) {

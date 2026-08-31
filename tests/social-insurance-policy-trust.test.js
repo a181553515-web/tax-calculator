@@ -18,7 +18,7 @@ test('官方核验地区均保留可追溯来源', () => {
   });
 });
 
-test('可信度卡片区分实测、部分官方核验和省级参考', () => {
+test('折叠参数说明区分实测、部分官方核验和省级参考', () => {
   assert.match(html, /安徽实测/);
   assert.match(html, /部分官方核验/);
   assert.match(html, /省级参考/);
@@ -26,6 +26,16 @@ test('可信度卡片区分实测、部分官方核验和省级参考', () => {
   assert.match(html, /最近复核：/);
   assert.match(html, /适用期：/);
   assert.match(html, /官方来源/);
+});
+
+test('计算结果默认只显示紧凑口径，完整参数与注意事项按需展开', () => {
+  assert.match(html, /<details class="policy-trust__details">/);
+  assert.doesNotMatch(html, /<details class="policy-trust__details" open>/);
+  assert.match(html, /<strong>计算口径：<\/strong>/);
+  assert.match(html, /查看参数说明/);
+  assert.match(html, /policy-trust__notices/);
+  assert.match(html, /renderPolicyTrust\(r, notes\)/);
+  assert.doesNotMatch(html, /result-notes/);
 });
 
 test('社保页加载独立计算引擎并提供三种测算模式', () => {
