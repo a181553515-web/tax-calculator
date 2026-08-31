@@ -723,7 +723,7 @@ body {
         <label class="form-label">社保缴费基数</label>
         <div class="base-mode-switch" id="siSocialBaseMode" role="group" aria-label="社保缴费基数方式">
           <button type="button" class="base-mode-btn active" data-base-mode="salary" aria-pressed="true">按工资</button>
-          <button type="button" class="base-mode-btn" data-base-mode="minimum" aria-pressed="false">按当地下限</button>
+          <button type="button" class="base-mode-btn" data-base-mode="minimum" aria-pressed="false">按最低基数</button>
           <button type="button" class="base-mode-btn" data-base-mode="custom" aria-pressed="false">自定义</button>
         </div>
         <div class="base-mode-note" id="siSocialBaseNote"></div>
@@ -1313,7 +1313,7 @@ function syncSocialBaseControls() {
 
   var minimumSummary = getMinimumBaseSummary(rates);
   if (currentSocialBaseMode === 'minimum') {
-    socialBaseNote.textContent = '当前按当地下限：' + minimumSummary;
+    socialBaseNote.textContent = '当前最低基数：' + minimumSummary;
   } else if (currentSocialBaseMode === 'custom') {
     socialBaseNote.textContent = '输入一个基数，各险种超出当地范围时自动取上下限';
   } else {

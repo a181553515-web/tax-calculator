@@ -46,7 +46,7 @@ test('三个模块共用轻量社保缴费基数设置', () => {
   assert.match(html, /data-base-mode="salary"/);
   assert.match(html, /data-base-mode="minimum"/);
   assert.match(html, /data-base-mode="custom"/);
-  assert.match(html, />按当地下限<\/button>/);
+  assert.match(html, />按最低基数<\/button>/);
   assert.match(html, /id="siCustomBaseGroup"/);
   assert.match(html, /function getMinimumBaseSummary\(rates\)/);
   assert.match(html, /solveGrossSalary\(rates, inputAmount, currentCalcMode, baseOptions\)/);
