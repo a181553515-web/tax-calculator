@@ -63,6 +63,6 @@ test('三个模块共用轻量社保缴费基数设置', () => {
   assert.doesNotMatch(html, /例如算最低基数请输入/);
 });
 
-test('社保计算器显示当前本地审核版本号', () => {
-  assert.match(html, /社保公积金计算器 v1\.3\.0-review<\/p>/);
+test('社保计算器显示当前正式版本号', () => {
+  assert.match(html, /社保公积金计算器 v1\.3\.0<\/p>/);
 });
