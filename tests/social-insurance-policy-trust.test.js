@@ -38,6 +38,14 @@ test('计算结果默认只显示紧凑口径，完整参数与注意事项按�
   assert.doesNotMatch(html, /result-notes/);
 });
 
+test('页首测算提示保留必要免责声明且不重复结果说明', () => {
+  assert.match(html, /<strong>测算提示：<\/strong>安徽地区按实测口径/);
+  assert.match(html, /其他地区按已录入的官方核验或常见参数估算/);
+  assert.match(html, /不作为申报或结算依据/);
+  assert.doesNotMatch(html, /适合招聘预算、用工成本沟通和员工薪酬测算/);
+  assert.doesNotMatch(html, /地市、统筹区、工伤行业及公积金可能不同/);
+});
+
 test('社保页加载独立计算引擎并提供三种测算模式', () => {
   assert.match(html, /<script src="social-calculation-engine\.js"><\/script>/);
   assert.match(html, /data-mode="gross"/);
