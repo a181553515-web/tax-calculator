@@ -59,6 +59,15 @@ test('社保页加载独立计算引擎并提供三种测算模式', () => {
   assert.match(html, /未扣个人所得税/);
 });
 
+test('移动端缴费明细压缩为四列并保留单位个人费率', () => {
+  assert.match(html, /手机端将费率并入金额列，六列压缩为四列/);
+  assert.match(html, /\.table th:nth-child\(2\)[\s\S]*display: none/);
+  assert.match(html, /<span class="si-head-mobile">单位缴纳<\/span>/);
+  assert.match(html, /<span class="si-head-mobile">个人缴纳<\/span>/);
+  assert.match(html, /<span class="si-rate-mobile">' \+ empRate/);
+  assert.match(html, /<span class="si-rate-mobile">' \+ perRate/);
+});
+
 test('三个模块共用轻量社保缴费基数设置', () => {
   assert.match(html, /id="siSocialBaseMode"/);
   assert.match(html, /data-base-mode="salary"/);
