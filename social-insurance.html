@@ -461,6 +461,7 @@ body {
   color: var(--color-text-secondary);
 }
 .policy-trust__summary-main strong { color: var(--color-brand-dark); }
+.policy-trust__summary-mobile { display: none; }
 .policy-trust__action {
   flex-shrink: 0;
   color: var(--color-brand);
@@ -721,6 +722,20 @@ body {
     font-size: 10px;
     white-space: nowrap;
   }
+  .policy-trust__summary {
+    gap: 6px;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  .policy-trust__summary-main {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .policy-trust__summary-desktop { display: none; }
+  .policy-trust__summary-mobile { display: inline; }
+  .policy-trust__action::before { content: '参数'; }
+  .policy-trust__details[open] .policy-trust__action::before { content: '收起'; }
 }
 
 .calculator-notice {
@@ -1155,6 +1170,15 @@ function renderPolicyTrust(r, notices) {
   var fundLabel = rates.fundEnabled ? '含公积金' : '未含公积金';
   var summaryText = escapeHtml(rates.regionLabel) + ' · ' + escapeHtml(trust.statusLabel) +
     '｜' + baseModeLabel + '｜' + fundLabel;
+  var mobileStatusLabel = rates.regionStatus === 'measured'
+    ? '实测'
+    : (rates.regionStatus === 'verified' ? (trust.referenceItems.length ? '部分核验' : '核验') : '参考');
+  var mobileBaseModeLabel = r.socialBaseMode === 'minimum'
+    ? '最低基数'
+    : (r.socialBaseMode === 'custom' ? '自定义基数' : '按工资');
+  var mobileRegionLabel = String(rates.regionLabel || '').replace(/（.*$/, '');
+  var mobileSummaryText = escapeHtml(mobileRegionLabel) + '｜' + mobileStatusLabel +
+    '｜' + mobileBaseModeLabel + '｜' + fundLabel;
   var noticesHtml = notices.length
     ? '<div class="policy-trust__notices"><strong>注意事项：</strong>' + notices.map(function(note) {
         return '<div class="policy-trust__notice">' + escapeHtml(note) + '</div>';
@@ -1163,7 +1187,9 @@ function renderPolicyTrust(r, notices) {
 
   policyTrust.className = 'policy-trust' + ((rates.regionStatus === 'reference' || trust.expired) ? ' policy-trust--warning' : '');
   policyTrust.innerHTML = '<details class="policy-trust__details"><summary class="policy-trust__summary">' +
-    '<span class="policy-trust__summary-main"><strong>计算口径：</strong>' + summaryText + '</span>' +
+    '<span class="policy-trust__summary-main">' +
+    '<span class="policy-trust__summary-desktop"><strong>计算口径：</strong>' + summaryText + '</span>' +
+    '<span class="policy-trust__summary-mobile"><strong>口径：</strong>' + mobileSummaryText + '</span></span>' +
     '<span class="policy-trust__action" aria-hidden="true"></span></summary>' +
     '<div class="policy-trust__body">' + rows + noticesHtml + '</div></details>';
   policyTrust.style.display = 'block';

@@ -38,6 +38,14 @@ test('计算结果默认只显示紧凑口径，完整参数与注意事项按�
   assert.doesNotMatch(html, /result-notes/);
 });
 
+test('移动端计算口径使用单行精简表述', () => {
+  assert.match(html, /policy-trust__summary-mobile/);
+  assert.match(html, /<strong>口径：<\/strong>' \+ mobileSummaryText/);
+  assert.match(html, /mobileRegionLabel = String\(rates\.regionLabel \|\| ''\)\.replace/);
+  assert.match(html, /text-overflow: ellipsis/);
+  assert.match(html, /policy-trust__action::before \{ content: '参数'; \}/);
+});
+
 test('页首测算提示保留必要免责声明且不重复结果说明', () => {
   assert.match(html, /<strong>测算提示：<\/strong>安徽按实测口径/);
   assert.match(html, /其他地区按官方核验或常见参数估算/);
