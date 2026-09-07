@@ -28,8 +28,8 @@ test('安徽社保使用2026年度最新上下限，公积金仍按合肥六安�
 });
 
 test('已核验的天津辽宁浙江社保基数更新为当前公开口径', () => {
-  assert.deepEqual([policy.provinceBases['天津'].min, policy.provinceBases['天津'].max], [5124, 25620]);
-  assert.deepEqual([policy.provinceBases['辽宁'].min, policy.provinceBases['辽宁'].max], [4359, 21792]);
+  assert.deepEqual([policy.provinceBases['天津'].min, policy.provinceBases['天津'].max], [5180, 25902]);
+  assert.deepEqual([policy.provinceBases['辽宁'].min, policy.provinceBases['辽宁'].max], [4533, 22665]);
   assert.deepEqual([policy.provinceBases['浙江'].min, policy.provinceBases['浙江'].max], [4986, 25299]);
 });
 
@@ -83,7 +83,7 @@ test('社保政策参数已从页面逻辑拆分为独立配置文件', () => {
   assert.match(html, /<script src="social-policy-data\.js"><\/script>/);
   assert.match(html, /SOCIAL_POLICY_DATA\.provinceBases/);
   assert.equal(Object.keys(policy.provinceBases).length, 31);
-  assert.equal(policy.version, '2026-09-04');
+  assert.equal(policy.version, '2026-09-07');
 });
 
 test('社保页在窄屏下与个税页采用一致的内容宽度并将双列表单改为单列', () => {

@@ -21,14 +21,20 @@ test('2026年已核验基础费率更新且安徽实测口径不变', () => {
   });
 });
 
-test('医保可以使用独立于养老失业工伤的缴费基数', () => {
+test('各险种可以使用独立缴费基数', () => {
   assert.deepEqual(
-    [policy.provinceBases['福建'].medicalMin, policy.provinceBases['福建'].medicalMax],
+    [policy.provinceBases['内蒙古'].medicalMin, policy.provinceBases['内蒙古'].medicalMax],
+    [6744, 25290]
+  );
+  assert.deepEqual(
+    [policy.provinceBases['福建'].injuryMin, policy.provinceBases['福建'].injuryMax],
     [4579, 22893]
   );
   assert.match(engineSource, /var medicalBase = clampBase\(socialBaseInputs\.medical, rates\.baseLimits\.medical\)/);
+  assert.match(engineSource, /var injuryBase = clampBase\(socialBaseInputs\.injury, rates\.baseLimits\.injury\)/);
   assert.match(engineSource, /medicalBase: medicalBase/);
-  assert.match(html, /医保基数/);
+  assert.match(engineSource, /injuryBase: injuryBase/);
+  assert.match(html, /group\.labels\.join\('\/'\) \+ '基数'/);
 });
 
 test('广东按省级统筹八档工伤基准费率计算', () => {

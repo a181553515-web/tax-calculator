@@ -920,6 +920,7 @@ function toLocale(n) {
 
 // ===== 政策数据（独立配置，便于按地区和生效期维护） =====
 var PROVINCE_BASES = SOCIAL_POLICY_DATA.provinceBases;
+var PROVINCE_BASE_POLICIES = SOCIAL_POLICY_DATA.provinceBasePolicies || {};
 var PROVINCE_RATES = SOCIAL_POLICY_DATA.provinceRates;
 var REGION_GROUPS = SOCIAL_POLICY_DATA.regionGroups;
 var DEFAULT_INJURY_RATES = SOCIAL_POLICY_DATA.defaultInjuryRates;
@@ -1007,6 +1008,7 @@ function syncRegionOptions() {
 function getRates() {
   var prov = provSel.value;
   var bases = PROVINCE_BASES[prov];
+  var basePolicy = PROVINCE_BASE_POLICIES[prov] || null;
   if (!bases) return null;
 
   var rates = JSON.parse(JSON.stringify(PROVINCE_RATES[prov] || {}));
@@ -1039,6 +1041,9 @@ function getRates() {
   rates.regionHasRates = !!region.rates;
   rates.regionHasBases = !!(region.social || region.bases);
   rates.regionHasFund = !!region.fund;
+  rates.regionBaseSources = [];
+  rates.regionBaseVerifiedLabel = '';
+  rates.regionHasPartialBases = false;
   if (region.social) {
     rates.siMin = region.social.min;
     rates.siMax = region.social.max;
@@ -1059,6 +1064,29 @@ function getRates() {
     rates.fundMax = region.fund.max;
   }
   if (region.rates) Object.assign(rates, region.rates);
+
+  if (basePolicy) {
+    var insuranceLabels = {
+      pension:'养老', medical:'医保', unemployment:'失业', injury:'工伤'
+    };
+    var verifiedInsurances = basePolicy.verifiedInsurances || [];
+    rates.regionHasBases = verifiedInsurances.length > 0;
+    rates.regionHasPartialBases = verifiedInsurances.length > 0 && verifiedInsurances.length < 4;
+    rates.regionBaseVerifiedLabel = verifiedInsurances.length === 4
+      ? '社保基数'
+      : verifiedInsurances.map(function(key) { return insuranceLabels[key] || key; }).join('/') + '基数';
+    rates.regionBaseSources = basePolicy.sources || [];
+    if (rates.regionStatus === 'reference') rates.regionStatus = 'verified';
+    rates.regionEffectiveFrom = rates.regionEffectiveFrom || basePolicy.effectiveFrom || '';
+    rates.regionEffectiveTo = rates.regionEffectiveTo || basePolicy.effectiveTo || '';
+    rates.regionEffectivePeriod = rates.regionEffectivePeriod || basePolicy.effectivePeriod || '';
+    rates.reviewedAt = basePolicy.reviewedAt || rates.reviewedAt;
+    if (basePolicy.note) {
+      rates.regionNote = rates.regionNote
+        ? rates.regionNote + '；' + basePolicy.note
+        : basePolicy.note;
+    }
+  }
 
   rates.injuryRates = rates.injuryRates || DEFAULT_INJURY_RATES;
   rates.injuryCategory = parseInt(industrySel.value, 10) || 1;
@@ -1094,10 +1122,9 @@ function getPolicyTrustModel(rates) {
     statusLabel = '安徽实测';
   } else if (rates.regionStatus === 'verified') {
     if (rates.regionHasRates) verifiedItems.push('地区费率');
-    if (rates.regionHasBases) verifiedItems.push('社保基数');
+    if (rates.regionHasBases) verifiedItems.push(rates.regionBaseVerifiedLabel || '社保基数');
     if (rates.regionHasFund) verifiedItems.push('公积金');
     statusLabel = verifiedItems.length === allItems.length ? '官方核验' : '部分官方核验';
-    badgeClass = '';
   }
 
   var referenceItems = [];
@@ -1106,6 +1133,7 @@ function getPolicyTrustModel(rates) {
   } else if (rates.regionStatus === 'verified') {
     if (!rates.regionHasRates) referenceItems.push('社保费率');
     if (!rates.regionHasBases) referenceItems.push('社保基数');
+    if (rates.regionHasPartialBases) referenceItems.push('其他险种基数');
     if (!rates.regionHasFund) referenceItems.push('公积金');
   }
 
@@ -1124,15 +1152,22 @@ function getPolicyTrustModel(rates) {
   }
 
   var links = [];
+  function addLink(label, url) {
+    if (!url || links.some(function(link) { return link.url === url; })) return;
+    links.push({ label:label, url:url });
+  }
   if (rates.regionRateSource) {
-    links.push({ label:'费率官方来源', url:rates.regionRateSource });
+    addLink('费率官方来源', rates.regionRateSource);
   }
   if (rates.regionBaseSource) {
-    links.push({ label:'社保基数官方来源', url:rates.regionBaseSource });
+    addLink('社保基数官方来源', rates.regionBaseSource);
   }
+  rates.regionBaseSources.forEach(function(source) {
+    addLink(source.label || '社保基数来源', source.url);
+  });
   if (rates.regionSource && rates.regionSource !== rates.regionRateSource) {
     var sourceLabel = rates.regionHasFund ? '公积金官方来源' : '地区政策来源';
-    links.push({ label:sourceLabel, url:rates.regionSource });
+    addLink(sourceLabel, rates.regionSource);
   }
 
   return {
