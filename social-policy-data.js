@@ -2,7 +2,7 @@
 'use strict';
 
 var data = {
-  version: '2026-08-20',
+  version: '2026-09-04',
   reviewedAt: '2026-08-20',
 
   // 国家八类工伤保险行业基准费率。各省可通过 injuryRates 覆盖。
@@ -22,7 +22,7 @@ var data = {
     '上海':   { min: 7460,  max: 37302, fundMin: 2690,  fundMax: 37302 },
     '江苏':   { min: 4952,  max: 24762, fundMin: 2260,  fundMax: 41400 },
     '浙江':   { min: 4986,  max: 25299, fundMin: 2490,  fundMax: 40694 },
-    '安徽':   { min: 4311,  max: 21556, fundMin: 2320,  fundMax: 31564 },
+    '安徽':   { min: 4354,  max: 21772, fundMin: 2320,  fundMax: 31564 },
     '福建':   { min: 4043,  max: 22607, medicalMin: 4579, medicalMax: 22893, fundMin: 2100,  fundMax: 22607 },
     '江西':   { min: 3915,  max: 19575, fundMin: 2000,  fundMax: 19575 },
     '山东':   { min: 4952,  max: 24762, fundMin: 2200,  fundMax: 24762 },
@@ -83,6 +83,10 @@ var data = {
     '安徽': {
       defaultRegion: 'hefei-urban',
       medicalAidAllowed: true,
+      reviewedAt: '2026-09-04',
+      effectiveFrom: '2026-01-01',
+      effectiveTo: '2026-12-31',
+      baseSource: 'https://hrss.ah.gov.cn/public/6595721/80811450.html',
       regions: [
         { id:'hefei-urban', label:'合肥市区', status:'measured', effectivePeriod:'2026年度', fund:{ min:2320, max:31564 } },
         { id:'hefei-counties', label:'合肥县市（肥东、肥西、长丰、庐江、巢湖）', status:'measured', effectivePeriod:'2026年度', fund:{ min:2100, max:31564 } },

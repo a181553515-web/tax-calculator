@@ -16,17 +16,17 @@ function buildRates(overrides = {}) {
     medicalAidFixed: 0,
     longTermCareEnabled: false,
     longTermCarePolicy: null,
-    siMin: 4311,
-    siMax: 21556,
+    siMin: 4354,
+    siMax: 21772,
     fundMin: 2320,
     fundMax: 31564,
     fundEnabled: false,
     fundRatio: 8,
     baseLimits: {
-      pension: { min:4311, max:21556 },
-      medical: { min:4311, max:21556 },
-      unemployment: { min:4311, max:21556 },
-      injury: { min:4311, max:21556 }
+      pension: { min:4354, max:21772 },
+      medical: { min:4354, max:21772 },
+      unemployment: { min:4354, max:21772 },
+      injury: { min:4354, max:21772 }
     }
   }, overrides);
 }

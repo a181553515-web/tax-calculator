@@ -809,7 +809,7 @@ body {
         </div>
         <div class="base-mode-note" id="siSocialBaseNote"></div>
         <div class="custom-base-field" id="siCustomBaseGroup">
-          <input class="form-input" type="text" id="siCustomBase" inputmode="decimal" aria-label="自定义社保缴费基数" placeholder="例如：4311">
+          <input class="form-input" type="text" id="siCustomBase" inputmode="decimal" aria-label="自定义社保缴费基数" placeholder="例如：4354">
         </div>
       </div>
 
@@ -1023,17 +1023,19 @@ function getRates() {
     unemployment: { min:bases.unemploymentMin || bases.min, max:bases.unemploymentMax || bases.max },
     injury: { min:bases.injuryMin || bases.min, max:bases.injuryMax || bases.max }
   };
+  var regionConfig = getRegionGroup(prov);
   var region = getSelectedRegion(prov);
   rates.regionId = region.id;
   rates.regionLabel = region.label;
   rates.regionStatus = region.status || 'reference';
-  rates.regionEffectiveFrom = region.effectiveFrom || '';
-  rates.regionEffectiveTo = region.effectiveTo || '';
+  rates.regionEffectiveFrom = region.effectiveFrom || regionConfig.effectiveFrom || '';
+  rates.regionEffectiveTo = region.effectiveTo || regionConfig.effectiveTo || '';
   rates.regionEffectivePeriod = region.effectivePeriod || '';
   rates.regionNote = region.note || '';
   rates.regionSource = region.source || '';
   rates.regionRateSource = region.rateSource || '';
-  rates.reviewedAt = region.reviewedAt || POLICY_REVIEWED_AT;
+  rates.regionBaseSource = region.baseSource || regionConfig.baseSource || '';
+  rates.reviewedAt = region.reviewedAt || regionConfig.reviewedAt || POLICY_REVIEWED_AT;
   rates.regionHasRates = !!region.rates;
   rates.regionHasBases = !!(region.social || region.bases);
   rates.regionHasFund = !!region.fund;
@@ -1068,7 +1070,6 @@ function getRates() {
   var fundRatio = parseInt(fundRatioSel.value);
   if (rates.fundMaxRatio && fundRatio > rates.fundMaxRatio) fundRatio = rates.fundMaxRatio;
   rates.fundRatio = fundRatio;
-  var regionConfig = getRegionGroup(prov);
   rates.medicalAidFixed = medicalAidCheck.checked && regionConfig.medicalAidAllowed ? 12 : 0;
 
   return rates;
@@ -1125,6 +1126,9 @@ function getPolicyTrustModel(rates) {
   var links = [];
   if (rates.regionRateSource) {
     links.push({ label:'费率官方来源', url:rates.regionRateSource });
+  }
+  if (rates.regionBaseSource) {
+    links.push({ label:'社保基数官方来源', url:rates.regionBaseSource });
   }
   if (rates.regionSource && rates.regionSource !== rates.regionRateSource) {
     var sourceLabel = rates.regionHasFund ? '公积金官方来源' : '地区政策来源';
@@ -1236,7 +1240,7 @@ function renderResult(r) {
   // 默认收起的专业说明：只保留未在紧凑标题中出现的特殊事项。
   var notes = [];
   if (rates.regionStatus === 'reference') notes.push('未区分具体城市或统筹区，不作为申报、结算依据');
-  if (rates.province === '安徽') notes.push('2026年社保基数暂按现行4311～21556元测算，正式新标准公布后可能补差');
+  if (rates.province === '安徽') notes.push('2026年社保基数按4354～21772元测算，执行期为2026年1月1日至12月31日；因调基产生的差额可于2026年底前补缴，期间不加收滞纳金和利息');
   if (rates.regionNote) notes.push(rates.regionNote);
   if (rates.medicalNote) notes.push(rates.medicalNote);
   notes.push('工伤按' + rates.injuryCategory + '类基准费率' + rates.injury + '%估算，未考虑参保单位实际浮动费率');

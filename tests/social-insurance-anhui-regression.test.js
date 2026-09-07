@@ -6,8 +6,8 @@ const test = require('node:test');
 const html = fs.readFileSync(path.join(__dirname, '..', 'social-insurance.html'), 'utf8');
 const policy = require(path.join(__dirname, '..', 'social-policy-data.js'));
 
-test('安徽社保实测参数保持不变，公积金按2026年度合肥六安区域匹配', () => {
-  assert.deepEqual(policy.provinceBases['安徽'], { min:4311, max:21556, fundMin:2320, fundMax:31564 });
+test('安徽社保使用2026年度最新上下限，公积金仍按合肥六安区域匹配', () => {
+  assert.deepEqual(policy.provinceBases['安徽'], { min:4354, max:21772, fundMin:2320, fundMax:31564 });
   assert.deepEqual(policy.provinceRates['安徽'], { pension:[16,8], medical:[6.4,2], unemployment:[0.5,0.5] });
   assert.equal(policy.regionGroups['安徽'].defaultRegion, 'hefei-urban');
   assert.deepEqual(policy.regionGroups['安徽'].regions.map(region => [region.label, region.fund.min, region.fund.max]), [
@@ -18,7 +18,12 @@ test('安徽社保实测参数保持不变，公积金按2026年度合肥六安�
   ]);
   assert.match(html, /rates\.fundMin = region\.fund\.min;/);
   assert.match(html, /rates\.fundMax = region\.fund\.max;/);
-  assert.match(html, /2026年社保基数暂按现行4311～21556元测算/);
+  assert.equal(policy.regionGroups['安徽'].reviewedAt, '2026-09-04');
+  assert.equal(policy.regionGroups['安徽'].effectiveFrom, '2026-01-01');
+  assert.equal(policy.regionGroups['安徽'].effectiveTo, '2026-12-31');
+  assert.match(policy.regionGroups['安徽'].baseSource, /^https:\/\/hrss\.ah\.gov\.cn\//);
+  assert.match(html, /2026年社保基数按4354～21772元测算/);
+  assert.match(html, /社保基数官方来源/);
   assert.match(html, /<option value="安徽" selected>安徽<\/option>/);
 });
 
@@ -78,7 +83,7 @@ test('社保政策参数已从页面逻辑拆分为独立配置文件', () => {
   assert.match(html, /<script src="social-policy-data\.js"><\/script>/);
   assert.match(html, /SOCIAL_POLICY_DATA\.provinceBases/);
   assert.equal(Object.keys(policy.provinceBases).length, 31);
-  assert.equal(policy.version, '2026-08-20');
+  assert.equal(policy.version, '2026-09-04');
 });
 
 test('社保页在窄屏下与个税页采用一致的内容宽度并将双列表单改为单列', () => {

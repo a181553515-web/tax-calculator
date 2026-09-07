@@ -16,17 +16,17 @@ function buildRates(overrides = {}) {
     medicalAidFixed: 0,
     longTermCareEnabled: false,
     longTermCarePolicy: null,
-    siMin: 4311,
-    siMax: 21556,
+    siMin: 4354,
+    siMax: 21772,
     fundMin: 2320,
     fundMax: 31564,
     fundEnabled: false,
     fundRatio: 8,
     baseLimits: {
-      pension: { min:4311, max:21556 },
-      medical: { min:4311, max:21556 },
-      unemployment: { min:4311, max:21556 },
-      injury: { min:4311, max:21556 }
+      pension: { min:4354, max:21772 },
+      medical: { min:4354, max:21772 },
+      unemployment: { min:4354, max:21772 },
+      injury: { min:4354, max:21772 }
     }
   }, overrides);
 }
@@ -43,12 +43,12 @@ test('安徽可以按当地下限测算工资与社保基数倒挂', () => {
   const result = engine.calculate(buildRates(), 5000, { socialBaseMode:'minimum' });
   assert.equal(result.socialBaseMode, 'minimum');
   assert.equal(result.salary, 5000);
-  assert.equal(result.pensionBase, 4311);
-  assert.equal(result.medicalBase, 4311);
-  assert.equal(result.siPerTotal, 452.66);
-  assert.equal(result.siEmpTotal, 995.84);
-  assert.equal(result.takeHome, 4547.34);
-  assert.equal(result.companyCost, 5995.84);
+  assert.equal(result.pensionBase, 4354);
+  assert.equal(result.medicalBase, 4354);
+  assert.equal(result.siPerTotal, 457.17);
+  assert.equal(result.siEmpTotal, 1005.78);
+  assert.equal(result.takeHome, 4542.83);
+  assert.equal(result.companyCost, 6005.78);
 });
 
 test('按当地下限时分别采用各险种自己的下限', () => {
@@ -71,10 +71,10 @@ test('按当地下限时分别采用各险种自己的下限', () => {
 test('自定义社保基数会分别套用各险种上下限', () => {
   const rates = buildRates({
     baseLimits: {
-      pension: { min:4311, max:21556 },
+      pension: { min:4354, max:21772 },
       medical: { min:5000, max:20000 },
-      unemployment: { min:4311, max:21556 },
-      injury: { min:4311, max:21556 }
+      unemployment: { min:4354, max:21772 },
+      injury: { min:4354, max:21772 }
     }
   });
   const below = engine.calculate(rates, 8000, {
@@ -89,7 +89,7 @@ test('自定义社保基数会分别套用各险种上下限', () => {
     socialBaseMode: 'custom',
     socialBaseAmount: 30000
   });
-  assert.equal(above.pensionBase, 21556);
+  assert.equal(above.pensionBase, 21772);
   assert.equal(above.medicalBase, 20000);
 });
 
@@ -101,17 +101,17 @@ test('最低基数设置同时适用于员工目标工资和企业预算反算',
   const takeHome = engine.solveGrossSalary(rates, forward.takeHome, 'take-home', options);
   assert.equal(takeHome.ok, true);
   assert.equal(takeHome.grossSalary, 5000);
-  assert.equal(takeHome.result.pensionBase, 4311);
+  assert.equal(takeHome.result.pensionBase, 4354);
 
   const budget = engine.solveGrossSalary(rates, forward.companyCost, 'company-budget', options);
   assert.equal(budget.ok, true);
   assert.equal(budget.grossSalary, 5000);
-  assert.equal(budget.result.pensionBase, 4311);
+  assert.equal(budget.result.pensionBase, 4354);
 });
 
 test('社保按下限时公积金仍按工资及公积金上下限测算', () => {
   const rates = buildRates({ fundEnabled:true });
   const result = engine.calculate(rates, 5000, { socialBaseMode:'minimum' });
-  assert.equal(result.pensionBase, 4311);
+  assert.equal(result.pensionBase, 4354);
   assert.equal(result.fundBase, 5000);
 });
