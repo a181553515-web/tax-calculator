@@ -10,7 +10,7 @@ function findRegion(group, regionId) {
 function listContributionRegions(socialData, province) {
   var group = socialData && socialData.regionGroups && socialData.regionGroups[province];
   if (!group || !Array.isArray(group.regions)) {
-    return [{ id:'province-reference', label:province + '省级常见口径（参考）', status:'reference' }];
+    return [{ id:'province-reference', label:province + '常见参考口径', status:'reference' }];
   }
   return group.regions.slice();
 }
@@ -28,7 +28,7 @@ function resolveContributionPolicy(socialData, province, regionId) {
   return {
     province: province,
     regionId: region ? region.id : 'province-reference',
-    label: region ? region.label : province + '省级常见口径（参考）',
+    label: region ? region.label : province + '常见参考口径',
     status: region ? (region.status || 'reference') : 'reference',
     min: fund && Number.isFinite(fund.min) ? fund.min : provinceBase.fundMin,
     max: fund && Number.isFinite(fund.max) ? fund.max : provinceBase.fundMax,

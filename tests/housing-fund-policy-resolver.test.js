@@ -31,6 +31,11 @@ test('没有地市覆盖时回退到省级公积金上下限', () => {
   assert.equal(policy.regionId, 'province-reference');
 });
 
+test('参考地区统一使用无行政层级歧义的名称', () => {
+  assert.equal(resolver.listContributionRegions(socialData, '北京')[0].label, '北京常见参考口径');
+  assert.equal(resolver.listContributionRegions(socialData, '江苏')[0].label, '江苏常见参考口径');
+});
+
 test('全国贷款利率带有效期和正式来源', () => {
   assert.equal(loanData.nationalLoanRates.first.over5Years, 2.6);
   assert.equal(loanData.nationalLoanRates.second.over5Years, 3.075);

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
 <meta name="format-detection" content="telephone=no">
 <meta name="theme-color" content="#0F766E">
-<meta name="description" content="小波财税公积金与社保计算器：测算公积金缴存额、反推缴存基数、公积金贷款月供及企业社保用工成本；安徽合肥、六安地区按实测口径测算。">
+<meta name="description" content="小波财税社保公积金计算器：测算公积金缴存额、反推缴存基数、公积金贷款月供及企业社保用工成本；安徽合肥、六安地区按实测口径测算。">
 <link rel="canonical" href="https://xiaobo-tax.cn/social-insurance.html">
 <meta property="og:title" content="公积金计算器｜缴存基数、贷款月供、社保用工成本 - 小波财税">
 <meta property="og:description" content="测算公积金缴存额、反推缴存基数、计算公积金贷款月供和企业社保用工成本。">
@@ -340,6 +340,7 @@ body {
   margin: -2px 0 6px;
   padding-left: 2px;
 }
+.form-hint.is-error { color: var(--color-danger); }
 
 /* ===== Toggle ===== */
 .toggle-row {
@@ -891,10 +892,9 @@ body {
     <div class="header-top">
       <div class="header-brand">
         <div class="header-brand-icon">🧮</div>
-        <h1 style="font-size:inherit;font-weight:inherit;margin:0">公积金与社保计算器</h1>
+        <h1 style="font-size:inherit;font-weight:inherit;margin:0">社保公积金计算器</h1>
       </div>
     </div>
-    <div class="header-sub">缴存 · 贷款 · 用工成本</div>
   </header>
 
   <!-- Main -->
@@ -933,15 +933,10 @@ body {
           <div class="form-hint" id="fundLimitHint"></div>
         </div>
 
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label" for="fundEmployerRatio">单位缴存比例</label>
-            <select class="form-select" id="fundEmployerRatio"></select>
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="fundEmployeeRatio">个人缴存比例</label>
-            <select class="form-select" id="fundEmployeeRatio"></select>
-          </div>
+        <div class="form-group">
+          <label class="form-label" for="fundContributionRatio">缴存比例</label>
+          <select class="form-select" id="fundContributionRatio"></select>
+          <div class="form-hint">按单位与个人同比例测算；个别地区允许个人自愿提高</div>
         </div>
       </div>
 
@@ -970,6 +965,7 @@ body {
             <div class="form-group">
               <label class="form-label" for="loanYears">贷款期限 <span class="unit">年</span></label>
               <input class="form-input" type="number" id="loanYears" inputmode="numeric" min="1" max="30" value="30">
+              <div class="form-hint" id="loanYearsHint">限1—30年；5年（含）以内适用短期利率</div>
             </div>
           </div>
           <div class="form-row">
@@ -1155,7 +1151,7 @@ body {
   <!-- Footer -->
   <footer class="footer" role="contentinfo">
     <p>@ 小波的财税日记 · 微信号：xbcs260611</p>
-    <p>© 2026 公积金与社保计算器 v1.4.0-review</p>
+    <p>© 2026 社保公积金计算器 v1.4.0-review</p>
     <p>⚠️ 计算结果仅供参考，具体以当地政策规定为准</p>
   </footer>
 
@@ -1234,10 +1230,9 @@ provinces.forEach(function(p) {
 });
 
 function getReferenceRegion(prov) {
-  var isMunicipality = ['北京', '上海', '天津', '重庆'].indexOf(prov) >= 0;
   return {
     id: 'province-reference',
-    label: prov + (isMunicipality ? '全市' : '省级') + '常见口径（参考）',
+    label: prov + '常见参考口径',
     status: 'reference'
   };
 }
@@ -1383,7 +1378,7 @@ function escapeHtml(value) {
 function getPolicyTrustModel(rates) {
   var allItems = ['社保费率', '社保基数', '公积金'];
   var verifiedItems = [];
-  var statusLabel = '省级参考';
+  var statusLabel = '常见参考';
 
   if (rates.regionStatus === 'measured') {
     verifiedItems = allItems.slice();
@@ -1969,8 +1964,7 @@ var fundModeHint = byId('fundContributionHint');
 var fundAmountLabel = byId('fundAmountLabel');
 var fundAmountInput = byId('fundAmountInput');
 var fundLimitHint = byId('fundLimitHint');
-var fundEmployerRatio = byId('fundEmployerRatio');
-var fundEmployeeRatio = byId('fundEmployeeRatio');
+var fundContributionRatio = byId('fundContributionRatio');
 var fundResult = byId('fundContributionResult');
 var fundResultBody = byId('fundContributionResultBody');
 var currentFundMode = 'forward';
@@ -2004,8 +1998,7 @@ function syncFundRegions() {
 function syncFundPolicyControls() {
   var policy = getFundPolicy();
   if (!policy) return;
-  fillRatioSelect(fundEmployerRatio, policy.ratioMax, 8);
-  fillRatioSelect(fundEmployeeRatio, policy.ratioMax, 8);
+  fillRatioSelect(fundContributionRatio, policy.ratioMax, 8);
   fundLimitHint.textContent = policy.label + '：基数下限 ' + money(policy.min) + ' 元，上限 ' + money(policy.max) + ' 元';
   runFundContribution();
 }
@@ -2062,10 +2055,10 @@ function runFundContribution() {
   }
   try {
     if (currentFundMode === 'reverse') {
-      var reverse = engine.reverseContributionBase(amount, parseFloat(fundEmployeeRatio.value), policy);
-      fundResultBody.innerHTML = renderReverseContribution(policy, reverse, parseFloat(fundEmployerRatio.value));
+      var reverse = engine.reverseContributionBase(amount, parseFloat(fundContributionRatio.value), policy);
+      fundResultBody.innerHTML = renderReverseContribution(policy, reverse, parseFloat(fundContributionRatio.value));
     } else {
-      var forward = engine.calculateContribution(amount, parseFloat(fundEmployerRatio.value), parseFloat(fundEmployeeRatio.value), policy);
+      var forward = engine.calculateContribution(amount, parseFloat(fundContributionRatio.value), parseFloat(fundContributionRatio.value), policy);
       fundResultBody.innerHTML = renderForwardContribution(policy, forward);
     }
     setVisible(fundResult, true);
@@ -2089,8 +2082,15 @@ fundModeSwitch.addEventListener('click', function(event) {
 fundProvince.addEventListener('change', syncFundRegions);
 fundRegion.addEventListener('change', syncFundPolicyControls);
 fundAmountInput.addEventListener('input', runFundContribution);
-fundEmployerRatio.addEventListener('change', runFundContribution);
-fundEmployeeRatio.addEventListener('change', runFundContribution);
+fundAmountInput.addEventListener('focus', function() {
+  var amount = parseAmount(fundAmountInput.value);
+  if (amount > 0) fundAmountInput.value = String(amount);
+});
+fundAmountInput.addEventListener('blur', function() {
+  var amount = parseAmount(fundAmountInput.value);
+  fundAmountInput.value = amount > 0 ? money(amount) : '';
+});
+fundContributionRatio.addEventListener('change', runFundContribution);
 syncFundRegions();
 
 // ===== 公积金贷款 =====
@@ -2100,6 +2100,7 @@ var loanPaymentFields = byId('loanPaymentFields');
 var loanCapFields = byId('loanCapFields');
 var loanAmount = byId('loanAmount');
 var loanYears = byId('loanYears');
+var loanYearsHint = byId('loanYearsHint');
 var loanHomeType = byId('loanHomeType');
 var loanMethod = byId('loanMethod');
 var loanCustomRate = byId('loanCustomRate');
@@ -2153,7 +2154,13 @@ function runLoanPayment() {
   if (currentLoanMode !== 'payment') return;
   var amountWan = parseAmount(loanAmount.value);
   var years = parseInt(loanYears.value, 10);
-  if (amountWan <= 0 || !Number.isInteger(years) || years < 1 || years > 30) {
+  var validYears = Number.isInteger(years) && years >= 1 && years <= 30;
+  loanYearsHint.classList.toggle('is-error', !validYears);
+  loanYearsHint.textContent = validYears
+    ? '限1—30年；5年（含）以内适用短期利率'
+    : '请输入1—30年的整数期限';
+  loanYears.setAttribute('aria-invalid', validYears ? 'false' : 'true');
+  if (amountWan <= 0 || !validYears) {
     setVisible(loanPaymentResult, false);
     return;
   }
@@ -2236,6 +2243,12 @@ loanModeSwitch.addEventListener('click', function(event) {
 });
 [loanAmount, loanYears, loanCustomRate].forEach(function(input) {
   input.addEventListener('input', runLoanPayment);
+});
+loanYears.addEventListener('blur', function() {
+  var years = parseInt(loanYears.value, 10);
+  if (!Number.isInteger(years) || years < 1) loanYears.value = '1';
+  if (years > 30) loanYears.value = '30';
+  runLoanPayment();
 });
 loanHomeType.addEventListener('change', runLoanPayment);
 loanMethod.addEventListener('change', runLoanPayment);

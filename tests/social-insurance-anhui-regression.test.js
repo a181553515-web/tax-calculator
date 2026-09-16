@@ -43,19 +43,19 @@ test('保留选地区即测算，并区分安徽实测与其他地区参考说�
   assert.match(html, /安徽合肥、六安地区按实测口径测算/);
   assert.match(html, /rates\.regionStatus === 'measured'/);
   assert.match(html, /rates\.regionStatus === 'verified'/);
-  assert.match(html, /isMunicipality/);
+  assert.match(html, /label: prov \+ '常见参考口径'/);
   assert.match(html, /provSel\.addEventListener\('change', function\(\) \{/);
   assert.match(html, /syncRegionOptions\(\)/);
   assert.match(html, /syncRegionalControls\(\)/);
   assert.doesNotMatch(html, /手工录入当地政策参数|SocialPolicyEngine|social-insurance-app\.js/);
 });
 
-test('全国省份统一显示二级地区选择，未核验省份使用省级参考兜底', () => {
+test('全国省份统一显示二级地区选择，未核验省份使用常见参考口径兜底', () => {
   assert.match(html, /id="siRegionGroup"/);
   assert.match(html, /id="siRegion"/);
   assert.match(html, /function getReferenceRegion\(prov\)/);
   assert.match(html, /REGION_GROUPS\[prov\] \|\|/);
-  assert.match(html, /省级.*常见口径（参考）/);
+  assert.match(html, /常见参考口径/);
   assert.match(html, /regionGroup\.style\.display = 'block'/);
 });
 

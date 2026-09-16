@@ -18,10 +18,10 @@ test('官方核验地区均保留可追溯来源', () => {
   });
 });
 
-test('折叠参数说明区分实测、部分官方核验和省级参考', () => {
+test('折叠参数说明区分实测、部分官方核验和常见参考', () => {
   assert.match(html, /安徽实测/);
   assert.match(html, /部分官方核验/);
-  assert.match(html, /省级参考/);
+  assert.match(html, /常见参考/);
   assert.match(html, /参考项：/);
   assert.match(html, /最近复核：/);
   assert.match(html, /适用期：/);
@@ -88,6 +88,6 @@ test('三个模块共用轻量社保缴费基数设置', () => {
   assert.doesNotMatch(html, /例如算最低基数请输入/);
 });
 
-test('公积金与社保计算器显示本地评审版本号', () => {
-  assert.match(html, /公积金与社保计算器 v1\.4\.0-review<\/p>/);
+test('社保公积金计算器显示本地评审版本号', () => {
+  assert.match(html, /社保公积金计算器 v1\.4\.0-review<\/p>/);
 });

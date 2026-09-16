@@ -171,7 +171,7 @@ var data = {
     '江苏': {
       defaultRegion: 'province-reference',
       regions: [
-        { id:'province-reference', label:'江苏省级常见口径（参考）', status:'reference' },
+        { id:'province-reference', label:'江苏常见参考口径', status:'reference' },
         { id:'nanjing', label:'南京市', status:'verified', effectiveFrom:'2026-07-01', effectiveTo:'2027-06-30', fund:{ min:2660, max:42400 }, source:'https://gjj.nanjing.gov.cn/zwgk/tzgg/202607/t20260717_5878580.html' },
         { id:'suzhou', label:'苏州市（一般单位）', status:'verified', effectiveFrom:'2026-07-01', effectiveTo:'2027-06-30', fund:{ min:4952, max:40600 }, rates:{ medical:[7,2], maternityEmployer:0.8, medicalFixed:5, medicalNote:'职工医保单位7%、个人2%，生育单位0.8%，个人另缴大额医疗5元/月' }, note:'公积金下限一般按社保最低基数；实际工资较低且经核准的，不低于当地最低工资标准', source:'https://www.suzhou.gov.cn/szsrmzf/zwgg/202607/501539493f89439aa33768e34a069914.shtml', rateSource:'https://jiangsu.chinatax.gov.cn/art/2026/4/14/art_21737_921.html' },
         { id:'changzhou', label:'常州市', status:'verified', effectiveFrom:'2026-07-01', effectiveTo:'2027-06-30', fund:{ min:2660, max:34080 }, source:'https://gjj.changzhou.gov.cn/content/suitable/show?catid=142&id=13974' },
@@ -185,7 +185,7 @@ var data = {
     '浙江': {
       defaultRegion: 'province-reference',
       regions: [
-        { id:'province-reference', label:'浙江省级常见口径（参考）', status:'reference' },
+        { id:'province-reference', label:'浙江常见参考口径', status:'reference' },
         { id:'ningbo-urban', label:'宁波市区（海曙、江北、镇海、北仑、鄞州、奉化）', status:'verified', effectiveFrom:'2026-07-01', effectiveTo:'2027-06-30', fund:{ min:2660, max:38907 }, note:'上限暂按2025年度38907元执行，官方公布新标准后需更新', source:'https://www.haishu.gov.cn/col/col1229100020/art/2026/art_ed8daf35d53e482893accae0bcb57abd.html' },
         { id:'ningbo-counties', label:'宁波余姚、慈溪、宁海、象山', status:'verified', effectiveFrom:'2026-07-01', effectiveTo:'2027-06-30', fund:{ min:2430, max:38907 }, note:'上限暂按2025年度38907元执行，官方公布新标准后需更新', source:'https://www.haishu.gov.cn/col/col1229100020/art/2026/art_ed8daf35d53e482893accae0bcb57abd.html' }
       ]
@@ -193,7 +193,7 @@ var data = {
     '福建': {
       defaultRegion: 'province-reference',
       regions: [
-        { id:'province-reference', label:'福建省级常见口径（参考）', status:'reference' },
+        { id:'province-reference', label:'福建常见参考口径', status:'reference' },
         { id:'fuzhou', label:'福州市', status:'verified', effectiveFrom:'2026-07-01', effectiveTo:'2027-06-30', fund:{ min:2195, max:32430 }, source:'https://zfgjj.fuzhou.gov.cn/zwgk/gzdt/tzgg/202606/t20260630_5341026.htm' },
         { id:'quanzhou-main', label:'泉州市区、石狮、晋江、南安、惠安', status:'verified', effectiveFrom:'2026-07-01', effectiveTo:'2027-06-30', fund:{ min:2195, max:24795 }, note:'含鲤城、丰泽、洛江、泉港及台商投资区', source:'https://qzgjj.quanzhou.gov.cn/zwgk/fgwj/zcjd/202606/t20260629_3304596.htm' },
         { id:'quanzhou-counties', label:'泉州安溪、永春、德化', status:'verified', effectiveFrom:'2026-07-01', effectiveTo:'2027-06-30', fund:{ min:2045, max:24795 }, source:'https://qzgjj.quanzhou.gov.cn/zwgk/fgwj/zcjd/202606/t20260629_3304596.htm' },
@@ -203,7 +203,7 @@ var data = {
     '江西': {
       defaultRegion: 'province-reference',
       regions: [
-        { id:'province-reference', label:'江西省级常见口径（参考）', status:'reference' },
+        { id:'province-reference', label:'江西常见参考口径', status:'reference' },
         { id:'nanchang', label:'南昌市', status:'verified', effectiveFrom:'2026-04-01', rates:{ medical:[6.8,2], injurySupplementEmployerFactor:0.3, medicalNote:'职工医保含生育单位6.8%、个人2%；补充工伤按行业基准费率的30%另计' }, note:'补充工伤保险随工伤保险一并测算', source:'https://www.nc.gov.cn/ncszf/ncsgfxwj/202604/71b7a78c36df4b1a83ba5b5320b6a1ea.shtml', rateSource:'https://ybj.nc.gov.cn/ncylbzj/jytagk/202511/73ad6df0be184096bdbad4565bfde7fc.shtml' },
         { id:'ganzhou', label:'赣州市', status:'verified', effectiveFrom:'2026-07-01', effectiveTo:'2027-06-30', fund:{ min:1950, max:24304 }, source:'https://zfgjj.ganzhou.gov.cn/gzszfjj/c103430/202607/616e6f447b994708997219f5e2e1748f.shtml' }
       ]
@@ -211,7 +211,7 @@ var data = {
     '山东': {
       defaultRegion: 'province-reference',
       regions: [
-        { id:'province-reference', label:'山东省级常见口径（参考）', status:'reference' },
+        { id:'province-reference', label:'山东常见参考口径', status:'reference' },
         { id:'jinan-urban', label:'济南市区（历下、市中、槐荫、天桥、历城）', status:'verified', effectiveFrom:'2026-07-01', effectiveTo:'2027-06-30', fund:{ min:2400, max:33902 }, source:'https://gjj.jinan.gov.cn/col/col111465/art/2026/art_1df4b8a8b2604fd185a8e9130c55a5ba.html' },
         { id:'jinan-counties', label:'济南其他区县（长清、章丘、济阳、莱芜、钢城、平阴、商河）', status:'verified', effectiveFrom:'2026-07-01', effectiveTo:'2027-06-30', fund:{ min:2210, max:33902 }, source:'https://gjj.jinan.gov.cn/col/col111465/art/2026/art_1df4b8a8b2604fd185a8e9130c55a5ba.html' },
         { id:'qingdao-urban', label:'青岛市区（含即墨区）', status:'verified', effectiveFrom:'2026-07-01', effectiveTo:'2027-06-30', fund:{ min:2400, max:34342.75 }, source:'https://www.qingdao.gov.cn/zwgk/zdgk/fgwj/zcwj/szbmgw/202607/t20260706_10652620.shtml' },
@@ -231,7 +231,7 @@ var data = {
     '广东': {
       defaultRegion: 'province-reference',
       regions: [
-        { id:'province-reference', label:'广东省级常见口径（参考）', status:'reference' },
+        { id:'province-reference', label:'广东常见参考口径', status:'reference' },
         { id:'guangzhou', label:'广州市', status:'verified', effectiveFrom:'2022-12-01', effectiveTo:'2026-12-31', rates:{ medical:[6,2], maternityEmployer:0.85, medicalNote:'广州职工医保单位6%、个人2%，生育保险单位0.85%' }, source:'https://www.gz.gov.cn/gfxwj/sbmgfxwj/gzsylbzj/content/mpost_8689834.html' },
         { id:'shenzhen', label:'深圳市（职工医保一档）', status:'verified', effectiveFrom:'2026-01-01', effectiveTo:'2026-12-31', bases:{ medical:{ min:6727, max:33633 } }, rates:{ medical:[6,2], maternityEmployer:0.5, medicalNote:'深圳职工医保一档单位6%、个人2%，生育保险单位0.5%；医保使用独立缴费基数' }, source:'https://hsa.sz.gov.cn/fzlm/znts/cnyc/content/post_12568243.html' }
       ]
