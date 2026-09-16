@@ -5,6 +5,16 @@ const test = require('node:test');
 
 const html = fs.readFileSync(path.join(__dirname, '..', 'social-insurance.html'), 'utf8');
 
+test('额度入口在前且默认选中，标签及单位提示精简', () => {
+  assert.ok(html.indexOf('data-loan-mode="cap"') < html.indexOf('data-loan-mode="payment"'));
+  assert.match(html, /var currentLoanMode = 'cap'/);
+  assert.match(html, /setLoanMode\('cap'\)/);
+  assert.match(html, /单位万元/);
+  assert.match(html, /公积金账户余额/);
+  assert.match(html, /连续缴存时间/);
+  assert.doesNotMatch(html, /请输入万元金额，例如80万元填80|测算余额 <span|连续正常缴存时间 <span/);
+});
+
 test('护理险入口暂时隐藏，保留底层开关供恢复', () => {
   assert.match(html, /id="siLongTermCareRow" hidden/);
   assert.match(html, /\.toggle-row\[hidden\] \{ display: none !important; \}/);
@@ -74,7 +84,7 @@ test('公积金贷款包含月供测算和当地最高额度查询', () => {
   assert.match(html, /id="loanPaymentResult"/);
   assert.match(html, /id="loanCapResult"/);
   assert.match(html, /id="loanYears"[\s\S]*min="1" max="30"/);
-  assert.match(html, /5年（含）以内适用短期利率/);
+  assert.match(html, /5年（含）以内利率不同/);
   assert.match(html, /请输入1—30年的整数期限/);
 });
 
