@@ -907,12 +907,12 @@ body {
   <main>
 
     <div class="main-task-switch" id="mainTaskSwitch" role="tablist" aria-label="选择计算工具">
-      <button type="button" class="main-task-btn active" data-task="contribution" role="tab" aria-selected="true">公积金缴存</button>
+      <button type="button" class="main-task-btn active" data-task="social" role="tab" aria-selected="true">社保公积金</button>
+      <button type="button" class="main-task-btn" data-task="contribution" role="tab" aria-selected="false">公积金缴存</button>
       <button type="button" class="main-task-btn" data-task="loan" role="tab" aria-selected="false">公积金贷款</button>
-      <button type="button" class="main-task-btn" data-task="social" role="tab" aria-selected="false">社保用工成本</button>
     </div>
 
-    <section class="task-panel" id="fundContributionPanel" aria-label="公积金缴存测算">
+    <section class="task-panel" id="fundContributionPanel" aria-label="公积金缴存测算" hidden>
       <div class="card fade-in">
         <div class="card-header">公积金缴存测算</div>
 
@@ -1035,7 +1035,7 @@ body {
       </div>
     </section>
 
-    <section class="task-panel" id="socialTaskPanel" aria-label="社保用工成本测算" hidden>
+    <section class="task-panel" id="socialTaskPanel" aria-label="社保公积金测算">
       <section class="calculator-notice" aria-label="测算提示"><strong>测算提示：</strong>安徽按实测口径，其他地区按官方核验或常见参数估算；结果仅供用工成本参考，不作为申报或结算依据。</section>
 
     <!-- Input Card -->
@@ -2270,7 +2270,7 @@ loanManualCap.addEventListener('input', runLoanCap);
 populateLoanPolicies();
 
 var requestedTask = new URLSearchParams(window.location.search).get('tool');
-setMainTask(requestedTask === 'loan' || requestedTask === 'social' ? requestedTask : 'contribution');
+setMainTask(requestedTask === 'loan' || requestedTask === 'contribution' ? requestedTask : 'social');
 
 })();
 </script>

@@ -5,11 +5,14 @@ const test = require('node:test');
 
 const html = fs.readFileSync(path.join(__dirname, '..', 'social-insurance.html'), 'utf8');
 
-test('页面提供公积金缴存、公积金贷款和社保用工成本三个主入口', () => {
+test('页面按社保公积金、公积金缴存、公积金贷款顺序提供三个主入口', () => {
   assert.match(html, /id="mainTaskSwitch"/);
   assert.match(html, />公积金缴存</);
   assert.match(html, />公积金贷款</);
-  assert.match(html, />社保用工成本</);
+  const switchHtml = html.match(/id="mainTaskSwitch"[\s\S]*?<\/div>/)[0];
+  assert.match(switchHtml, /data-task="social"[\s\S]*?>社保公积金<[\s\S]*data-task="contribution"[\s\S]*?>公积金缴存<[\s\S]*data-task="loan"[\s\S]*?>公积金贷款</);
+  assert.match(switchHtml, /class="main-task-btn active" data-task="social"/);
+  assert.match(html, /setMainTask\(requestedTask === 'loan' \|\| requestedTask === 'contribution' \? requestedTask : 'social'\)/);
 });
 
 test('公积金缴存包含缴存额和反推基数两种模式', () => {
