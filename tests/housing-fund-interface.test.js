@@ -5,8 +5,15 @@ const test = require('node:test');
 
 const html = fs.readFileSync(path.join(__dirname, '..', 'social-insurance.html'), 'utf8');
 
+test('护理险入口暂时隐藏，保留底层开关供恢复', () => {
+  assert.match(html, /id="siLongTermCareRow" hidden/);
+  assert.match(html, /\.toggle-row\[hidden\] \{ display: none !important; \}/);
+  assert.match(html, /id="siLongTermCare"/);
+});
+
 test('商贷对比默认关闭，仅增加利率，共用贷款条件', () => {
-  assert.match(html, /id="loanCompareEnabled"> 与商贷对比/);
+  assert.match(html, /id="loanCompareEnabled" aria-label="与商贷对比"/);
+  assert.match(html, /class="toggle-row loan-compare-switch" for="loanCompareEnabled"/);
   assert.match(html, /id="loanCommercialFields" hidden/);
   assert.match(html, /engine\.calculateLoanSchedule\(amountCheck\.principal, commercialRate, months, loanMethod\.value\)/);
   assert.match(html, /当前贷款（自定义）/);

@@ -359,6 +359,18 @@ body {
   padding: var(--space-2) 0;
   min-height: 44px;
 }
+.toggle-row[hidden] { display: none !important; }
+.loan-compare-switch {
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-top: 12px;
+  gap: 16px;
+  cursor: pointer;
+}
+.loan-compare-switch .toggle-label { color: var(--color-brand); font-weight: 600; }
+.loan-compare-switch .toggle { pointer-events: none; }
+#loanCommercialFields { padding: 16px 2px 0; }
 .toggle-label {
   font-size: var(--text-base);
   color: var(--color-text-secondary);
@@ -1007,7 +1019,14 @@ body {
         </div>
 
         <div id="loanCompareControls" class="form-group">
-          <label><input type="checkbox" id="loanCompareEnabled"> 与商贷对比</label>
+          <label class="toggle-row loan-compare-switch" for="loanCompareEnabled">
+            <span class="toggle-label">与商贷对比</span>
+            <span class="toggle">
+              <input type="checkbox" id="loanCompareEnabled" aria-label="与商贷对比" aria-controls="loanCommercialFields">
+              <span class="toggle-track"></span>
+              <span class="toggle-thumb"></span>
+            </span>
+          </label>
           <div id="loanCommercialFields" hidden>
             <label class="form-label" for="loanCommercialRate">商贷年利率 <span class="unit">%</span></label>
             <input class="form-input" type="text" id="loanCommercialRate" inputmode="decimal" placeholder="填写银行报价，例如：3.05">
@@ -1159,7 +1178,7 @@ body {
         </label>
       </div>
 
-      <div class="toggle-row">
+      <div class="toggle-row" id="siLongTermCareRow" hidden>
         <span class="toggle-label" id="siLongTermCareLabel">🩺 长期护理险（未录入当地确认参数时不计入成本）</span>
         <label class="toggle">
           <input type="checkbox" id="siLongTermCare">
