@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
 <meta name="format-detection" content="telephone=no">
 <meta name="theme-color" content="#0F766E">
-<meta name="description" content="小波财税社保公积金计算器：安徽合肥、六安地区按实测口径测算，其他地区按省级或直辖市常见企业职工口径快速估算员工实收与企业用工成本。">
+<meta name="description" content="小波财税公积金与社保计算器：测算公积金缴存额、反推缴存基数、公积金贷款月供及企业社保用工成本；安徽合肥、六安地区按实测口径测算。">
 <link rel="canonical" href="https://xiaobo-tax.cn/social-insurance.html">
-<meta property="og:title" content="社保公积金计算器｜企业用工成本测算（参考）- 小波财税">
-<meta property="og:description" content="选择参保省份并输入工资，快速估算企业用工成本和员工实收。">
+<meta property="og:title" content="公积金计算器｜缴存基数、贷款月供、社保用工成本 - 小波财税">
+<meta property="og:description" content="测算公积金缴存额、反推缴存基数、计算公积金贷款月供和企业社保用工成本。">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="小波财税">
 <meta property="og:url" content="https://xiaobo-tax.cn/social-insurance.html">
@@ -24,7 +24,7 @@
 <meta name="twitter:image:alt" content="小波财税社保公积金计算器">
 <meta itemprop="image" content="https://xiaobo-tax.cn/assets/xiaobo-tax-share-v2.jpg">
 <link rel="image_src" href="https://xiaobo-tax.cn/assets/xiaobo-tax-share-v2.jpg">
-<title>社保公积金计算器｜企业用工成本测算（参考）- 小波财税</title>
+<title>公积金计算器｜缴存基数、贷款月供、社保用工成本 - 小波财税</title>
 <style>
 /* ===== CSS Reset & Design Tokens ===== */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -752,6 +752,135 @@ body {
   color: var(--color-text-secondary);
   font-weight: 600;
 }
+
+/* ===== Main Tasks ===== */
+.main-task-switch {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  margin: var(--space-4) var(--space-4) 0;
+  padding: 4px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-border-light);
+}
+.main-task-btn,
+.sub-mode-btn {
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-family: var(--font-sans);
+  font-weight: 600;
+  cursor: pointer;
+}
+.main-task-btn {
+  min-height: 46px;
+  padding: 6px 4px;
+  font-size: var(--text-sm);
+}
+.main-task-btn.active,
+.sub-mode-btn.active {
+  color: var(--color-brand-dark);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-xs);
+}
+.main-task-btn:focus-visible,
+.sub-mode-btn:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 1px;
+}
+.task-panel[hidden],
+.field-panel[hidden] { display: none !important; }
+.sub-mode-switch {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 4px;
+  padding: 4px;
+  margin-bottom: var(--space-2);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+}
+.sub-mode-btn {
+  min-height: 40px;
+  padding: 6px 8px;
+  font-size: var(--text-xs);
+}
+.tool-result {
+  display: none;
+}
+.tool-result.is-visible { display: block; }
+.result-callout {
+  padding: var(--space-3);
+  border: 1px solid var(--color-brand-light);
+  border-radius: var(--radius-md);
+  background: var(--color-brand-lighter);
+  color: var(--color-text-secondary);
+  font-size: var(--text-xs);
+  line-height: 1.65;
+}
+.result-callout strong { color: var(--color-brand-dark); }
+.result-callout--warning {
+  border-color: #FCD34D;
+  background: var(--color-accent-light);
+}
+.compact-details {
+  margin-top: var(--space-3);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  overflow: hidden;
+}
+.compact-details summary {
+  padding: 9px 12px;
+  color: var(--color-brand);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  cursor: pointer;
+}
+.compact-details__body {
+  padding: 0 12px 12px;
+  color: var(--color-text-tertiary);
+  font-size: 11px;
+  line-height: 1.7;
+}
+.loan-schedule-wrap {
+  max-height: 420px;
+  overflow: auto;
+  border-top: 1px solid var(--color-border-light);
+}
+.loan-schedule {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 10px;
+  font-family: var(--font-num);
+}
+.loan-schedule th,
+.loan-schedule td {
+  padding: 7px 4px;
+  text-align: right;
+  border-bottom: 1px solid var(--color-border-light);
+  white-space: nowrap;
+}
+.loan-schedule th:first-child,
+.loan-schedule td:first-child { text-align: center; }
+.source-link {
+  color: var(--color-brand);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+@media (max-width: 600px) {
+  .main-task-btn {
+    min-height: 42px;
+    padding-left: 2px;
+    padding-right: 2px;
+    font-size: 11px;
+    line-height: 1.3;
+  }
+  .sub-mode-btn { font-size: 11px; }
+}
 </style>
 </head>
 <body>
@@ -762,16 +891,150 @@ body {
     <div class="header-top">
       <div class="header-brand">
         <div class="header-brand-icon">🧮</div>
-        <h1 style="font-size:inherit;font-weight:inherit;margin:0">社保公积金计算器</h1>
+        <h1 style="font-size:inherit;font-weight:inherit;margin:0">公积金与社保计算器</h1>
       </div>
     </div>
-    <div class="header-sub">企业用工成本 · 快速测算</div>
+    <div class="header-sub">缴存 · 贷款 · 用工成本</div>
   </header>
 
   <!-- Main -->
   <main>
 
-    <section class="calculator-notice" aria-label="测算提示"><strong>测算提示：</strong>安徽按实测口径，其他地区按官方核验或常见参数估算；结果仅供用工成本参考，不作为申报或结算依据。</section>
+    <div class="main-task-switch" id="mainTaskSwitch" role="tablist" aria-label="选择计算工具">
+      <button type="button" class="main-task-btn active" data-task="contribution" role="tab" aria-selected="true">公积金缴存</button>
+      <button type="button" class="main-task-btn" data-task="loan" role="tab" aria-selected="false">公积金贷款</button>
+      <button type="button" class="main-task-btn" data-task="social" role="tab" aria-selected="false">社保用工成本</button>
+    </div>
+
+    <section class="task-panel" id="fundContributionPanel" aria-label="公积金缴存测算">
+      <div class="card fade-in">
+        <div class="card-header">公积金缴存测算</div>
+
+        <div class="sub-mode-switch" id="fundContributionMode" role="tablist" aria-label="公积金缴存测算方式">
+          <button type="button" class="sub-mode-btn active" data-fund-mode="forward" role="tab" aria-selected="true">算每月缴存额</button>
+          <button type="button" class="sub-mode-btn" data-fund-mode="reverse" role="tab" aria-selected="false">按实缴额反推基数</button>
+        </div>
+        <div class="calc-mode-hint" id="fundContributionHint">输入工资或申报基数，计算单位和个人每月缴存额</div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="fundProvince">缴存省份</label>
+            <select class="form-select" id="fundProvince"></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="fundRegion">缴存城市/地区</label>
+            <select class="form-select" id="fundRegion"></select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="fundAmountInput"><span id="fundAmountLabel">工资或申报基数</span> <span class="unit" id="fundAmountUnit">元/月</span></label>
+          <input class="form-input" type="text" id="fundAmountInput" inputmode="decimal" placeholder="例如：5000">
+          <div class="form-hint" id="fundLimitHint"></div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="fundEmployerRatio">单位缴存比例</label>
+            <select class="form-select" id="fundEmployerRatio"></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="fundEmployeeRatio">个人缴存比例</label>
+            <select class="form-select" id="fundEmployeeRatio"></select>
+          </div>
+        </div>
+      </div>
+
+      <div class="card tool-result" id="fundContributionResult" aria-live="polite">
+        <div class="card-header">测算结果</div>
+        <div id="fundContributionResultBody"></div>
+      </div>
+    </section>
+
+    <section class="task-panel" id="fundLoanPanel" aria-label="公积金贷款测算" hidden>
+      <div class="card fade-in">
+        <div class="card-header">公积金贷款测算</div>
+
+        <div class="sub-mode-switch" id="fundLoanMode" role="tablist" aria-label="公积金贷款测算方式">
+          <button type="button" class="sub-mode-btn active" data-loan-mode="payment" role="tab" aria-selected="true">算贷款月供</button>
+          <button type="button" class="sub-mode-btn" data-loan-mode="cap" role="tab" aria-selected="false">查当地最高额度</button>
+        </div>
+        <div class="calc-mode-hint" id="fundLoanHint">按现行公积金贷款利率测算月供、总利息和还款明细</div>
+
+        <div class="field-panel" id="loanPaymentFields">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="loanAmount">贷款金额 <span class="unit">万元</span></label>
+              <input class="form-input" type="text" id="loanAmount" inputmode="decimal" placeholder="例如：80">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="loanYears">贷款期限 <span class="unit">年</span></label>
+              <input class="form-input" type="number" id="loanYears" inputmode="numeric" min="1" max="30" value="30">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="loanHomeType">住房套数</label>
+              <select class="form-select" id="loanHomeType">
+                <option value="first">首套住房</option>
+                <option value="second">第二套住房</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="loanMethod">还款方式</label>
+              <select class="form-select" id="loanMethod">
+                <option value="equal-payment">等额本息</option>
+                <option value="equal-principal">等额本金</option>
+              </select>
+            </div>
+          </div>
+          <details class="compact-details">
+            <summary>自定义贷款利率</summary>
+            <div class="compact-details__body">
+              <label class="form-label" for="loanCustomRate">年利率 <span class="unit">%</span></label>
+              <input class="form-input" type="text" id="loanCustomRate" inputmode="decimal" placeholder="留空则自动采用现行利率">
+            </div>
+          </details>
+        </div>
+
+        <div class="field-panel" id="loanCapFields" hidden>
+          <div class="form-group">
+            <label class="form-label" for="loanPolicyRegion">购房地区</label>
+            <select class="form-select" id="loanPolicyRegion"></select>
+          </div>
+          <div class="form-row" id="loanVerifiedCapFields">
+            <div class="form-group">
+              <label class="form-label" for="loanApplicantType">缴存情况</label>
+              <select class="form-select" id="loanApplicantType">
+                <option value="single">单人缴存</option>
+                <option value="family">夫妻双方缴存</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="loanCapCategory">政策情形</label>
+              <select class="form-select" id="loanCapCategory"></select>
+            </div>
+          </div>
+          <div class="form-group" id="loanManualCapGroup" hidden>
+            <label class="form-label" for="loanManualCap">当地贷款上限 <span class="unit">万元</span></label>
+            <input class="form-input" type="text" id="loanManualCap" inputmode="decimal" placeholder="请输入当地公积金贷款上限">
+          </div>
+        </div>
+      </div>
+
+      <div class="card tool-result" id="loanPaymentResult" aria-live="polite">
+        <div class="card-header">月供测算结果</div>
+        <div id="loanPaymentResultBody"></div>
+      </div>
+
+      <div class="card tool-result" id="loanCapResult" aria-live="polite">
+        <div class="card-header">当地最高额度</div>
+        <div id="loanCapResultBody"></div>
+      </div>
+    </section>
+
+    <section class="task-panel" id="socialTaskPanel" aria-label="社保用工成本测算" hidden>
+      <section class="calculator-notice" aria-label="测算提示"><strong>测算提示：</strong>安徽按实测口径，其他地区按官方核验或常见参数估算；结果仅供用工成本参考，不作为申报或结算依据。</section>
 
     <!-- Input Card -->
     <div class="card fade-in">
@@ -885,18 +1148,23 @@ body {
       <div class="card-body" id="siResult"></div>
     </div>
 
+    </section>
+
   </main>
 
   <!-- Footer -->
   <footer class="footer" role="contentinfo">
     <p>@ 小波的财税日记 · 微信号：xbcs260611</p>
-    <p>© 2026 社保公积金计算器 v1.3.0</p>
+    <p>© 2026 公积金与社保计算器 v1.4.0-review</p>
     <p>⚠️ 计算结果仅供参考，具体以当地政策规定为准</p>
   </footer>
 
 </div>
 
 <script src="social-policy-data.js"></script>
+<script src="housing-fund-policy-data.js"></script>
+<script src="housing-fund-policy-resolver.js"></script>
+<script src="housing-fund-calculation-engine.js"></script>
 <script src="social-calculation-engine.js"></script>
 <script>
 (function() {
@@ -1634,6 +1902,351 @@ syncRegionOptions();
 syncRegionalControls();
 updateSalaryPlaceholder();
 runCalc();
+
+})();
+</script>
+<script>
+(function() {
+'use strict';
+
+var socialData = window.SOCIAL_POLICY_DATA;
+var fundPolicyData = window.HOUSING_FUND_POLICY_DATA;
+var resolver = window.HOUSING_FUND_POLICY_RESOLVER;
+var engine = window.HOUSING_FUND_CALCULATION_ENGINE;
+
+if (!socialData || !fundPolicyData || !resolver || !engine) return;
+
+function byId(id) { return document.getElementById(id); }
+function parseAmount(value) {
+  var parsed = parseFloat(String(value || '').replace(/,/g, ''));
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+function money(value) {
+  return Number(value || 0).toLocaleString('zh-CN', { minimumFractionDigits:2, maximumFractionDigits:2 });
+}
+function escapeHtml(value) {
+  return String(value == null ? '' : value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+function setVisible(element, visible) {
+  element.classList.toggle('is-visible', visible);
+}
+
+var mainTaskSwitch = byId('mainTaskSwitch');
+var taskPanels = {
+  contribution: byId('fundContributionPanel'),
+  loan: byId('fundLoanPanel'),
+  social: byId('socialTaskPanel')
+};
+
+function setMainTask(task) {
+  if (!taskPanels[task]) return;
+  Object.keys(taskPanels).forEach(function(key) {
+    taskPanels[key].hidden = key !== task;
+  });
+  mainTaskSwitch.querySelectorAll('.main-task-btn').forEach(function(button) {
+    var active = button.dataset.task === task;
+    button.classList.toggle('active', active);
+    button.setAttribute('aria-selected', active ? 'true' : 'false');
+  });
+}
+
+mainTaskSwitch.addEventListener('click', function(event) {
+  var button = event.target.closest('.main-task-btn');
+  if (!button) return;
+  setMainTask(button.dataset.task);
+});
+
+// ===== 公积金缴存 =====
+var fundProvince = byId('fundProvince');
+var fundRegion = byId('fundRegion');
+var fundModeSwitch = byId('fundContributionMode');
+var fundModeHint = byId('fundContributionHint');
+var fundAmountLabel = byId('fundAmountLabel');
+var fundAmountInput = byId('fundAmountInput');
+var fundLimitHint = byId('fundLimitHint');
+var fundEmployerRatio = byId('fundEmployerRatio');
+var fundEmployeeRatio = byId('fundEmployeeRatio');
+var fundResult = byId('fundContributionResult');
+var fundResultBody = byId('fundContributionResultBody');
+var currentFundMode = 'forward';
+
+function fillRatioSelect(select, maximum, preferred) {
+  var current = parseFloat(select.value) || preferred;
+  var html = '';
+  for (var ratio = 5; ratio <= maximum; ratio++) {
+    html += '<option value="' + ratio + '">' + ratio + '%</option>';
+  }
+  select.innerHTML = html;
+  select.value = String(Math.min(Math.max(current, 5), maximum));
+}
+
+function getFundPolicy() {
+  return resolver.resolveContributionPolicy(socialData, fundProvince.value, fundRegion.value);
+}
+
+function syncFundRegions() {
+  var province = fundProvince.value;
+  var regions = resolver.listContributionRegions(socialData, province);
+  var group = socialData.regionGroups && socialData.regionGroups[province];
+  fundRegion.innerHTML = regions.map(function(region) {
+    return '<option value="' + escapeHtml(region.id) + '">' + escapeHtml(region.label) + '</option>';
+  }).join('');
+  fundRegion.value = group && group.defaultRegion ? group.defaultRegion : 'province-reference';
+  if (!fundRegion.value && regions[0]) fundRegion.value = regions[0].id;
+  syncFundPolicyControls();
+}
+
+function syncFundPolicyControls() {
+  var policy = getFundPolicy();
+  if (!policy) return;
+  fillRatioSelect(fundEmployerRatio, policy.ratioMax, 8);
+  fillRatioSelect(fundEmployeeRatio, policy.ratioMax, 8);
+  fundLimitHint.textContent = policy.label + '：基数下限 ' + money(policy.min) + ' 元，上限 ' + money(policy.max) + ' 元';
+  runFundContribution();
+}
+
+function setFundMode(mode) {
+  currentFundMode = mode;
+  var reverse = mode === 'reverse';
+  fundAmountLabel.textContent = reverse ? '个人每月实缴金额' : '工资或申报基数';
+  fundAmountInput.placeholder = reverse ? '例如：400' : '例如：5000';
+  fundModeHint.textContent = reverse
+    ? '输入个人每月实际扣缴金额和比例，反推公积金缴存基数'
+    : '输入工资或申报基数，计算单位和个人每月缴存额';
+  fundModeSwitch.querySelectorAll('.sub-mode-btn').forEach(function(button) {
+    var active = button.dataset.fundMode === mode;
+    button.classList.toggle('active', active);
+    button.setAttribute('aria-selected', active ? 'true' : 'false');
+  });
+  fundAmountInput.value = '';
+  setVisible(fundResult, false);
+}
+
+function renderForwardContribution(policy, result) {
+  var stateText = result.baseState === 'floor'
+    ? '输入金额低于当地下限，已按下限测算'
+    : (result.baseState === 'ceiling' ? '输入金额高于当地上限，已按上限测算' : '输入金额在当地缴存范围内');
+  return '<div class="summary-grid">' +
+    '<div class="summary-card summary-card--highlight"><div class="summary-card__label">缴存基数</div><div class="summary-card__amount">¥' + money(result.base) + '</div><div class="summary-card__sub">' + escapeHtml(stateText) + '</div></div>' +
+    '<div class="summary-card"><div class="summary-card__label">个人月缴</div><div class="summary-card__amount">¥' + money(result.employeeMonthly) + '</div><div class="summary-card__sub">比例 ' + result.employeeRatio + '%</div></div>' +
+    '<div class="summary-card"><div class="summary-card__label">单位月缴</div><div class="summary-card__amount">¥' + money(result.employerMonthly) + '</div><div class="summary-card__sub">比例 ' + result.employerRatio + '%</div></div>' +
+    '<div class="summary-card"><div class="summary-card__label">每月合计</div><div class="summary-card__amount">¥' + money(result.monthlyTotal) + '</div></div>' +
+    '<div class="summary-card"><div class="summary-card__label">全年合计</div><div class="summary-card__amount">¥' + money(result.annualTotal) + '</div></div>' +
+    '</div><div class="result-callout"><strong>计算口径：</strong>' + escapeHtml(policy.label) + '，基数范围 ¥' + money(policy.min) + '～¥' + money(policy.max) + '。</div>';
+}
+
+function renderReverseContribution(policy, result, employerRatio) {
+  var employerMonthly = Math.round(result.rawBase * employerRatio) / 100;
+  var stateText = result.baseState === 'normal'
+    ? '反推基数在当地缴存范围内'
+    : (result.baseState === 'floor' ? '反推基数低于当地下限，请核对实缴金额或比例' : '反推基数高于当地上限，请核对实缴金额或比例');
+  var warningClass = result.baseState === 'normal' ? '' : ' result-callout--warning';
+  return '<div class="summary-grid">' +
+    '<div class="summary-card summary-card--highlight"><div class="summary-card__label">反推缴存基数</div><div class="summary-card__amount">¥' + money(result.rawBase) + '</div><div class="summary-card__sub">个人实缴 ÷ 个人比例</div></div>' +
+    '<div class="summary-card"><div class="summary-card__label">个人月缴</div><div class="summary-card__amount">¥' + money(result.employeeMonthly) + '</div><div class="summary-card__sub">比例 ' + result.employeeRatio + '%</div></div>' +
+    '<div class="summary-card"><div class="summary-card__label">推算单位月缴</div><div class="summary-card__amount">¥' + money(employerMonthly) + '</div><div class="summary-card__sub">比例 ' + employerRatio + '%</div></div>' +
+    '</div><div class="result-callout' + warningClass + '"><strong>范围校验：</strong>' + escapeHtml(stateText) + '。当地基数范围 ¥' + money(policy.min) + '～¥' + money(policy.max) + '。</div>';
+}
+
+function runFundContribution() {
+  var amount = parseAmount(fundAmountInput.value);
+  var policy = getFundPolicy();
+  if (!policy || amount <= 0) {
+    setVisible(fundResult, false);
+    return;
+  }
+  try {
+    if (currentFundMode === 'reverse') {
+      var reverse = engine.reverseContributionBase(amount, parseFloat(fundEmployeeRatio.value), policy);
+      fundResultBody.innerHTML = renderReverseContribution(policy, reverse, parseFloat(fundEmployerRatio.value));
+    } else {
+      var forward = engine.calculateContribution(amount, parseFloat(fundEmployerRatio.value), parseFloat(fundEmployeeRatio.value), policy);
+      fundResultBody.innerHTML = renderForwardContribution(policy, forward);
+    }
+    setVisible(fundResult, true);
+  } catch (error) {
+    setVisible(fundResult, false);
+  }
+}
+
+Object.keys(socialData.provinceBases).forEach(function(province) {
+  var option = document.createElement('option');
+  option.value = province;
+  option.textContent = province;
+  fundProvince.appendChild(option);
+});
+fundProvince.value = '安徽';
+fundModeSwitch.addEventListener('click', function(event) {
+  var button = event.target.closest('.sub-mode-btn');
+  if (!button || !button.dataset.fundMode) return;
+  setFundMode(button.dataset.fundMode);
+});
+fundProvince.addEventListener('change', syncFundRegions);
+fundRegion.addEventListener('change', syncFundPolicyControls);
+fundAmountInput.addEventListener('input', runFundContribution);
+fundEmployerRatio.addEventListener('change', runFundContribution);
+fundEmployeeRatio.addEventListener('change', runFundContribution);
+syncFundRegions();
+
+// ===== 公积金贷款 =====
+var loanModeSwitch = byId('fundLoanMode');
+var loanHint = byId('fundLoanHint');
+var loanPaymentFields = byId('loanPaymentFields');
+var loanCapFields = byId('loanCapFields');
+var loanAmount = byId('loanAmount');
+var loanYears = byId('loanYears');
+var loanHomeType = byId('loanHomeType');
+var loanMethod = byId('loanMethod');
+var loanCustomRate = byId('loanCustomRate');
+var loanPaymentResult = byId('loanPaymentResult');
+var loanPaymentResultBody = byId('loanPaymentResultBody');
+var loanPolicyRegion = byId('loanPolicyRegion');
+var loanApplicantType = byId('loanApplicantType');
+var loanCapCategory = byId('loanCapCategory');
+var loanVerifiedCapFields = byId('loanVerifiedCapFields');
+var loanManualCapGroup = byId('loanManualCapGroup');
+var loanManualCap = byId('loanManualCap');
+var loanCapResult = byId('loanCapResult');
+var loanCapResultBody = byId('loanCapResultBody');
+var currentLoanMode = 'payment';
+
+var capCategoryLabels = {
+  standard: '普通缴存家庭',
+  multiChildFirstHome: '多子女家庭购买首套房',
+  newHome: '新建商品住房',
+  usedOrAffordableHome: '二手房/保障房/政府存量房',
+  firstHome: '首套住房',
+  secondHome: '第二套住房'
+};
+
+function setLoanMode(mode) {
+  currentLoanMode = mode;
+  var isPayment = mode === 'payment';
+  loanPaymentFields.hidden = !isPayment;
+  loanCapFields.hidden = isPayment;
+  loanHint.textContent = isPayment
+    ? '按现行公积金贷款利率测算月供、总利息和还款明细'
+    : '查看已核验城市政策最高额度；其他地区可手动填写当地上限';
+  loanModeSwitch.querySelectorAll('.sub-mode-btn').forEach(function(button) {
+    var active = button.dataset.loanMode === mode;
+    button.classList.toggle('active', active);
+    button.setAttribute('aria-selected', active ? 'true' : 'false');
+  });
+  setVisible(loanPaymentResult, false);
+  setVisible(loanCapResult, false);
+  if (isPayment) runLoanPayment();
+  else runLoanCap();
+}
+
+function renderLoanScheduleRows(schedule) {
+  return schedule.map(function(row) {
+    return '<tr><td>' + row.period + '</td><td>¥' + money(row.payment) + '</td><td>¥' + money(row.principal) + '</td><td>¥' + money(row.interest) + '</td><td>¥' + money(row.remaining) + '</td></tr>';
+  }).join('');
+}
+
+function runLoanPayment() {
+  if (currentLoanMode !== 'payment') return;
+  var amountWan = parseAmount(loanAmount.value);
+  var years = parseInt(loanYears.value, 10);
+  if (amountWan <= 0 || !Number.isInteger(years) || years < 1 || years > 30) {
+    setVisible(loanPaymentResult, false);
+    return;
+  }
+  var months = years * 12;
+  var customRate = parseAmount(loanCustomRate.value);
+  if (!loanCustomRate.value.trim()) customRate = undefined;
+  try {
+    var annualRate = engine.resolveAnnualLoanRate(fundPolicyData.nationalLoanRates, loanHomeType.value, months, customRate);
+    var result = engine.calculateLoanSchedule(amountWan * 10000, annualRate, months, loanMethod.value);
+    var paymentLabel = result.method === 'equal-payment' ? '每月月供' : '首月月供';
+    var secondary = result.method === 'equal-payment'
+      ? '<div class="summary-card"><div class="summary-card__label">末月月供</div><div class="summary-card__amount">¥' + money(result.lastPayment) + '</div></div>'
+      : '<div class="summary-card"><div class="summary-card__label">末月月供</div><div class="summary-card__amount">¥' + money(result.lastPayment) + '</div><div class="summary-card__sub">每月约递减 ¥' + money(result.monthlyDecrease) + '</div></div>';
+    loanPaymentResultBody.innerHTML = '<div class="summary-grid">' +
+      '<div class="summary-card summary-card--highlight"><div class="summary-card__label">' + paymentLabel + '</div><div class="summary-card__amount">¥' + money(result.firstPayment) + '</div><div class="summary-card__sub">年利率 ' + annualRate + '% · ' + months + '期</div></div>' +
+      secondary +
+      '<div class="summary-card"><div class="summary-card__label">总利息</div><div class="summary-card__amount">¥' + money(result.totalInterest) + '</div></div>' +
+      '<div class="summary-card"><div class="summary-card__label">本息合计</div><div class="summary-card__amount">¥' + money(result.totalRepayment) + '</div></div>' +
+      '</div>' +
+      '<div class="result-callout"><strong>利率口径：</strong>' + (customRate ? '按自定义利率测算' : '按现行全国公积金贷款利率自动匹配') + '，结果仅供还款计划参考。</div>' +
+      '<details class="compact-details"><summary>查看全部 ' + months + ' 期还款明细</summary><div class="loan-schedule-wrap"><table class="loan-schedule"><thead><tr><th>期数</th><th>月供</th><th>本金</th><th>利息</th><th>剩余本金</th></tr></thead><tbody>' + renderLoanScheduleRows(result.schedule) + '</tbody></table></div></details>';
+    setVisible(loanPaymentResult, true);
+  } catch (error) {
+    setVisible(loanPaymentResult, false);
+  }
+}
+
+function populateLoanPolicies() {
+  var policies = resolver.listLoanPolicies(fundPolicyData);
+  loanPolicyRegion.innerHTML = policies.map(function(policy) {
+    return '<option value="' + escapeHtml(policy.id) + '">' + escapeHtml(policy.label) + '</option>';
+  }).join('') + '<option value="manual">其他地区（手动填写上限）</option>';
+  loanPolicyRegion.value = 'anhui-hefei';
+  syncLoanCapCategories();
+}
+
+function syncLoanCapCategories() {
+  var manual = loanPolicyRegion.value === 'manual';
+  loanVerifiedCapFields.hidden = manual;
+  loanManualCapGroup.hidden = !manual;
+  if (!manual) {
+    var policy = resolver.resolveLoanPolicy(fundPolicyData, loanPolicyRegion.value);
+    var categories = policy ? Object.keys(policy.caps || {}) : [];
+    loanCapCategory.innerHTML = categories.map(function(category) {
+      return '<option value="' + escapeHtml(category) + '">' + escapeHtml(capCategoryLabels[category] || category) + '</option>';
+    }).join('');
+  }
+  runLoanCap();
+}
+
+function runLoanCap() {
+  if (currentLoanMode !== 'cap') return;
+  var manual = loanPolicyRegion.value === 'manual';
+  var policy = manual ? null : resolver.resolveLoanPolicy(fundPolicyData, loanPolicyRegion.value);
+  var manualAmount = manual ? parseAmount(loanManualCap.value) * 10000 : 0;
+  var result = engine.resolveReferenceLoanCap(policy, loanApplicantType.value, manualAmount, loanCapCategory.value);
+  if (!result.amount) {
+    setVisible(loanCapResult, false);
+    return;
+  }
+
+  var label = manual ? '手动填写的当地上限' : policy.label + '政策最高额度';
+  var detail = manual
+    ? '该金额由你手动填写，系统未核验当地政策。'
+    : escapeHtml(policy.note || '实际额度还需按当地审批规则确定。');
+  var source = policy && policy.source
+    ? '<div class="compact-details__body"><a class="source-link" href="' + escapeHtml(policy.source) + '" target="_blank" rel="noopener noreferrer">查看政策来源</a></div>'
+    : '';
+  loanCapResultBody.innerHTML = '<div class="summary-grid">' +
+    '<div class="summary-card summary-card--highlight"><div class="summary-card__label">' + escapeHtml(label) + '</div><div class="summary-card__amount">¥' + money(result.amount) + '</div><div class="summary-card__sub">' + (loanApplicantType.value === 'family' ? '夫妻双方缴存' : '单人缴存') + '</div></div>' +
+    '</div><div class="result-callout result-callout--warning"><strong>注意：</strong>政策最高额度不等于实际审批额度。' + detail + '</div>' +
+    (source ? '<details class="compact-details"><summary>查看政策说明</summary>' + source + '</details>' : '');
+  setVisible(loanCapResult, true);
+}
+
+loanModeSwitch.addEventListener('click', function(event) {
+  var button = event.target.closest('.sub-mode-btn');
+  if (!button || !button.dataset.loanMode) return;
+  setLoanMode(button.dataset.loanMode);
+});
+[loanAmount, loanYears, loanCustomRate].forEach(function(input) {
+  input.addEventListener('input', runLoanPayment);
+});
+loanHomeType.addEventListener('change', runLoanPayment);
+loanMethod.addEventListener('change', runLoanPayment);
+loanPolicyRegion.addEventListener('change', syncLoanCapCategories);
+loanApplicantType.addEventListener('change', runLoanCap);
+loanCapCategory.addEventListener('change', runLoanCap);
+loanManualCap.addEventListener('input', runLoanCap);
+populateLoanPolicies();
+
+var requestedTask = new URLSearchParams(window.location.search).get('tool');
+setMainTask(requestedTask === 'loan' || requestedTask === 'social' ? requestedTask : 'contribution');
 
 })();
 </script>
