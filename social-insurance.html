@@ -1162,9 +1162,9 @@ body {
           <label class="form-label" for="siFundRatio">公积金比例</label>
           <select class="form-select" id="siFundRatio">
             <option value="5">5%</option><option value="6">6%</option>
-            <option value="7">7%</option><option value="8" selected>8%</option>
+            <option value="7">7%</option><option value="8">8%</option>
             <option value="9">9%</option><option value="10">10%</option>
-            <option value="11">11%</option><option value="12">12%</option>
+            <option value="11">11%</option><option value="12" selected>12%</option>
           </select>
         </div>
       </div>
@@ -1882,7 +1882,7 @@ function resetAll() {
   currentSocialBaseMode = 'salary';
   syncSocialBaseControls();
   fundEnabled.checked = false;
-  fundRatioSel.value = '8';
+  fundRatioSel.value = '12';
   fundHint.style.display = 'none';
   medicalAidCheck.checked = false;
   industrySel.value = '1';
@@ -2059,7 +2059,7 @@ function syncFundRegions() {
 function syncFundPolicyControls() {
   var policy = getFundPolicy();
   if (!policy) return;
-  fillRatioSelect(fundContributionRatio, policy.ratioMax, 8);
+  fillRatioSelect(fundContributionRatio, policy.ratioMax, 12);
   fundLimitHint.textContent = policy.label + '：基数下限 ' + money(policy.min) + ' 元，上限 ' + money(policy.max) + ' 元';
   runFundContribution();
 }

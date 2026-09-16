@@ -5,6 +5,12 @@ const test = require('node:test');
 
 const html = fs.readFileSync(path.join(__dirname, '..', 'social-insurance.html'), 'utf8');
 
+test('社保与独立公积金缴存默认12%，重置也恢复12%', () => {
+  assert.match(html, /value="12" selected>12%/);
+  assert.match(html, /fundRatioSel.value = '12'/);
+  assert.match(html, /fillRatioSelect\(fundContributionRatio, policy.ratioMax, 12\)/);
+});
+
 test('额度入口在前且默认选中，标签及单位提示精简', () => {
   assert.ok(html.indexOf('data-loan-mode="cap"') < html.indexOf('data-loan-mode="payment"'));
   assert.match(html, /var currentLoanMode = 'cap'/);
