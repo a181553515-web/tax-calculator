@@ -2448,6 +2448,19 @@ loanApplicantType.addEventListener('change', function() { syncPersonalLoanFields
 loanCapCategory.addEventListener('change', function() { syncPersonalLoanFields(); runLoanCap(); });
 loanEstimationFields.addEventListener('input', runLoanCap);
 loanEstimationFields.addEventListener('change', runLoanCap);
+estimateContributors.addEventListener('focusin', function(event) {
+  var input = event.target;
+  if (!/^(base|balance|monthlyTotal)$/.test(input.dataset.field || '')) return;
+  var amount = parseAmount(input.value);
+  if (input.value.trim() && Number.isFinite(amount) && amount >= 0) input.value = String(amount);
+});
+estimateContributors.addEventListener('focusout', function(event) {
+  var input = event.target;
+  if (!/^(base|balance|monthlyTotal)$/.test(input.dataset.field || '')) return;
+  var amount = parseAmount(input.value);
+  if (input.value.trim() && Number.isFinite(amount) && amount >= 0) input.value = money(amount);
+  runLoanCap();
+});
 loanCapResultBody.addEventListener('click', function(event) {
   if (event.target.id !== 'useEstimateForPayment' || !lastPersonalEstimate || lastPersonalEstimate.amount <= 0) return;
   loanAmount.value = String(lastPersonalEstimate.amount / 10000);

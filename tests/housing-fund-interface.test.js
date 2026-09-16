@@ -5,6 +5,13 @@ const test = require('node:test');
 
 const html = fs.readFileSync(path.join(__dirname, '..', 'social-insurance.html'), 'utf8');
 
+test('额度动态金额字段失焦后格式化，月份不做金额格式化', () => {
+  assert.match(html, /estimateContributors.addEventListener\('focusout'/);
+  assert.match(html, /base\|balance\|monthlyTotal/);
+  assert.match(html, /input.value = money\(amount\)/);
+  assert.match(html, /estimateContributors.addEventListener\('focusin'/);
+});
+
 test('社保与独立公积金缴存默认12%，重置也恢复12%', () => {
   assert.match(html, /value="12" selected>12%/);
   assert.match(html, /fundRatioSel.value = '12'/);
