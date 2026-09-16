@@ -5,6 +5,12 @@ const test = require('node:test');
 
 const html = fs.readFileSync(path.join(__dirname, '..', 'social-insurance.html'), 'utf8');
 
+test('页面与分享标题统一使用社保公积金名称', () => {
+  const title = '社保公积金计算器｜缴存测算、贷款月供、用工成本';
+  assert.ok(html.includes('<title>' + title + '</title>'));
+  assert.ok(html.includes('<meta property="og:title" content="' + title + '">'));
+});
+
 test('额度动态金额字段失焦后格式化，月份不做金额格式化', () => {
   assert.match(html, /estimateContributors.addEventListener\('focusout'/);
   assert.match(html, /base\|balance\|monthlyTotal/);
