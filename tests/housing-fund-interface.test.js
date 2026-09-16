@@ -34,6 +34,16 @@ test('公积金贷款包含月供测算和当地最高额度查询', () => {
   assert.match(html, /请输入1—30年的整数期限/);
 });
 
+test('贷款政策选项根据城市差异自动精简', () => {
+  assert.match(html, /id="loanApplicantGroup"/);
+  assert.match(html, /id="loanCapCategoryGroup"/);
+  assert.match(html, /policy\.applicantMode !== 'shared'/);
+  assert.match(html, /categories\.length > 1/);
+  assert.match(html, /policy\.capLabels/);
+  assert.match(html, /不区分缴存人数/);
+  assert.doesNotMatch(html, /普通缴存家庭/);
+});
+
 test('公积金金额输入在失焦后显示千分位和两位小数', () => {
   assert.match(html, /fundAmountInput\.addEventListener\('focus'/);
   assert.match(html, /fundAmountInput\.addEventListener\('blur'/);
@@ -46,7 +56,7 @@ test('页面使用原有工具名称且不再显示功能副标题', () => {
 });
 
 test('页面加载统一公积金政策解析和计算引擎', () => {
-  assert.match(html, /<script src="housing-fund-policy-data\.js"><\/script>/);
+  assert.match(html, /<script src="housing-fund-policy-data\.js\?v=20260916"><\/script>/);
   assert.match(html, /<script src="housing-fund-policy-resolver\.js"><\/script>/);
   assert.match(html, /<script src="housing-fund-calculation-engine\.js"><\/script>/);
 });

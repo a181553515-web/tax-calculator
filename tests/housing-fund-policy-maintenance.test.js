@@ -13,6 +13,12 @@ test('贷款政策都包含核验状态、生效日、复核日和官方来源',
     assert.match(policy.effectiveFrom, /^\d{4}-\d{2}-\d{2}$/, `${id} 缺少生效日期`);
     assert.match(policy.reviewedAt, /^\d{4}-\d{2}-\d{2}$/, `${id} 缺少复核日期`);
     assert.match(policy.source, /^https:\/\//, `${id} 缺少官方来源链接`);
+    assert.ok(policy.capLabels && Object.keys(policy.capLabels).length > 0, `${id} 缺少用户可读的政策情形名称`);
+    assert.deepEqual(
+      Object.keys(policy.capLabels).sort(),
+      Object.keys(policy.caps).sort(),
+      `${id} 的政策情形名称与额度数据不一致`
+    );
   }
 });
 

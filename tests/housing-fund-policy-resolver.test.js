@@ -52,3 +52,37 @@ test('已核验城市返回政策上限，其他地区要求手动填写', () =>
   const missing = resolver.resolveLoanPolicy(loanData, 'unknown-city');
   assert.equal(missing, null);
 });
+
+test('贷款地区已扩展为15个官方核验地区', () => {
+  const ids = resolver.listLoanPolicies(loanData).map((policy) => policy.id);
+  assert.equal(ids.length, 15);
+  assert.deepEqual(ids.sort(), [
+    'anhui-hefei', 'anhui-luan', 'beijing', 'chongqing',
+    'guangdong-guangzhou', 'guangdong-shenzhen', 'hubei-wuhan',
+    'jiangsu-nanjing', 'jiangsu-suzhou', 'shaanxi-xian',
+    'shandong-jinan', 'shandong-qingdao', 'shanghai', 'tianjin',
+    'zhejiang-hangzhou'
+  ].sort());
+});
+
+test('新增城市代表性额度与特殊展示方式正确', () => {
+  assert.deepEqual(loanData.loanPolicies.beijing.caps.firstHome, {
+    single: 1200000,
+    family: 2400000
+  });
+  assert.equal(loanData.loanPolicies.tianjin.applicantMode, 'shared');
+  assert.equal(loanData.loanPolicies.tianjin.caps.multiChildFirstHome.family, 1440000);
+  assert.equal(loanData.loanPolicies['guangdong-guangzhou'].caps.multiChildFirstHome.family, 2240000);
+  assert.equal(loanData.loanPolicies['jiangsu-nanjing'].caps.stackedSupport.single, 1160000);
+  assert.equal(loanData.loanPolicies['hubei-wuhan'].caps.multiChild.family, 1800000);
+  assert.equal(loanData.loanPolicies['shaanxi-xian'].caps.standard.single, 900000);
+  assert.equal(loanData.loanPolicies['shandong-jinan'].caps.maxStackedSupport.family, 2400000);
+  assert.equal(loanData.loanPolicies['shandong-qingdao'].caps.maxStackedSupport.single, 1600000);
+});
+
+test('上海把补充公积金后的总上限直接列为可选政策情形', () => {
+  const shanghai = loanData.loanPolicies.shanghai;
+  assert.equal(shanghai.caps.firstHomeSupplemental.family, 2400000);
+  assert.equal(shanghai.caps.secondHomeSupplemental.single, 1000000);
+  assert.equal(shanghai.supplementalCaps, undefined);
+});

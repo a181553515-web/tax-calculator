@@ -334,6 +334,12 @@ body {
   grid-template-columns: 1fr 1fr;
   gap: var(--space-4);
 }
+.form-row.is-single {
+  grid-template-columns: 1fr;
+}
+.form-group[hidden] {
+  display: none !important;
+}
 .form-hint {
   font-size: 10px;
   color: var(--color-text-tertiary);
@@ -999,14 +1005,14 @@ body {
             <select class="form-select" id="loanPolicyRegion"></select>
           </div>
           <div class="form-row" id="loanVerifiedCapFields">
-            <div class="form-group">
+            <div class="form-group" id="loanApplicantGroup">
               <label class="form-label" for="loanApplicantType">缴存情况</label>
               <select class="form-select" id="loanApplicantType">
                 <option value="single">单人缴存</option>
                 <option value="family">夫妻双方缴存</option>
               </select>
             </div>
-            <div class="form-group">
+            <div class="form-group" id="loanCapCategoryGroup">
               <label class="form-label" for="loanCapCategory">政策情形</label>
               <select class="form-select" id="loanCapCategory"></select>
             </div>
@@ -1158,7 +1164,7 @@ body {
 </div>
 
 <script src="social-policy-data.js"></script>
-<script src="housing-fund-policy-data.js"></script>
+<script src="housing-fund-policy-data.js?v=20260916"></script>
 <script src="housing-fund-policy-resolver.js"></script>
 <script src="housing-fund-calculation-engine.js"></script>
 <script src="social-calculation-engine.js"></script>
@@ -2110,20 +2116,13 @@ var loanPolicyRegion = byId('loanPolicyRegion');
 var loanApplicantType = byId('loanApplicantType');
 var loanCapCategory = byId('loanCapCategory');
 var loanVerifiedCapFields = byId('loanVerifiedCapFields');
+var loanApplicantGroup = byId('loanApplicantGroup');
+var loanCapCategoryGroup = byId('loanCapCategoryGroup');
 var loanManualCapGroup = byId('loanManualCapGroup');
 var loanManualCap = byId('loanManualCap');
 var loanCapResult = byId('loanCapResult');
 var loanCapResultBody = byId('loanCapResultBody');
 var currentLoanMode = 'payment';
-
-var capCategoryLabels = {
-  standard: '普通缴存家庭',
-  multiChildFirstHome: '多子女家庭购买首套房',
-  newHome: '新建商品住房',
-  usedOrAffordableHome: '二手房/保障房/政府存量房',
-  firstHome: '首套住房',
-  secondHome: '第二套住房'
-};
 
 function setLoanMode(mode) {
   currentLoanMode = mode;
@@ -2199,13 +2198,20 @@ function populateLoanPolicies() {
 
 function syncLoanCapCategories() {
   var manual = loanPolicyRegion.value === 'manual';
-  loanVerifiedCapFields.hidden = manual;
   loanManualCapGroup.hidden = !manual;
+  loanVerifiedCapFields.hidden = manual;
   if (!manual) {
     var policy = resolver.resolveLoanPolicy(fundPolicyData, loanPolicyRegion.value);
     var categories = policy ? Object.keys(policy.caps || {}) : [];
+    var showApplicant = policy && policy.applicantMode !== 'shared';
+    var showCategory = categories.length > 1;
+    loanApplicantGroup.hidden = !showApplicant;
+    loanCapCategoryGroup.hidden = !showCategory;
+    loanVerifiedCapFields.hidden = !showApplicant && !showCategory;
+    loanVerifiedCapFields.classList.toggle('is-single', showApplicant !== showCategory);
     loanCapCategory.innerHTML = categories.map(function(category) {
-      return '<option value="' + escapeHtml(category) + '">' + escapeHtml(capCategoryLabels[category] || category) + '</option>';
+      var label = policy.capLabels && policy.capLabels[category] ? policy.capLabels[category] : category;
+      return '<option value="' + escapeHtml(category) + '">' + escapeHtml(label) + '</option>';
     }).join('');
   }
   runLoanCap();
@@ -2223,6 +2229,11 @@ function runLoanCap() {
   }
 
   var label = manual ? '手动填写的当地上限' : policy.label + '政策最高额度';
+  var applicantLabel = manual
+    ? '手动参考值'
+    : (policy.applicantMode === 'shared'
+      ? '不区分缴存人数'
+      : (loanApplicantType.value === 'family' ? '夫妻双方缴存' : '单人缴存'));
   var detail = manual
     ? '该金额由你手动填写，系统未核验当地政策。'
     : escapeHtml(policy.note || '实际额度还需按当地审批规则确定。');
@@ -2230,7 +2241,7 @@ function runLoanCap() {
     ? '<div class="compact-details__body"><a class="source-link" href="' + escapeHtml(policy.source) + '" target="_blank" rel="noopener noreferrer">查看政策来源</a></div>'
     : '';
   loanCapResultBody.innerHTML = '<div class="summary-grid">' +
-    '<div class="summary-card summary-card--highlight"><div class="summary-card__label">' + escapeHtml(label) + '</div><div class="summary-card__amount">¥' + money(result.amount) + '</div><div class="summary-card__sub">' + (loanApplicantType.value === 'family' ? '夫妻双方缴存' : '单人缴存') + '</div></div>' +
+    '<div class="summary-card summary-card--highlight"><div class="summary-card__label">' + escapeHtml(label) + '</div><div class="summary-card__amount">¥' + money(result.amount) + '</div><div class="summary-card__sub">' + escapeHtml(applicantLabel) + '</div></div>' +
     '</div><div class="result-callout result-callout--warning"><strong>注意：</strong>政策最高额度不等于实际审批额度。' + detail + '</div>' +
     (source ? '<details class="compact-details"><summary>查看政策说明</summary>' + source + '</details>' : '');
   setVisible(loanCapResult, true);
