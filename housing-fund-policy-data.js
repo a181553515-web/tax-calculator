@@ -33,6 +33,25 @@ var data = {
         standard: { single: 900000, family: 1200000 },
         multiChildFirstHome: { single: 1080000, family: 1440000 }
       },
+      estimation: {
+        type: 'base-and-balance',
+        minimumMonths: 6,
+        minimumBalance: 30000,
+        monthThreshold: 24,
+        shortMultiple: 15,
+        longMultiple: 20,
+        baseRatio: 0.6,
+        categories: {
+          standard: { minDownPaymentRatio: 0.2 },
+          multiChildFirstHome: { minDownPaymentRatio: 0.2 }
+        },
+        note: '仅测算合肥市中心单位缴存职工购买新建商品住房；不含绿色建筑、人才、保障房、商转公等特殊情形。符合条件的租房及购房提取额可合并计入测算余额，尚未确认时仅填账户现余额，结果可能偏低。年限需结合年龄及退休条件确认，征信、负债、住房套数等仍须审核。',
+        sources: [
+          'https://www.hfyaohai.gov.cn/zwdt/bmts/11463605.html',
+          'https://www.hfgfgs.com/index.php/dynamic/detail/id/42281/cid/31.html',
+          'https://www.hfyaohai.gov.cn/zwdt/bmts/11330317.html'
+        ]
+      },
       note: '实际额度还受缴存基数、账户余额、可贷年限和还款能力等因素限制',
       source: 'https://gjjzx.hefei.gov.cn/zcfg/gjjzc/18878349.html'
     },
@@ -45,13 +64,32 @@ var data = {
       reviewedAt: '2026-09-16',
       capLabels: {
         newHome: '新建商品住房',
-        usedOrAffordableHome: '二手房/保障房/政府存量房'
+        usedOrAffordableHome: '二手住房',
+        affordableHome: '保障性住房',
+        governmentStockHome: '政府存量住房'
       },
       caps: {
         newHome: { single: 600000, family: 800000 },
-        usedOrAffordableHome: { single: 400000, family: 600000 }
+        usedOrAffordableHome: { single: 400000, family: 600000 },
+        affordableHome: { single: 400000, family: 600000 },
+        governmentStockHome: { single: 400000, family: 600000 }
       },
       formula: { type: 'monthly-contribution-multiple', annualMultiple: 20 },
+      estimation: {
+        type: 'monthly-contribution',
+        minimumMonths: 6,
+        annualMultiple: 20,
+        minimumFormulaAmount: 180000,
+        repaymentRatio: 0.5,
+        categories: {
+          newHome: { minDownPaymentRatio: 0.2 },
+          usedOrAffordableHome: { minDownPaymentRatio: 0.2, maxPropertyAge: 20, agePlusYears: 40 },
+          affordableHome: { minDownPaymentRatio: 0.15 },
+          governmentStockHome: { minDownPaymentRatio: 0.2 }
+        },
+        note: '仅测算普通单位缴存职工购房；暂不含灵活就业、人才、多子女、绿色建筑等优惠及商转公。家庭收入应采用当地认可的收入口径。年限需结合年龄和退休条件确认，征信、担保及住房套数等仍须审核。',
+        sources: ['https://zfgjj.luan.gov.cn/public/6608511/10701396.html']
+      },
       note: '可贷额度还需按借款人及配偶最近一次月缴存额×12×20测算，并受还款能力及房价限制',
       source: 'https://zfgjj.luan.gov.cn/public/6608511/10701396.html'
     },
@@ -215,14 +253,15 @@ var data = {
       city: '苏州市',
       label: '江苏苏州',
       status: 'verified',
-      effectiveFrom: '2025-01-01',
+      effectiveFrom: '2026-06-01',
+      effectiveTo: '2028-05-31',
       reviewedAt: '2026-09-16',
       capLabels: { standard: '普通家庭' },
       caps: {
-        standard: { single: 1200000, family: 1500000 }
+        standard: { single: 1500000, family: 2000000 }
       },
       note: '青年人才等特定群体另有上浮政策；此处展示普通家庭最高限额',
-      source: 'https://gjj.suzhou.gov.cn/szgjj/fzxdt/202603/db257614ca4d492a8f7e95519f7ffad2.shtml'
+      source: 'https://www.suzhou.gov.cn/szsrmzf/dstx/202605/d7bf7a1d2f55450db7a81f3b48883fa6.shtml'
     },
     'hubei-wuhan': {
       province: '湖北',

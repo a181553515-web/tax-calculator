@@ -1,6 +1,10 @@
 (function(root) {
 'use strict';
 
+var fundEngine = typeof module !== 'undefined' && module.exports
+  ? require('./housing-fund-calculation-engine.js')
+  : root.HOUSING_FUND_CALCULATION_ENGINE;
+
 function round2(value) {
   return Math.round(value * 100) / 100;
 }
@@ -38,10 +42,12 @@ function calculate(rates, salary, options) {
   var unemploymentBase = clampBase(socialBaseInputs.unemployment, rates.baseLimits.unemployment);
   var injuryBase = clampBase(socialBaseInputs.injury, rates.baseLimits.injury);
   var siBase = pensionBase;
-  var fundBase = Math.max(rates.fundMin, Math.min(salary, rates.fundMax));
+  var fundLimits = { min:rates.fundMin, max:rates.fundMax };
+  var fundState = fundEngine.resolveContributionBase(salary, fundLimits);
+  var fundBase = fundState.base;
 
   var isCapped = getBaseState(socialBaseInputs.pension, rates.baseLimits.pension);
-  var isFundCapped = salary < rates.fundMin ? 'floor' : (salary > rates.fundMax ? 'ceiling' : 'normal');
+  var isFundCapped = fundState.baseState;
 
   var pensionEmp = round2(pensionBase * rates.pension[0] / 100);
   var pensionPer = round2(pensionBase * rates.pension[1] / 100);
@@ -69,8 +75,9 @@ function calculate(rates, salary, options) {
   var fundEmp = 0;
   var fundPer = 0;
   if (rates.fundEnabled) {
-    fundEmp = round2(fundBase * rates.fundRatio / 100);
-    fundPer = round2(fundBase * rates.fundRatio / 100);
+    var fundResult = fundEngine.calculateContribution(fundBase, rates.fundRatio, rates.fundRatio, fundLimits);
+    fundEmp = fundResult.employerMonthly;
+    fundPer = fundResult.employeeMonthly;
   }
 
   var siEmpTotal = round2(pensionEmp + medicalEmp + maternityEmp + medicalAidEmp + unempEmp + injuryEmp + injurySupplementEmp + ltcEmp);

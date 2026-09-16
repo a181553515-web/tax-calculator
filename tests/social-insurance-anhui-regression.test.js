@@ -16,8 +16,9 @@ test('安徽社保使用2026年度最新上下限，公积金仍按合肥六安�
     ['六安市区', 2170, 25945],
     ['六安县区（霍邱、金寨、霍山、舒城、叶集）', 2100, 25945]
   ]);
-  assert.match(html, /rates\.fundMin = region\.fund\.min;/);
-  assert.match(html, /rates\.fundMax = region\.fund\.max;/);
+  assert.match(html, /HOUSING_FUND_POLICY_RESOLVER\.resolveContributionPolicy\(SOCIAL_POLICY_DATA, prov, region\.id\)/);
+  assert.match(html, /rates\.fundMin = fundPolicy\.min;/);
+  assert.match(html, /rates\.fundMax = fundPolicy\.max;/);
   assert.equal(policy.regionGroups['安徽'].reviewedAt, '2026-09-04');
   assert.equal(policy.regionGroups['安徽'].effectiveFrom, '2026-01-01');
   assert.equal(policy.regionGroups['安徽'].effectiveTo, '2026-12-31');

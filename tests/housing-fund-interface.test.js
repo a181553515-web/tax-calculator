@@ -5,6 +5,21 @@ const test = require('node:test');
 
 const html = fs.readFileSync(path.join(__dirname, '..', 'social-insurance.html'), 'utf8');
 
+test('额度入口精简，不要求房价首付，可选校验默认折叠', () => {
+  assert.match(html, />算贷款额度</);
+  assert.doesNotMatch(html, /id="estimatePropertyPrice"|id="estimateDownPayment"|算算我能贷多少/);
+  assert.match(html, /<details[^>]*id="estimateIncomeFields"[^>]*hidden>/);
+  assert.match(html, /还款能力校验（可选）/);
+  assert.match(html, /id="estimateCheckIncome"/);
+  assert.match(html, /缴存条件测算上限（参考）/);
+});
+
+test('贷款金额防错与明确转换入口保留', () => {
+  assert.match(html, /id="loanAmountConvert"/);
+  assert.match(html, /engine\.validateLoanAmount/);
+  assert.match(html, /id="useEstimateForPayment"/);
+});
+
 test('页面按社保公积金、公积金缴存、公积金贷款顺序提供三个主入口', () => {
   assert.match(html, /id="mainTaskSwitch"/);
   assert.match(html, />公积金缴存</);
@@ -59,9 +74,9 @@ test('页面使用原有工具名称且不再显示功能副标题', () => {
 });
 
 test('页面加载统一公积金政策解析和计算引擎', () => {
-  assert.match(html, /<script src="housing-fund-policy-data\.js\?v=20260916"><\/script>/);
+  assert.match(html, /<script src="housing-fund-policy-data\.js\?v=20260916-estimate"><\/script>/);
   assert.match(html, /<script src="housing-fund-policy-resolver\.js"><\/script>/);
-  assert.match(html, /<script src="housing-fund-calculation-engine\.js"><\/script>/);
+  assert.match(html, /<script src="housing-fund-calculation-engine\.js\?v=20260916-estimate"><\/script>/);
 });
 
 test('原社保三种模式和计算结果容器保持存在', () => {

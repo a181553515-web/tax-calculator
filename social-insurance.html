@@ -340,6 +340,9 @@ body {
 .form-group[hidden] {
   display: none !important;
 }
+.form-row[hidden], button[hidden], #loanEstimationFields[hidden] {
+  display: none !important;
+}
 .form-hint {
   font-size: 10px;
   color: var(--color-text-tertiary);
@@ -958,7 +961,7 @@ body {
 
         <div class="sub-mode-switch" id="fundLoanMode" role="tablist" aria-label="公积金贷款测算方式">
           <button type="button" class="sub-mode-btn active" data-loan-mode="payment" role="tab" aria-selected="true">算贷款月供</button>
-          <button type="button" class="sub-mode-btn" data-loan-mode="cap" role="tab" aria-selected="false">查当地最高额度</button>
+          <button type="button" class="sub-mode-btn" data-loan-mode="cap" role="tab" aria-selected="false">算贷款额度</button>
         </div>
         <div class="calc-mode-hint" id="fundLoanHint">按现行公积金贷款利率测算月供、总利息和还款明细</div>
 
@@ -966,7 +969,9 @@ body {
           <div class="form-row">
             <div class="form-group">
               <label class="form-label" for="loanAmount">贷款金额 <span class="unit">万元</span></label>
-              <input class="form-input" type="text" id="loanAmount" inputmode="decimal" placeholder="例如：80">
+              <input class="form-input" type="text" id="loanAmount" inputmode="decimal" placeholder="例如：80（即80万元）" aria-describedby="loanAmountHint">
+              <div class="form-hint" id="loanAmountHint" aria-live="polite">请输入万元金额，例如80万元填80</div>
+              <button type="button" class="source-link" id="loanAmountConvert" hidden>我填的是元，换算为万元</button>
             </div>
             <div class="form-group">
               <label class="form-label" for="loanYears">贷款期限 <span class="unit">年</span></label>
@@ -995,6 +1000,7 @@ body {
             <div class="compact-details__body">
               <label class="form-label" for="loanCustomRate">年利率 <span class="unit">%</span></label>
               <input class="form-input" type="text" id="loanCustomRate" inputmode="decimal" placeholder="留空则自动采用现行利率">
+              <div class="form-hint" id="loanCustomRateHint" aria-live="polite"></div>
             </div>
           </details>
         </div>
@@ -1021,6 +1027,27 @@ body {
             <label class="form-label" for="loanManualCap">当地贷款上限 <span class="unit">万元</span></label>
             <input class="form-input" type="text" id="loanManualCap" inputmode="decimal" placeholder="请输入当地公积金贷款上限">
           </div>
+          <div id="loanEstimationFields" hidden>
+            <div class="form-hint" id="loanEstimationScope"></div>
+            <div class="form-row">
+              <div class="form-group"><label class="form-label" for="estimateYears">实际可贷年限 <span class="unit">年</span></label><input class="form-input" type="number" id="estimateYears" min="1" max="30" step="1" value="30"><div class="form-hint">1—30年，需结合年龄、退休条件及房龄确认</div></div>
+              <div class="form-group" id="estimatePropertyAgeGroup" hidden><label class="form-label" for="estimatePropertyAge">二手房房龄 <span class="unit">年</span></label><input class="form-input" type="number" id="estimatePropertyAge" min="0" max="20" step="1" placeholder="例如：10"></div>
+            </div>
+            <div id="estimateContributors"></div>
+            <details class="compact-details" id="estimateIncomeFields" hidden>
+            <summary>还款能力校验（可选）</summary>
+            <div class="form-hint"><label><input type="checkbox" id="estimateCheckIncome"> 同时考虑家庭收入和已有贷款</label></div>
+            <div class="form-row">
+              <div class="form-group"><label class="form-label" for="estimateHomeType">贷款利率档次</label><select class="form-select" id="estimateHomeType"><option value="first">首套住房</option><option value="second">第二套住房</option></select></div>
+              <div class="form-group"><label class="form-label" for="estimateMethod">还款方式</label><select class="form-select" id="estimateMethod"><option value="equal-payment">等额本息</option><option value="equal-principal">等额本金</option></select></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label class="form-label" for="estimateFamilyIncome">家庭认可月收入 <span class="unit">元/月</span></label><input class="form-input" type="text" id="estimateFamilyIncome" inputmode="decimal" placeholder="例如：8000"></div>
+              <div class="form-group"><label class="form-label" for="estimateOtherDebt">其他贷款月还款额 <span class="unit">元/月</span></label><input class="form-input" type="text" id="estimateOtherDebt" inputmode="decimal" value="0"><div class="form-hint">没有其他贷款填0</div></div>
+            </div>
+            </details>
+            <div class="form-hint" id="loanEstimateHint" aria-live="polite"></div>
+          </div>
         </div>
       </div>
 
@@ -1030,7 +1057,7 @@ body {
       </div>
 
       <div class="card tool-result" id="loanCapResult" aria-live="polite">
-        <div class="card-header">当地最高额度</div>
+        <div class="card-header">贷款额度参考</div>
         <div id="loanCapResultBody"></div>
       </div>
     </section>
@@ -1164,10 +1191,10 @@ body {
 </div>
 
 <script src="social-policy-data.js"></script>
-<script src="housing-fund-policy-data.js?v=20260916"></script>
+<script src="housing-fund-policy-data.js?v=20260916-estimate"></script>
 <script src="housing-fund-policy-resolver.js"></script>
-<script src="housing-fund-calculation-engine.js"></script>
-<script src="social-calculation-engine.js"></script>
+<script src="housing-fund-calculation-engine.js?v=20260916-estimate"></script>
+<script src="social-calculation-engine.js?v=20260916-estimate"></script>
 <script>
 (function() {
 'use strict';
@@ -1286,8 +1313,6 @@ function getRates() {
   rates.province = prov;
   rates.siMin = bases.min;
   rates.siMax = bases.max;
-  rates.fundMin = bases.fundMin;
-  rates.fundMax = bases.fundMax;
   rates.baseLimits = {
     pension: { min:bases.min, max:bases.max },
     medical: { min:bases.medicalMin || bases.min, max:bases.medicalMax || bases.max },
@@ -1328,11 +1353,10 @@ function getRates() {
       };
     });
   }
-  if (region.fund) {
-    rates.fundMin = region.fund.min;
-    rates.fundMax = region.fund.max;
-  }
   if (region.rates) Object.assign(rates, region.rates);
+  var fundPolicy = HOUSING_FUND_POLICY_RESOLVER.resolveContributionPolicy(SOCIAL_POLICY_DATA, prov, region.id);
+  rates.fundMin = fundPolicy.min;
+  rates.fundMax = fundPolicy.max;
 
   if (basePolicy) {
     var insuranceLabels = {
@@ -1919,8 +1943,10 @@ if (!socialData || !fundPolicyData || !resolver || !engine) return;
 
 function byId(id) { return document.getElementById(id); }
 function parseAmount(value) {
-  var parsed = parseFloat(String(value || '').replace(/,/g, ''));
-  return Number.isFinite(parsed) ? parsed : 0;
+  var text = String(value == null ? '' : value).trim();
+  if (!text) return 0;
+  if (!/^(?:\d+|\d{1,3}(?:,\d{3})+)(?:\.\d{1,6})?$/.test(text)) return NaN;
+  return Number(text.replace(/,/g, ''));
 }
 function money(value) {
   return Number(value || 0).toLocaleString('zh-CN', { minimumFractionDigits:2, maximumFractionDigits:2 });
@@ -2105,6 +2131,8 @@ var loanHint = byId('fundLoanHint');
 var loanPaymentFields = byId('loanPaymentFields');
 var loanCapFields = byId('loanCapFields');
 var loanAmount = byId('loanAmount');
+var loanAmountHint = byId('loanAmountHint');
+var loanAmountConvert = byId('loanAmountConvert');
 var loanYears = byId('loanYears');
 var loanYearsHint = byId('loanYearsHint');
 var loanHomeType = byId('loanHomeType');
@@ -2123,6 +2151,9 @@ var loanManualCap = byId('loanManualCap');
 var loanCapResult = byId('loanCapResult');
 var loanCapResultBody = byId('loanCapResultBody');
 var currentLoanMode = 'payment';
+var loanEstimationFields = byId('loanEstimationFields');
+var estimateContributors = byId('estimateContributors');
+var lastPersonalEstimate = null;
 
 function setLoanMode(mode) {
   currentLoanMode = mode;
@@ -2131,7 +2162,7 @@ function setLoanMode(mode) {
   loanCapFields.hidden = isPayment;
   loanHint.textContent = isPayment
     ? '按现行公积金贷款利率测算月供、总利息和还款明细'
-    : '查看已核验城市政策最高额度；其他地区可手动填写当地上限';
+    : '选择城市，自动匹配政策上限；已开放地区可继续填写个人情况测算';
   loanModeSwitch.querySelectorAll('.sub-mode-btn').forEach(function(button) {
     var active = button.dataset.loanMode === mode;
     button.classList.toggle('active', active);
@@ -2151,21 +2182,33 @@ function renderLoanScheduleRows(schedule) {
 
 function runLoanPayment() {
   if (currentLoanMode !== 'payment') return;
-  var amountWan = parseAmount(loanAmount.value);
-  var years = parseInt(loanYears.value, 10);
+  var amountCheck = engine.validateLoanAmount(loanAmount.value);
+  var amountWan = amountCheck.amountWan;
+  loanAmountHint.classList.toggle('is-error', !amountCheck.ok && amountCheck.reason !== 'empty');
+  loanAmountHint.textContent = amountCheck.ok ? '贷款本金：' + money(amountCheck.principal) + '元'
+    : (amountCheck.reason === 'suspected-yuan' ? '当前单位为万元。金额超过1000万元防错阈值，请检查是否误填了元；这不是政策贷款上限。'
+      : (amountCheck.reason === 'empty' ? '请输入万元金额，例如80万元填80' : '请输入有效金额，最多六位小数；不要输入“元”或“万”等文字'));
+  loanAmountConvert.hidden = amountCheck.reason !== 'suspected-yuan';
+  loanAmount.setAttribute('aria-invalid', !amountCheck.ok && amountCheck.reason !== 'empty' ? 'true' : 'false');
+  var years = Number(loanYears.value);
   var validYears = Number.isInteger(years) && years >= 1 && years <= 30;
   loanYearsHint.classList.toggle('is-error', !validYears);
   loanYearsHint.textContent = validYears
     ? '限1—30年；5年（含）以内适用短期利率'
     : '请输入1—30年的整数期限';
   loanYears.setAttribute('aria-invalid', validYears ? 'false' : 'true');
-  if (amountWan <= 0 || !validYears) {
+  if (!amountCheck.ok || !validYears) {
     setVisible(loanPaymentResult, false);
     return;
   }
   var months = years * 12;
   var customRate = parseAmount(loanCustomRate.value);
   if (!loanCustomRate.value.trim()) customRate = undefined;
+  var validRate = customRate === undefined || (Number.isFinite(customRate) && customRate > 0 && customRate <= 20);
+  byId('loanCustomRateHint').textContent = validRate ? '' : '请输入大于0且不超过20的年利率百分数，或留空采用现行利率';
+  byId('loanCustomRateHint').classList.toggle('is-error', !validRate);
+  loanCustomRate.setAttribute('aria-invalid', validRate ? 'false' : 'true');
+  if (!validRate) { setVisible(loanPaymentResult, false); return; }
   try {
     var annualRate = engine.resolveAnnualLoanRate(fundPolicyData.nationalLoanRates, loanHomeType.value, months, customRate);
     var result = engine.calculateLoanSchedule(amountWan * 10000, annualRate, months, loanMethod.value);
@@ -2214,11 +2257,59 @@ function syncLoanCapCategories() {
       return '<option value="' + escapeHtml(category) + '">' + escapeHtml(label) + '</option>';
     }).join('');
   }
+  syncPersonalLoanFields();
   runLoanCap();
+}
+
+function syncPersonalLoanFields() {
+  var policy = resolver.resolveLoanPolicy(fundPolicyData, loanPolicyRegion.value);
+  var rule = policy && policy.estimation;
+  var categoryRule = rule && rule.categories[loanCapCategory.value];
+  loanEstimationFields.hidden = !categoryRule;
+  if (!categoryRule) { estimateContributors.innerHTML = ''; return; }
+  byId('loanEstimationScope').textContent = rule.type === 'base-and-balance'
+    ? '合肥：仅限单位缴存职工购买新建商品住房，暂不含绿色建筑等特殊优惠'
+    : '六安：按普通单位缴存职工购房测算，暂不含灵活就业及特殊优惠';
+  byId('estimatePropertyAgeGroup').hidden = categoryRule.maxPropertyAge == null;
+  byId('estimateIncomeFields').hidden = rule.type !== 'monthly-contribution';
+  var count = loanApplicantType.value === 'family' ? 2 : 1;
+  var existing = {};
+  estimateContributors.querySelectorAll('input').forEach(function(input) { existing[input.id] = input.value; });
+  estimateContributors.innerHTML = Array.from({ length:count }, function(_, index) {
+    var prefix = 'estimatePerson' + index;
+    var label = index === 0 ? '本人' : '配偶';
+    var amounts = rule.type === 'base-and-balance'
+      ? '<div class="form-row"><div class="form-group"><label class="form-label" for="' + prefix + 'Base">' + label + '公积金缴存基数 <span class="unit">元/月</span></label><input class="form-input" type="text" id="' + prefix + 'Base" data-person="' + index + '" data-field="base" inputmode="decimal" placeholder="例如：5000"></div><div class="form-group"><label class="form-label" for="' + prefix + 'Balance">' + label + '测算余额 <span class="unit">元</span></label><input class="form-input" type="text" id="' + prefix + 'Balance" data-person="' + index + '" data-field="balance" inputmode="decimal" placeholder="例如：30000"><div class="form-hint">账户现余额；符合政策的提取额可合并计入</div></div></div>'
+      : '<div class="form-group"><label class="form-label" for="' + prefix + 'MonthlyTotal">' + label + '公积金月缴存额 <span class="unit">元/月</span></label><input class="form-input" type="text" id="' + prefix + 'MonthlyTotal" data-person="' + index + '" data-field="monthlyTotal" inputmode="decimal" placeholder="例如：1000"><div class="form-hint">填个人＋单位双边合计，不是个人扣款金额</div></div>';
+    return amounts + '<div class="form-group"><label class="form-label" for="' + prefix + 'Months">' + label + '连续正常缴存时间 <span class="unit">月</span></label><input class="form-input" type="number" id="' + prefix + 'Months" data-person="' + index + '" data-field="months" min="6" step="1" placeholder="例如：24"></div>';
+  }).join('');
+  estimateContributors.querySelectorAll('input').forEach(function(input) { if (existing[input.id] != null) input.value = existing[input.id]; });
+}
+
+function readPersonalLoanInput() {
+  var contributors = [];
+  estimateContributors.querySelectorAll('input').forEach(function(input) {
+    var index = Number(input.dataset.person);
+    if (!contributors[index]) contributors[index] = {};
+    contributors[index][input.dataset.field] = input.value.trim() ? parseAmount(input.value) : NaN;
+  });
+  var years = Number(byId('estimateYears').value);
+  var rates = fundPolicyData.nationalLoanRates[byId('estimateHomeType').value];
+  return {
+    contributors:contributors,
+    checkRepaymentCapacity:!byId('estimateIncomeFields').hidden && byId('estimateCheckIncome').checked,
+    years:years,
+    propertyAge:byId('estimatePropertyAge').value.trim() ? Number(byId('estimatePropertyAge').value) : NaN,
+    familyIncome:parseAmount(byId('estimateFamilyIncome').value),
+    otherMonthlyDebt:byId('estimateOtherDebt').value.trim() ? parseAmount(byId('estimateOtherDebt').value) : NaN,
+    annualRate:years <= 5 ? rates.upTo5Years : rates.over5Years,
+    method:byId('estimateMethod').value
+  };
 }
 
 function runLoanCap() {
   if (currentLoanMode !== 'cap') return;
+  lastPersonalEstimate = null;
   var manual = loanPolicyRegion.value === 'manual';
   var policy = manual ? null : resolver.resolveLoanPolicy(fundPolicyData, loanPolicyRegion.value);
   var manualAmount = manual ? parseAmount(loanManualCap.value) * 10000 : 0;
@@ -2240,9 +2331,36 @@ function runLoanCap() {
   var source = policy && policy.source
     ? '<div class="compact-details__body"><a class="source-link" href="' + escapeHtml(policy.source) + '" target="_blank" rel="noopener noreferrer">查看政策来源</a></div>'
     : '';
+  var personal = loanEstimationFields.hidden ? { ok:false, reason:'unsupported' }
+    : engine.estimatePersonalLoan(policy, loanApplicantType.value, loanCapCategory.value, readPersonalLoanInput());
+  var messages = {
+    'invalid-input':'请完整填写有效金额及1—30年的整数年限。',
+    'property-age':'六安二手房房龄不能超过20年，房龄与贷款年限合计不能超过40年。',
+    'contribution-months':'参与贷款测算的本人及配偶需连续正常缴存至少6个月，请核对。'
+  };
+  byId('loanEstimateHint').textContent = personal.ok ? '' : (messages[personal.reason] || '');
+  byId('loanEstimateHint').classList.toggle('is-error', !personal.ok && personal.reason !== 'unsupported');
+  var mainAmount = result.amount;
+  var mainLabel = label;
+  var personalHtml = '';
+  if (personal.ok) {
+    lastPersonalEstimate = { amount:personal.amount, input:readPersonalLoanInput() };
+    mainAmount = personal.amount;
+    mainLabel = '缴存条件测算上限（参考）';
+    personalHtml = '<div class="result-callout">当地政策上限：¥' + money(result.amount) + '；当前限制因素：' + escapeHtml(personal.limitingFactors.join('、')) + '。</div>' +
+      (personal.amount > 0 ? '<button type="button" class="source-link" id="useEstimateForPayment">按此额度算月供 →</button>' : '') +
+      '<details class="compact-details"><summary>查看测算依据</summary><div class="compact-details__body">' +
+      personal.limits.map(function(item) { return '<div>' + escapeHtml(item.label) + '：¥' + money(item.amount) + '</div>'; }).join('') +
+      '<p>' + escapeHtml(policy.estimation.note) + '</p>' +
+      policy.estimation.sources.map(function(url, index) { return '<div><a class="source-link" href="' + escapeHtml(url) + '" target="_blank" rel="noopener noreferrer">测算规则来源' + (index + 1) + '</a></div>'; }).join('') + '</div></details>';
+  } else {
+    personalHtml = '<div class="result-callout">' + (personal.reason === 'unsupported'
+      ? '该地区目前仅提供政策上限，个人额度规则尚未完整核验，不生成个人可贷测算值。'
+      : '填写上方个人情况后测算可贷额度；未完成前这里只展示政策上限。') + '</div>';
+  }
   loanCapResultBody.innerHTML = '<div class="summary-grid">' +
-    '<div class="summary-card summary-card--highlight"><div class="summary-card__label">' + escapeHtml(label) + '</div><div class="summary-card__amount">¥' + money(result.amount) + '</div><div class="summary-card__sub">' + escapeHtml(applicantLabel) + '</div></div>' +
-    '</div><div class="result-callout result-callout--warning"><strong>注意：</strong>政策最高额度不等于实际审批额度。' + detail + '</div>' +
+    '<div class="summary-card summary-card--highlight"><div class="summary-card__label">' + escapeHtml(mainLabel) + '</div><div class="summary-card__amount">¥' + money(mainAmount) + '</div><div class="summary-card__sub">' + escapeHtml(applicantLabel) + '</div></div>' +
+    '</div>' + personalHtml + '<div class="result-callout result-callout--warning"><strong>注意：</strong>' + (personal.ok ? '此为缴存条件测算上限；实际贷款还受房价、首付、还款能力及审批条件限制。' : '政策最高额度不等于实际审批额度。' + detail) + '</div>' +
     (source ? '<details class="compact-details"><summary>查看政策说明</summary>' + source + '</details>' : '');
   setVisible(loanCapResult, true);
 }
@@ -2256,16 +2374,31 @@ loanModeSwitch.addEventListener('click', function(event) {
   input.addEventListener('input', runLoanPayment);
 });
 loanYears.addEventListener('blur', function() {
-  var years = parseInt(loanYears.value, 10);
-  if (!Number.isInteger(years) || years < 1) loanYears.value = '1';
-  if (years > 30) loanYears.value = '30';
+  runLoanPayment();
+});
+loanAmountConvert.addEventListener('click', function() {
+  var check = engine.validateLoanAmount(loanAmount.value);
+  if (check.reason !== 'suspected-yuan') return;
+  loanAmount.value = String(check.amountWan / 10000);
   runLoanPayment();
 });
 loanHomeType.addEventListener('change', runLoanPayment);
 loanMethod.addEventListener('change', runLoanPayment);
 loanPolicyRegion.addEventListener('change', syncLoanCapCategories);
-loanApplicantType.addEventListener('change', runLoanCap);
-loanCapCategory.addEventListener('change', runLoanCap);
+loanApplicantType.addEventListener('change', function() { syncPersonalLoanFields(); runLoanCap(); });
+loanCapCategory.addEventListener('change', function() { syncPersonalLoanFields(); runLoanCap(); });
+loanEstimationFields.addEventListener('input', runLoanCap);
+loanEstimationFields.addEventListener('change', runLoanCap);
+loanCapResultBody.addEventListener('click', function(event) {
+  if (event.target.id !== 'useEstimateForPayment' || !lastPersonalEstimate || lastPersonalEstimate.amount <= 0) return;
+  loanAmount.value = String(lastPersonalEstimate.amount / 10000);
+  loanYears.value = String(lastPersonalEstimate.input.years);
+  loanHomeType.value = byId('estimateHomeType').value;
+  loanMethod.value = lastPersonalEstimate.input.method;
+  loanCustomRate.value = '';
+  setLoanMode('payment');
+  loanAmount.focus();
+});
 loanManualCap.addEventListener('input', runLoanCap);
 populateLoanPolicies();
 
