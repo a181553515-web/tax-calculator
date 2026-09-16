@@ -5,6 +5,19 @@ const engine = require('../housing-fund-calculation-engine.js');
 
 const limits = { min: 2320, max: 31564 };
 
+test('同条件商贷比较支持等额本息、等额本金和二套利息反转', () => {
+  const fund = engine.calculateLoanSchedule(800000,2.6,360,'equal-payment');
+  const commercial = engine.calculateLoanSchedule(800000,3.05,360,'equal-payment');
+  assert.equal(fund.firstPayment,3202.72);
+  assert.equal(commercial.firstPayment,3394.44);
+  assert.equal(Math.round((commercial.totalInterest-fund.totalInterest)*100)/100,69021.30);
+  const second = engine.calculateLoanSchedule(800000,3.075,360,'equal-principal');
+  const secondCommercial = engine.calculateLoanSchedule(800000,3.05,360,'equal-principal');
+  assert.equal(second.firstPayment,4272.22);
+  assert.equal(secondCommercial.firstPayment,4255.56);
+  assert.equal(Math.round((secondCommercial.totalInterest-second.totalInterest)*100)/100,-3008.33);
+});
+
 test('公积金缴存额按当地上下限计算', () => {
   const below = engine.calculateContribution(2000, 8, 8, limits);
   assert.equal(below.base, 2320);

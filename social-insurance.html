@@ -1001,10 +1001,20 @@ body {
               <label class="form-label" for="loanCustomRate">年利率 <span class="unit">%</span></label>
               <input class="form-input" type="text" id="loanCustomRate" inputmode="decimal" placeholder="留空则自动采用现行利率">
               <div class="form-hint" id="loanCustomRateHint" aria-live="polite"></div>
+              <div class="form-hint">修改当前贷款的测算利率；比较商贷请使用下方对比功能。</div>
             </div>
           </details>
         </div>
 
+        <div id="loanCompareControls" class="form-group">
+          <label><input type="checkbox" id="loanCompareEnabled"> 与商贷对比</label>
+          <div id="loanCommercialFields" hidden>
+            <label class="form-label" for="loanCommercialRate">商贷年利率 <span class="unit">%</span></label>
+            <input class="form-input" type="text" id="loanCommercialRate" inputmode="decimal" placeholder="填写银行报价，例如：3.05">
+            <div class="form-hint" id="loanCommercialReference"></div>
+            <div class="form-hint" id="loanCommercialHint" aria-live="polite"></div>
+          </div>
+        </div>
         <div class="field-panel" id="loanCapFields" hidden>
           <div class="form-group">
             <label class="form-label" for="loanPolicyRegion">购房地区</label>
@@ -2159,6 +2169,7 @@ function setLoanMode(mode) {
   currentLoanMode = mode;
   var isPayment = mode === 'payment';
   loanPaymentFields.hidden = !isPayment;
+  byId('loanCompareControls').hidden = !isPayment;
   loanCapFields.hidden = isPayment;
   loanHint.textContent = isPayment
     ? '按现行公积金贷款利率测算月供、总利息和还款明细'
@@ -2180,8 +2191,15 @@ function renderLoanScheduleRows(schedule) {
   }).join('');
 }
 
+function syncCommercialComparison() {
+  byId('loanCommercialFields').hidden = !byId('loanCompareEnabled').checked;
+  var reference = fundPolicyData.commercialLoanReference;
+  byId('loanCommercialReference').textContent = reference[loanHomeType.value] + '（参考至' + reference.reviewedAt + '）；' + reference.note + '。';
+}
+
 function runLoanPayment() {
   if (currentLoanMode !== 'payment') return;
+  syncCommercialComparison();
   var amountCheck = engine.validateLoanAmount(loanAmount.value);
   var amountWan = amountCheck.amountWan;
   loanAmountHint.classList.toggle('is-error', !amountCheck.ok && amountCheck.reason !== 'empty');
@@ -2213,6 +2231,22 @@ function runLoanPayment() {
     var annualRate = engine.resolveAnnualLoanRate(fundPolicyData.nationalLoanRates, loanHomeType.value, months, customRate);
     var result = engine.calculateLoanSchedule(amountWan * 10000, annualRate, months, loanMethod.value);
     var paymentLabel = result.method === 'equal-payment' ? '每月月供' : '首月月供';
+    var comparisonHtml = '';
+    if (byId('loanCompareEnabled').checked) {
+      var commercialRate = parseAmount(byId('loanCommercialRate').value);
+      var comparisonValid = byId('loanCommercialRate').value.trim() && Number.isFinite(commercialRate) && commercialRate > 0 && commercialRate <= 20;
+      byId('loanCommercialHint').textContent = comparisonValid ? '' : '填写大于0且不超过20的商贷年利率后显示对比';
+      byId('loanCommercialRate').setAttribute('aria-invalid', comparisonValid || !byId('loanCommercialRate').value.trim() ? 'false' : 'true');
+      if (comparisonValid) {
+        var commercial = engine.calculateLoanSchedule(amountCheck.principal, commercialRate, months, loanMethod.value);
+        var interestDifference = Math.round((commercial.totalInterest - result.totalInterest) * 100) / 100;
+        comparisonHtml = '<div class="result-callout" id="loanComparisonResult"><strong>与商贷对比 · ' + paymentLabel + '</strong>' +
+          '<div>' + (customRate === undefined ? '公积金' : '当前贷款（自定义）') + '：¥' + money(result.firstPayment) + '（' + annualRate + '%）</div>' +
+          '<div>商贷：¥' + money(commercial.firstPayment) + '（' + commercialRate + '%）</div>' +
+          '<div>' + (interestDifference >= 0 ? '当前贷款总利息少' : '当前贷款总利息多') + ' ¥' + money(Math.abs(interestDifference)) + '</div>' +
+          '<div class="form-hint">同金额、期限及还款方式；按全程利率不变，不计贴息与费用。</div></div>';
+      }
+    }
     var secondary = result.method === 'equal-payment'
       ? '<div class="summary-card"><div class="summary-card__label">末月月供</div><div class="summary-card__amount">¥' + money(result.lastPayment) + '</div></div>'
       : '<div class="summary-card"><div class="summary-card__label">末月月供</div><div class="summary-card__amount">¥' + money(result.lastPayment) + '</div><div class="summary-card__sub">每月约递减 ¥' + money(result.monthlyDecrease) + '</div></div>';
@@ -2221,7 +2255,7 @@ function runLoanPayment() {
       secondary +
       '<div class="summary-card"><div class="summary-card__label">总利息</div><div class="summary-card__amount">¥' + money(result.totalInterest) + '</div></div>' +
       '<div class="summary-card"><div class="summary-card__label">本息合计</div><div class="summary-card__amount">¥' + money(result.totalRepayment) + '</div></div>' +
-      '</div>' +
+      '</div>' + comparisonHtml +
       '<div class="result-callout"><strong>利率口径：</strong>' + (customRate ? '按自定义利率测算' : '按现行全国公积金贷款利率自动匹配') + '，结果仅供还款计划参考。</div>' +
       '<details class="compact-details"><summary>查看全部 ' + months + ' 期还款明细</summary><div class="loan-schedule-wrap"><table class="loan-schedule"><thead><tr><th>期数</th><th>月供</th><th>本金</th><th>利息</th><th>剩余本金</th></tr></thead><tbody>' + renderLoanScheduleRows(result.schedule) + '</tbody></table></div></details>';
     setVisible(loanPaymentResult, true);
@@ -2386,6 +2420,8 @@ loanAmountConvert.addEventListener('click', function() {
   runLoanPayment();
 });
 loanHomeType.addEventListener('change', runLoanPayment);
+byId('loanCompareEnabled').addEventListener('change', runLoanPayment);
+byId('loanCommercialRate').addEventListener('input', runLoanPayment);
 loanMethod.addEventListener('change', runLoanPayment);
 loanPolicyRegion.addEventListener('change', syncLoanCapCategories);
 loanApplicantType.addEventListener('change', function() { syncPersonalLoanFields(); runLoanCap(); });

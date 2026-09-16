@@ -5,6 +5,14 @@ const test = require('node:test');
 
 const html = fs.readFileSync(path.join(__dirname, '..', 'social-insurance.html'), 'utf8');
 
+test('商贷对比默认关闭，仅增加利率，共用贷款条件', () => {
+  assert.match(html, /id="loanCompareEnabled"> 与商贷对比/);
+  assert.match(html, /id="loanCommercialFields" hidden/);
+  assert.match(html, /engine\.calculateLoanSchedule\(amountCheck\.principal, commercialRate, months, loanMethod\.value\)/);
+  assert.match(html, /当前贷款（自定义）/);
+  assert.match(html, /按全程利率不变/);
+});
+
 test('贷款优惠表述清晰，单一情形隐藏，基数与扣款区分', () => {
   const policies = require('../housing-fund-policy-data.js').loanPolicies;
   for (const policy of Object.values(policies)) {

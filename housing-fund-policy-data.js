@@ -5,6 +5,14 @@ var data = {
   version: '2026-09-16',
   reviewedAt: '2026-09-16',
 
+  commercialLoanReference: {
+    reviewedAt: '2026-09-16',
+    first: '近期多地首套（5年以上）约3.0%—3.1%',
+    second: '近期多地二套（5年以上）亦约3.0%—3.1%，部分城市首套、二套同价',
+    note: '非全国统一报价，不含贴息及特殊优惠；以银行报价为准',
+    source: 'https://finance.sina.com.cn/money/bank/bank_hydt/2026-08-07/doc-inimnvkm3146388.shtml'
+  },
+
   // 全国统一的公积金贷款利率。二套利率按当前各地普遍执行值测算。
   nationalLoanRates: {
     effectiveFrom: '2025-05-08',
