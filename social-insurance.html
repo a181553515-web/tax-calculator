@@ -1019,7 +1019,7 @@ body {
               </select>
             </div>
             <div class="form-group" id="loanCapCategoryGroup">
-              <label class="form-label" for="loanCapCategory">政策情形</label>
+              <label class="form-label" for="loanCapCategory">优惠情形</label>
               <select class="form-select" id="loanCapCategory"></select>
             </div>
           </div>
@@ -2248,6 +2248,9 @@ function syncLoanCapCategories() {
     var categories = policy ? Object.keys(policy.caps || {}) : [];
     var showApplicant = policy && policy.applicantMode !== 'shared';
     var showCategory = categories.length > 1;
+    loanCapCategoryGroup.querySelector('label').textContent = categories.indexOf('standard') >= 0
+      ? '优惠情形'
+      : (categories.some(function(key) { return /multiChild|green|talent/i.test(key); }) ? '购房情形' : '住房类型');
     loanApplicantGroup.hidden = !showApplicant;
     loanCapCategoryGroup.hidden = !showCategory;
     loanVerifiedCapFields.hidden = !showApplicant && !showCategory;
@@ -2279,7 +2282,7 @@ function syncPersonalLoanFields() {
     var prefix = 'estimatePerson' + index;
     var label = index === 0 ? '本人' : '配偶';
     var amounts = rule.type === 'base-and-balance'
-      ? '<div class="form-row"><div class="form-group"><label class="form-label" for="' + prefix + 'Base">' + label + '公积金缴存基数 <span class="unit">元/月</span></label><input class="form-input" type="text" id="' + prefix + 'Base" data-person="' + index + '" data-field="base" inputmode="decimal" placeholder="例如：5000"></div><div class="form-group"><label class="form-label" for="' + prefix + 'Balance">' + label + '测算余额 <span class="unit">元</span></label><input class="form-input" type="text" id="' + prefix + 'Balance" data-person="' + index + '" data-field="balance" inputmode="decimal" placeholder="例如：30000"><div class="form-hint">账户现余额；符合政策的提取额可合并计入</div></div></div>'
+      ? '<div class="form-row"><div class="form-group"><label class="form-label" for="' + prefix + 'Base">' + label + '公积金缴存基数 <span class="unit">元/月</span></label><input class="form-input" type="text" id="' + prefix + 'Base" data-person="' + index + '" data-field="base" inputmode="decimal" placeholder="例如：5000"><div class="form-hint">不是每月扣款金额</div></div><div class="form-group"><label class="form-label" for="' + prefix + 'Balance">' + label + '测算余额 <span class="unit">元</span></label><input class="form-input" type="text" id="' + prefix + 'Balance" data-person="' + index + '" data-field="balance" inputmode="decimal" placeholder="例如：30000"><div class="form-hint">账户现余额；符合政策的提取额可合并计入</div></div></div>'
       : '<div class="form-group"><label class="form-label" for="' + prefix + 'MonthlyTotal">' + label + '公积金月缴存额 <span class="unit">元/月</span></label><input class="form-input" type="text" id="' + prefix + 'MonthlyTotal" data-person="' + index + '" data-field="monthlyTotal" inputmode="decimal" placeholder="例如：1000"><div class="form-hint">填个人＋单位双边合计，不是个人扣款金额</div></div>';
     return amounts + '<div class="form-group"><label class="form-label" for="' + prefix + 'Months">' + label + '连续正常缴存时间 <span class="unit">月</span></label><input class="form-input" type="number" id="' + prefix + 'Months" data-person="' + index + '" data-field="months" min="6" step="1" placeholder="例如：24"></div>';
   }).join('');

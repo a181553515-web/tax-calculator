@@ -5,6 +5,17 @@ const test = require('node:test');
 
 const html = fs.readFileSync(path.join(__dirname, '..', 'social-insurance.html'), 'utf8');
 
+test('贷款优惠表述清晰，单一情形隐藏，基数与扣款区分', () => {
+  const policies = require('../housing-fund-policy-data.js').loanPolicies;
+  for (const policy of Object.values(policies)) {
+    if (policy.capLabels.standard) assert.equal(policy.capLabels.standard,'无额外优惠');
+  }
+  assert.match(html, />优惠情形</);
+  assert.match(html, /var showCategory = categories.length > 1/);
+  assert.match(html, /不是每月扣款金额/);
+  assert.match(html, /'住房类型'/);
+});
+
 test('额度入口精简，不要求房价首付，可选校验默认折叠', () => {
   assert.match(html, />算贷款额度</);
   assert.doesNotMatch(html, /id="estimatePropertyPrice"|id="estimateDownPayment"|算算我能贷多少/);

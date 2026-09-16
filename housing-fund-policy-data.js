@@ -26,7 +26,7 @@ var data = {
       effectiveTo: '2030-09-07',
       reviewedAt: '2026-09-16',
       capLabels: {
-        standard: '普通家庭',
+        standard: '无额外优惠',
         multiChildFirstHome: '多子女家庭购买首套房'
       },
       caps: {
@@ -122,7 +122,7 @@ var data = {
       status: 'verified',
       effectiveFrom: '2026-03-30',
       reviewedAt: '2026-09-16',
-      capLabels: { standard: '普通家庭' },
+      capLabels: { standard: '无额外优惠' },
       caps: {
         standard: { single: 900000, family: 1800000 }
       },
@@ -137,7 +137,7 @@ var data = {
       status: 'verified',
       effectiveFrom: '2026-04-30',
       reviewedAt: '2026-09-16',
-      capLabels: { standard: '普通家庭' },
+      capLabels: { standard: '无额外优惠' },
       caps: {
         standard: { single: 700000, family: 1300000 }
       },
@@ -194,7 +194,7 @@ var data = {
       effectiveFrom: '2024-10-14',
       reviewedAt: '2026-09-16',
       capLabels: {
-        standard: '普通家庭',
+        standard: '无额外优惠',
         multiChild: '多子女家庭'
       },
       caps: {
@@ -213,7 +213,7 @@ var data = {
       effectiveFrom: '2025-09-03',
       reviewedAt: '2026-09-16',
       capLabels: {
-        standard: '普通家庭',
+        standard: '无额外优惠',
         greenOneStar: '一星级绿色建筑',
         greenTwoStar: '二星级及以上绿色建筑',
         multiChildFirstHome: '多子女家庭购买首套房'
@@ -236,7 +236,7 @@ var data = {
       effectiveTo: '2027-12-31',
       reviewedAt: '2026-09-16',
       capLabels: {
-        standard: '普通家庭',
+        standard: '无额外优惠',
         uplift20: '符合一项20%上浮政策',
         stackedSupport: '符合两项可叠加政策'
       },
@@ -256,11 +256,11 @@ var data = {
       effectiveFrom: '2026-06-01',
       effectiveTo: '2028-05-31',
       reviewedAt: '2026-09-16',
-      capLabels: { standard: '普通家庭' },
+      capLabels: { standard: '无额外优惠' },
       caps: {
         standard: { single: 1500000, family: 2000000 }
       },
-      note: '青年人才等特定群体另有上浮政策；此处展示普通家庭最高限额',
+      note: '青年人才等特定群体另有上浮政策；此处展示无额外优惠最高限额',
       source: 'https://www.suzhou.gov.cn/szsrmzf/dstx/202605/d7bf7a1d2f55450db7a81f3b48883fa6.shtml'
     },
     'hubei-wuhan': {
@@ -271,7 +271,7 @@ var data = {
       effectiveFrom: '2025-09-30',
       reviewedAt: '2026-09-16',
       capLabels: {
-        standard: '普通家庭',
+        standard: '无额外优惠',
         multiChild: '多子女家庭',
         greenTwoStarFirstHome: '二星级绿色建筑首套新房'
       },
@@ -291,7 +291,7 @@ var data = {
       effectiveFrom: '2026-08-26',
       reviewedAt: '2026-09-16',
       capLabels: {
-        standard: '普通家庭',
+        standard: '无额外优惠',
         multiChild: '多子女家庭'
       },
       caps: {
@@ -310,7 +310,7 @@ var data = {
       effectiveTo: '2028-04-19',
       reviewedAt: '2026-09-16',
       capLabels: {
-        standard: '普通家庭',
+        standard: '无额外优惠',
         multiChild: '多子女家庭',
         maxStackedSupport: '多项政策叠加上限'
       },
@@ -330,7 +330,7 @@ var data = {
       effectiveFrom: '2026-04-20',
       reviewedAt: '2026-09-16',
       capLabels: {
-        standard: '普通家庭',
+        standard: '无额外优惠',
         maxStackedSupport: '多项政策叠加上限'
       },
       caps: {
