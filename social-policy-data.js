@@ -2,8 +2,8 @@
 'use strict';
 
 var data = {
-  version: '2026-09-07',
-  reviewedAt: '2026-09-07',
+  version: '2026-10-13',
+  reviewedAt: '2026-10-13',
 
   // 国家八类工伤保险行业基准费率。各省可通过 injuryRates 覆盖。
   defaultInjuryRates: [0.2, 0.4, 0.7, 0.9, 1.1, 1.3, 1.6, 1.9],
@@ -20,16 +20,16 @@ var data = {
     '吉林':   { min: 4436,  max: 22180, fundMin: 2020,  fundMax: 22180 },
     '黑龙江': { min: 4623,  max: 23115, fundMin: 2080,  fundMax: 23115 },
     '上海':   { min: 7546,  max: 37731, fundMin: 2690,  fundMax: 37302 },
-    '江苏':   { min: 4952,  max: 24762, fundMin: 2260,  fundMax: 41400 },
+    '江苏':   { min: 5025,  max: 25127, fundMin: 2260,  fundMax: 41400 },
     '浙江':   { min: 4986,  max: 25299, fundMin: 2490,  fundMax: 40694 },
     '安徽':   { min: 4354,  max: 21772, fundMin: 2320,  fundMax: 31564 },
-    '福建':   { min: 4043,  max: 22607, injuryMin: 4579, injuryMax: 22893, fundMin: 2100, fundMax: 22607 },
-    '江西':   { min: 3915,  max: 19575, fundMin: 2000,  fundMax: 19575 },
-    '山东':   { min: 4952,  max: 24762, fundMin: 2200,  fundMax: 24762 },
-    '河南':   { min: 4382,  max: 21910, fundMin: 2200,  fundMax: 21910 },
-    '湖北':   { min: 4500,  max: 22500, fundMin: 2210,  fundMax: 34560 },
+    '福建':   { min: 4579,  max: 22893, injuryMin: 4579, injuryMax: 22893, fundMin: 2100,  fundMax: 22607 },
+    '江西':   { min: 3990,  max: 19947, medicalMin: 3915, medicalMax: 19575, fundMin: 2000,  fundMax: 19575 },
+    '山东':   { min: 4573,  max: 22863, fundMin: 2200,  fundMax: 24762 },
+    '河南':   { min: 3912,  max: 19560, fundMin: 2200,  fundMax: 21910 },
+    '湖北':   { min: 4552,  max: 22761, fundMin: 2210,  fundMax: 34560 },
     '湖南':   { min: 4106,  max: 20529, medicalMin: 4480, medicalMax: 22400, fundMin: 2100, fundMax: 22400 },
-    '广东':   { min: 4775,  max: 23875, fundMin: 2500,  fundMax: 39828 },
+    '广东':   { min: 5521,  max: 27603, medicalMin: 4775, medicalMax: 23875, unemploymentMin: 4775, unemploymentMax: 23875, injuryMin: 4775, injuryMax: 23875, fundMin: 2500, fundMax: 39828 },
     '广西':   { min: 4245,  max: 21225, fundMin: 2000,  fundMax: 21225 },
     '海南':   { min: 4428,  max: 22140, fundMin: 2010,  fundMax: 22140 },
     '重庆':   { min: 4450,  max: 22250, fundMin: 2200,  fundMax: 22250 },
@@ -41,7 +41,7 @@ var data = {
     '甘肃':   { min: 4526,  max: 22626, medicalMin: 4610, medicalMax: 22014, fundMin: 2120, fundMax: 22014 },
     '青海':   { min: 4538,  max: 22689, fundMin: 2100,  fundMax: 22689 },
     '宁夏':   { min: 5023,  max: 25113, fundMin: 2100,  fundMax: 22400 },
-    '新疆':   { min: 4575,  max: 22875, fundMin: 2100,  fundMax: 22875 }
+    '新疆':   { min: 5246,  max: 26231, medicalMin: 4575, medicalMax: 22875, unemploymentMin: 4575, unemploymentMax: 22875, injuryMin: 4575, injuryMax: 22875, fundMin: 2100, fundMax: 22875 }
   },
 
   // 仅记录已经找到正式文件的2026年省级社保基数。未列险种仍按省级参考值估算。
@@ -87,11 +87,48 @@ var data = {
       verifiedInsurances:['pension','medical','unemployment','injury'],
       sources:[{ label:'社保基数官方来源', url:'https://rsj.sh.gov.cn/tdjjf_17554/20260824/t0035_1443297.html' }]
     },
+    '江苏': {
+      reviewedAt:'2026-10-13', effectiveFrom:'2026-01-01', effectiveTo:'2026-12-31',
+      verifiedInsurances:['pension','medical','unemployment','injury'],
+      sources:[{ label:'社保基数官方来源', url:'https://jshrss.jiangsu.gov.cn/art/2026/10/8/art_77277_11838872.html' }]
+    },
     '福建': {
-      reviewedAt:'2026-09-07', effectiveFrom:'2026-08-01',
-      verifiedInsurances:['injury'],
-      note:'自2026年8月1日起，正式调整仅用于工伤保险基数；养老、医保和失业仍按省级参考值估算',
-      sources:[{ label:'工伤基数官方来源', url:'https://rst.fujian.gov.cn/zw/zfxxgk/zfxxgkml/zyywgz/ldgx/202607/t20260716_7178672.htm' }]
+      reviewedAt:'2026-10-13',
+      effectivePeriod:'2026年度（养老自1月起、医保自7月起、工伤自8月起、失业自10月起）',
+      verifiedInsurances:['pension','medical','unemployment','injury'],
+      note:'四险现行上下限均为4579～22893元，具体起始月份按各险种文件执行',
+      sources:[
+        { label:'养老及失业基数官方来源', url:'https://rst.fj.gov.cn/zw/ztzl/zxzt/sbhm/zxsl/zcfg/202610/t20261008_7221778.htm' },
+        { label:'医保基数官方来源', url:'https://ybj.fujian.gov.cn/zfxxgkzl/fdzdgknr/qtyzdgkzfxx/202606/t20260629_7168980.htm' },
+        { label:'工伤基数官方来源', url:'https://rst.fujian.gov.cn/zw/zfxxgk/zfxxgkml/zyywgz/ldgx/202607/t20260716_7178672.htm' }
+      ]
+    },
+    '江西': {
+      reviewedAt:'2026-10-13', effectiveFrom:'2026-01-01', effectiveTo:'2026-12-31',
+      verifiedInsurances:['pension','unemployment','injury'],
+      note:'正式上下限适用于养老、失业和工伤保险；医保仍保留原省级参考值',
+      sources:[{ label:'养老等基数官方来源', url:'https://hrss.jdz.gov.cn/zwgk/fdzdgknr/fgzc/zcwj/t1108381.shtml' }]
+    },
+    '山东': {
+      reviewedAt:'2026-10-13', effectivePeriod:'2026年度',
+      verifiedInsurances:['pension','medical','unemployment','injury'],
+      sources:[{ label:'社保基数官方来源', url:'https://www.jinan.gov.cn/col/col118356/art/2026/art_9d5e63220137445a87d95453ab6b51b9.html' }]
+    },
+    '河南': {
+      reviewedAt:'2026-10-13', effectiveFrom:'2026-07-01',
+      verifiedInsurances:['pension','medical','unemployment','injury'],
+      sources:[{ label:'社保基数官方来源', url:'https://henan.chinatax.gov.cn/2026/10-10/142418.html' }]
+    },
+    '湖北': {
+      reviewedAt:'2026-10-13', effectivePeriod:'2026社保年度',
+      verifiedInsurances:['pension','medical','unemployment','injury'],
+      sources:[{ label:'社保基数官方来源', url:'https://rst.hubei.gov.cn/zfxxgk/zc/qtzdgkwj/202610/t20261008_6027858.shtml' }]
+    },
+    '广东': {
+      reviewedAt:'2026-10-13', effectiveFrom:'2026-07-01',
+      verifiedInsurances:['pension'],
+      note:'现行企业职工养老保险上下限为5521～27603元；医保、失业和工伤仍按省级参考值或已录入城市口径估算',
+      sources:[{ label:'养老基数官方来源', url:'https://guangdong.chinatax.gov.cn/gdsw/ssfggds/2026-10/08/content_b40dcb7bf605411fbb12e0f81281dc6b.shtml' }]
     },
     '湖南': {
       reviewedAt:'2026-09-07', effectiveFrom:'2026-01-01', effectiveTo:'2026-12-31',
@@ -115,6 +152,12 @@ var data = {
       reviewedAt:'2026-09-07', effectiveFrom:'2026-01-01', effectiveTo:'2026-12-31',
       verifiedInsurances:['pension','medical','unemployment','injury'],
       sources:[{ label:'社保基数官方来源', url:'https://hrss.nx.gov.cn/xxgk/zcj/zcfg/shbz/202608/t20260828_5325572.html' }]
+    },
+    '新疆': {
+      reviewedAt:'2026-10-13', effectivePeriod:'2026年度',
+      verifiedInsurances:['pension'],
+      note:'正式上下限仅用于职工基本养老保险；医保、失业和工伤仍按省级参考值估算',
+      sources:[{ label:'养老基数官方来源', url:'https://rst.xinjiang.gov.cn/xjrst/c112734/202609/234e01d8b8b9404ca3c98c2cee384903.shtml' }]
     }
   },
 

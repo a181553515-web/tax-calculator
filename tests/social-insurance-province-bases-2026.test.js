@@ -15,10 +15,18 @@ test('2026年正式发布统一主基数的省级地区使用最新上下限', (
     '内蒙古': [5058, 25290],
     '辽宁': [4533, 22665],
     '上海': [7546, 37731],
+    '江苏': [5025, 25127],
+    '福建': [4579, 22893],
+    '江西': [3990, 19947],
+    '山东': [4573, 22863],
+    '河南': [3912, 19560],
+    '湖北': [4552, 22761],
     '湖南': [4106, 20529],
+    '广东': [5521, 27603],
     '云南': [4403, 22017],
     '甘肃': [4526, 22626],
-    '宁夏': [5023, 25113]
+    '宁夏': [5023, 25113],
+    '新疆': [5246, 26231]
   };
 
   Object.entries(expected).forEach(([province, limits]) => {
@@ -55,24 +63,33 @@ test('只更新正式文件明确覆盖的险种，不把主基数误套到医�
     [policy.provinceBases['甘肃'].medicalMin, policy.provinceBases['甘肃'].medicalMax],
     [4610, 22014]
   );
+  assert.deepEqual(
+    [policy.provinceBases['江西'].medicalMin, policy.provinceBases['江西'].medicalMax],
+    [3915, 19575]
+  );
+  assert.deepEqual(
+    [policy.provinceBases['广东'].medicalMin, policy.provinceBases['广东'].medicalMax],
+    [4775, 23875]
+  );
+  assert.deepEqual(
+    [policy.provinceBases['新疆'].medicalMin, policy.provinceBases['新疆'].medicalMax],
+    [4575, 22875]
+  );
 });
 
-test('内蒙古医保和福建工伤使用独立的2026年正式上下限', () => {
+test('内蒙古医保使用独立上下限，福建四险使用同一组2026年正式上下限', () => {
   assert.deepEqual(
     [policy.provinceBases['内蒙古'].medicalMin, policy.provinceBases['内蒙古'].medicalMax],
     [6744, 25290]
   );
-  assert.deepEqual(
-    [policy.provinceBases['福建'].injuryMin, policy.provinceBases['福建'].injuryMax],
-    [4579, 22893]
-  );
+  assert.deepEqual([policy.provinceBases['福建'].min, policy.provinceBases['福建'].max], [4579, 22893]);
   assert.equal(policy.provinceBases['福建'].medicalMin, undefined);
   assert.equal(policy.provinceBases['福建'].medicalMax, undefined);
 });
 
 test('正式基数政策记录险种范围、生效期和可追溯来源', () => {
   const policies = policy.provinceBasePolicies;
-  assert.equal(Object.keys(policies).length, 12);
+  assert.equal(Object.keys(policies).length, 19);
 
   Object.entries(policies).forEach(([province, item]) => {
     assert.match(item.reviewedAt, /^2026-\d{2}-\d{2}$/, `${province}缺少复核日期`);

@@ -41,6 +41,9 @@ test('全国贷款利率带有效期和正式来源', () => {
   assert.equal(loanData.nationalLoanRates.second.over5Years, 3.075);
   assert.equal(loanData.nationalLoanRates.effectiveFrom, '2025-05-08');
   assert.match(loanData.nationalLoanRates.source, /^https:\/\//);
+  assert.match(loanData.nationalLoanRates.regulationSource, /^https:\/\//);
+  assert.match(loanData.nationalLoanRates.note, /按现行国家规定/);
+  assert.doesNotMatch(loanData.nationalLoanRates.note, /人民银行规定二套房利率/);
 });
 
 test('已核验城市返回政策上限，其他地区要求手动填写', () => {

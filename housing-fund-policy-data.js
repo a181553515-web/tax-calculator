@@ -2,8 +2,8 @@
 'use strict';
 
 var data = {
-  version: '2026-09-16',
-  reviewedAt: '2026-09-16',
+  version: '2026-10-13',
+  reviewedAt: '2026-10-13',
 
   commercialLoanReference: {
     reviewedAt: '2026-09-16',
@@ -16,11 +16,12 @@ var data = {
   // 全国统一的公积金贷款利率。二套利率按当前各地普遍执行值测算。
   nationalLoanRates: {
     effectiveFrom: '2025-05-08',
-    reviewedAt: '2026-09-16',
+    reviewedAt: '2026-10-13',
     first: { upTo5Years: 2.1, over5Years: 2.6 },
     second: { upTo5Years: 2.525, over5Years: 3.075 },
     source: 'https://app.www.gov.cn/govdata/gov/202505/07/528461/article.html',
-    note: '人民银行规定二套房利率不低于该值；计算器按当前各地普遍执行值测算'
+    regulationSource: 'https://www.mee.gov.cn/zcwj/gwywj/202608/t20260820_1164286.shtml',
+    note: '利率数值未调整；按现行国家规定及各地实际执行口径测算'
   },
 
   // 这里只保存贷款政策，不复制 social-policy-data.js 中的公积金缴存上下限。
