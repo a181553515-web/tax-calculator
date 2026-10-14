@@ -20,8 +20,10 @@ test('robots 声明的 sitemap 在本地存在且包含两个公开工具入口'
 });
 
 test('GitHub Pages 不发布内部部署说明和政策维护记录', () => {
+  assert.match(pagesConfig, /- README\.md/);
   assert.match(pagesConfig, /- 部署说明\.md/);
-  assert.match(pagesConfig, /- docs\/policy-sources/);
+  assert.match(pagesConfig, /- docs/);
+  assert.match(pagesConfig, /- tests/);
   assert.equal(fs.existsSync(path.join(root, 'docs', 'plans')), false);
 });
 

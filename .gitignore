@@ -3,3 +3,8 @@
 .codex/
 .mcp.json
 data/
+
+# 仅保留在本机的项目维护资料
+README.md
+部署说明.md
+docs/policy-sources/
